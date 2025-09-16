@@ -3,43 +3,43 @@
 namespace App\Services;
 
 use App\Models\Campaign;
-use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 
 class CampaignService
 {
-
-    public function getAll()
+    public function all(): Collection
     {
         return Campaign::with('children')->get();
     }
 
-
-    public function getById(string $id)
+    public function find(string $id): ?Campaign
     {
-        return Campaign::with('children')->findOrFail($id);
+        return Campaign::with('children')->find($id);
     }
-
 
     public function create(array $data): Campaign
     {
-        $data['campaign_id'] = Str::uuid()->toString();
-
         return Campaign::create($data);
     }
 
-
-    public function update(string $id, array $data): Campaign
+    public function update(string $id, array $data): ?Campaign
     {
-        $campaign = Campaign::findOrFail($id);
-        $campaign->update($data);
+        $campaign = Campaign::find($id);
+        if (!$campaign) {
+            return null;
+        }
 
+        $campaign->update($data);
         return $campaign;
     }
 
     public function delete(string $id): bool
     {
-        $campaign = Campaign::findOrFail($id);
+        $campaign = Campaign::find($id);
+        if (!$campaign) {
+            return false;
+        }
 
-        return $campaign->delete();
+        return (bool) $campaign->delete();
     }
 }

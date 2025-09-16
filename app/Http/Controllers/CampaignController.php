@@ -1,39 +1,73 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Services\CampaignService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class CampaignController extends Controller
 {
-    public function __construct(protected CampaignService $campaigns) {}
+    protected CampaignService $campaignService;
 
-    public function index()
+    public function __construct(CampaignService $campaignService)
     {
-        return response()->json($this->campaigns->getAll());
+        $this->campaignService = $campaignService;
     }
 
-    public function store(Request $request)
+    public function index(): JsonResponse
     {
-        $campaign = $this->campaigns->create($request->all());
-        return response()->json($campaign, 201);
+        return response()->json($this->campaignService->all());
     }
 
-    public function show($id)
+    public function show(string $id): JsonResponse
     {
-        return response()->json($this->campaigns->getById($id));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $campaign = $this->campaigns->update($id, $request->all());
+        $campaign = $this->campaignService->find($id);
+        if (!$campaign) {
+            return response()->json(['message' => 'Campaign not found'], 404);
+        }
         return response()->json($campaign);
     }
 
-    public function destroy($id)
+    public function store(Request $request): JsonResponse
     {
-        $this->campaigns->delete($id);
-        return response()->json(null, 204);
+        $validated = $request->validate([
+            'parent_id' => 'nullable|uuid|exists:campaigns,campaign_id',
+            'name' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'duration' => 'required|integer|min:1',
+            'type' => 'nullable|in:campaign,website-mytopia,website-edisons,marketplaces',
+        ]);
+
+        return response()->json($this->campaignService->create($validated), 201);
+    }
+
+    public function update(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'parent_id' => 'nullable|uuid|exists:campaigns,campaign_id',
+            'name' => 'sometimes|required|string|max:255',
+            'start_date' => 'sometimes|required|date',
+            'duration' => 'sometimes|required|integer|min:1',
+            'type' => 'nullable|in:campaign,website-mytopia,website-edisons,marketplaces',
+        ]);
+
+        $campaign = $this->campaignService->update($id, $validated);
+
+        if (!$campaign) {
+            return response()->json(['message' => 'Campaign not found'], 404);
+        }
+
+        return response()->json($campaign);
+    }
+
+    public function destroy(string $id): JsonResponse
+    {
+        if (!$this->campaignService->delete($id)) {
+            return response()->json(['message' => 'Campaign not found'], 404);
+        }
+
+        return response()->json(['message' => 'Campaign deleted']);
     }
 }
