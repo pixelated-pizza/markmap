@@ -8,45 +8,101 @@
              dark:focus:ring-green-800"
       @click="addCampaign"
     >
-      Add Campaign
+      Add Campaign / Promo
     </button>
 
-    <div class="gantt-wrapper">
-      <div ref="ganttContainer" class="gantt-container"></div>
-    </div>
+    <div ref="ganttContainer" class="gantt-container w-400 h-200"></div>
   </div>
 </template>
 
 <script setup>
+import Swal from "sweetalert2";
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { getCurrentInstance } from "vue";
 import gantt from "dhtmlx-gantt";
 import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
 
-const ganttContainer = ref(null);
+const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
 
-function initGantt() {
+import {
+  fetchCampaigns,
+  createCampaign,
+  updateCampaign,
+  deleteCampaign,
+  fetchChannels,
+} from "../services/campaign_service";
+
+const ganttContainer = ref(null);
+const newTasks = new Set();
+const channels = ref([]);
+
+function parseLocalDate(dateStr) {
+  const [year, month, day] = dateStr.split("-");
+  return new Date(year, month - 1, day); 
+}
+
+function parseEndDate(dateStr) {
+  const d = parseLocalDate(dateStr);
+  d.setDate(d.getDate() + 1);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function setEndOfDay(date) {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+function normalizeEndDate(date) {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
+function formatDateForDB(date) {
+  const d = new Date(date.getTime() - 1000);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day} 23:59:59`;
+}
+
+function formatLocalDateTime(date) {
+  const d = new Date(date);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  const sec = String(d.getSeconds()).padStart(2, "0");
+  return `${y}-${m}-${day} ${h}:${min}:${sec}`;
+}
+
+async function loadChannels() {
+  channels.value = await fetchChannels(); 
+}
+
+async function initGantt() {
+  gantt.config.grid_resize = true;
+
   gantt.config.columns = [
-    { name: "text", label: "Sales Campaign name", tree: true, width: 250 },
     {
-      name: "start_date",
-      label: "Start date",
-      align: "center",
-      template(task) {
-        return task.start_date ? gantt.templates.date_grid(task.start_date) : "";
+      name: "channel",
+      label: "Category/Sales Channel",
+      width: 170,
+      template: function (task) {
+        const channel = channels.value.find(c => c.channel_id === task.channel_id);
+        return channel ? channel.name : "";
       }
     },
     {
-      name: "duration",
-      label: "Duration",
-      align: "center",
-      template(task) {
-        if (task.start_date && task.end_date) {
-          return Math.round(gantt.calculateDuration(task.start_date, task.end_date));
-        }
-        return task.duration || "";
-      }
-    },
-    { name: "add", label: "", width: 44 }
+      name: "text",
+      label: "Campaign Name/Discount Name",
+      width: 250,
+      tree: false,
+      resize: true
+    }
   ];
 
   gantt.config.xml_date = "%Y-%m-%d %H:%i";
@@ -55,116 +111,170 @@ function initGantt() {
   gantt.config.drag_links = true;
 
   const fmt = gantt.date.date_to_str("%Y-%m-%d %H:%i");
-  const strToDate = gantt.date.str_to_date(gantt.config.xml_date);
 
-  gantt.templates.tooltip_text = function (start, end, task) {
-    return `
-      Task: <b>${task.text}</b><br/>
-      Start: <b>${fmt(start)}</b><br/>
-      End: <b>${fmt(end)}</b><br/>
-      Progress: <b>${Math.round((task.progress || 0) * 100)}%</b>
-    `;
-  };
+  gantt.templates.tooltip_text = (start, end, task) => `
+    Task: <b>${task.text}</b><br/>
+    Start: <b>${fmt(start)}</b><br/>
+    End: <b>${fmt(end)}</b><br/>
+    Progress: <b>${Math.round((task.progress || 0) * 100)}%</b>
+  `;
 
-  gantt.config.scales = [
-  { unit: "day", step: 1, format: "%D, %d %M" }, 
-];
+  gantt.config.scales = [{ step: 1, format: "%d %M" }];
+
+  gantt.config.lightbox.sections = [
+    { name: "description", height: 70, map_to: "text", type: "textarea", focus: true, label: "Campaign Name / Promo" },
+    { 
+      name: "Category / Sales Channel",
+      type: "select",
+      options: channels.value.map(c => ({ key: c.channel_id, label: c.name })),
+      map_to: "channel_id",
+      label: "Channel"
+    },
+    { name: "time", type: "time", map_to: "auto", label: "Time period (Start - End)" },
+    
+  ];
+
+  gantt.eachTask(task => {
+    if (!task.channel_id && channels.value.length) {
+      task.channel_id = channels.value[0].channel_id;
+    }
+  });
 
   gantt.init(ganttContainer.value);
+  gantt.attachEvent("onAfterTaskAdd", autoAdjustTimeline);
+  gantt.attachEvent("onAfterTaskUpdate", autoAdjustTimeline);
+  gantt.attachEvent("onAfterTaskDelete", autoAdjustTimeline);
+  loadCampaigns();
 
-gantt.attachEvent("onAfterTaskAdd", function(id, task) {
-  gantt.render();
-  gantt.showDate(task.start_date); 
-  gantt.showDate(task.end_date);   
+  gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
+  if (typeof id === "number") return;
+
+  try {
+    await updateCampaign(id, {
+      name: task.text,
+      start_date: formatLocalDateTime(task.start_date),
+      end_date: formatDateForDB(task.end_date),  
+      channel_id: task.channel_id,
+    });
+    toastr.success("Campaign updated successfully.");
+  } catch (err) {
+    console.error("Error updating campaign:", err);
+    toastr.error("Failed to update campaign.");
+  }
 });
 
-gantt.attachEvent("onAfterTaskUpdate", function(id, task) {
-  gantt.render();
-  gantt.showDate(task.end_date);
-});
-
-  gantt.parse({ data: [] });
-
-  gantt.attachEvent("onLightboxSave", function (id, task, is_new) {
-    if (typeof task.start_date === "string") {
-      task.start_date = strToDate(task.start_date);
+  gantt.attachEvent("onAfterTaskDelete", async id => {
+    if (typeof id === "number") return;
+    try {
+      await deleteCampaign(id);
+      toastr.success("Campaign deleted successfully.");
+    } catch (err) {
+      console.error("Error deleting campaign:", err);
+      toastr.error("Failed to delete campaign.");
     }
-    task.end_date = gantt.calculateEndDate(task.start_date, task.duration);
-    task.duration = gantt.calculateDuration(task.start_date, task.end_date);
-
-    gantt.updateTask(id);
-    gantt.refreshTask(id);
-    return true; 
   });
 
-  gantt.attachEvent("onTaskEndDateChange", function (id, task) {
-    task.duration = gantt.calculateDuration(task.start_date, task.end_date);
-    gantt.updateTask(id);
-    gantt.refreshTask(id);
-    return true;
-  });
+  gantt.attachEvent("onLightboxSave", async (id, task) => {
+    if (newTasks.has(id)) {
+      try {
+        const payload = {
+          name: task.text || "New Campaign / Promo",
+          start_date: formatLocalDateTime(task.start_date),
+          end_date: formatDateForDB(task.end_date), 
+          channel_id: task.channel_id,
+        };
+        const saved = await createCampaign(payload);
+        gantt.changeTaskId(id, saved.campaign_id);
+        newTasks.delete(id);
 
-  gantt.attachEvent("onTaskChanged", function (id, task) {
-    if (task.start_date && task.end_date) {
-      task.duration = gantt.calculateDuration(task.start_date, task.end_date);
+        toastr.success("Campaign created successfully.");
+      } catch (err) {
+        console.error("Error saving campaign:", err);
+        gantt.deleteTask(id);
+        newTasks.delete(id);
+        toastr.error("Failed to create campaign.");
+        return false;
+      }
     }
-    gantt.updateTask(id);
-    gantt.refreshTask(id);
     return true;
   });
 
-  gantt.attachEvent("onTaskClick", function (id) {
-    console.log("Gantt task:", gantt.getTask(id));
-    return true;
-  });
 }
 
-function handleResize() {
-  if (gantt && gantt.setSizes) gantt.setSizes();
-  else gantt.render();
+function autoAdjustTimeline() {
+  const tasks = gantt.getTaskByTime(); 
+
+  if (!tasks.length) return;
+
+  let minDate = null;
+  let maxDate = null;
+
+  gantt.eachTask(task => {
+    if (!minDate || task.start_date < minDate) minDate = task.start_date;
+    if (!maxDate || task.end_date > maxDate) maxDate = task.end_date;
+  });
+
+  if (minDate && maxDate) {
+    const padding = 1; 
+    minDate = new Date(minDate.getTime() - padding * 24*60*60*1000);
+    maxDate = new Date(maxDate.getTime() + padding * 24*60*60*1000);
+
+    gantt.config.start_date = minDate;
+    gantt.config.end_date = maxDate;
+    gantt.render();
+  }
 }
 
-function addCampaign() {
-  const id = gantt.uid();
-  gantt.addTask({
-    id,
+async function loadCampaigns() {
+  try {
+    const campaigns = await fetchCampaigns();
+    const ganttTasks = {
+      data: campaigns.map(c => ({
+        id: c.campaign_id,
+        text: c.name,
+        start_date: new Date(c.start_date), 
+        end_date: parseEndDate(c.end_date),
+        channel_id: c.channel_id,
+      })),
+    };
+    gantt.parse(ganttTasks);
+    autoAdjustTimeline();
+  } catch (err) {
+    console.error("Failed to load campaigns:", err);
+  }
+}
+
+async function addCampaign() {
+  const tempId = gantt.uid();
+  const now = new Date();
+
+  const defaultEnd = new Date(now.getTime() + 13*24*60*60*1000);
+  const endDate = normalizeEndDate(defaultEnd);
+
+  const task = {
+    id: tempId,
     text: "New Campaign",
-    start_date: new Date(),
-    duration: 5,
-    progress: 0
-  });
+    start_date: formatLocalDateTime(now),
+    end_date: formatLocalDateTime(endDate),
+    channel_id: channels.value.length ? channels.value[0].channel_id : null,
+  };
 
-  gantt.showLightbox(id);
+  gantt.addTask(task);
+  newTasks.add(tempId);
+  gantt.showLightbox(tempId);
 }
 
-onMounted(() => {
-  initGantt();
-  window.addEventListener("resize", handleResize);
+onMounted(async () => {
+  channels.value = await fetchChannels(); 
+  await initGantt(); 
+  window.addEventListener("resize", () => gantt.setSizes());
 });
+
 
 onBeforeUnmount(() => {
   try {
-    window.removeEventListener("resize", handleResize);
+    window.removeEventListener("resize", () => gantt.setSizes());
     gantt.clearAll();
-  } catch (e) {
-    // ignore
-  }
+  } catch {}
 });
 </script>
-
-<style scoped>
-.gantt-wrapper {
-  width: 80vw;
-  height: 40vw;
-  display: flex;
-  flex-direction: column;
-}
-
-.gantt-container {
-  flex: 1 1 auto;
-  min-height: 400px;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-}
-</style>

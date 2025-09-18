@@ -13,17 +13,14 @@ return new class extends Migration
     {
         Schema::create('campaigns', function (Blueprint $table) {
             $table->uuid('campaign_id')->primary();
-            $table->uuid('parent_id')->nullable();
-
+            $table->uuid('channel_id');
             $table->string('name');
             $table->date('start_date');
-            $table->integer('duration');
-            $table->enum('type', ['campaign', 'website-mytopia', 'website-edisons', 'marketplaces'])
-                ->nullable();
+            $table->date('end_date');
 
-            $table->foreign('parent_id')
-                ->references('campaign_id')
-                ->on('campaigns')
+            $table->foreign('channel_id')
+                ->references('channel_id')
+                ->on('category_channels')
                 ->onDelete('cascade');
         });
     }

@@ -3,7 +3,7 @@
     <!-- Sidebar -->
     <aside :class="sidebarOpen ? 'w-64' : 'w-16'" class="bg-gray-800 text-white flex-shrink-0 transition-all duration-300">
       <div class="p-4 flex items-center justify-between border-b border-gray-700">
-        <span class="font-bold text-xl" v-show="sidebarOpen">MarkMap</span>
+        <span class="font-bold text-xl" v-show="sidebarOpen">MarketMap</span>
         <button @click="sidebarOpen = !sidebarOpen" class="focus:outline-none">
           <svg v-show="sidebarOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
                viewBox="0 0 24 24" stroke="currentColor">
@@ -20,7 +20,6 @@
 
       <nav class="mt-4">
         <ul>
-          <!-- Campaign Calendar Menu -->
           <li class="px-4 py-2 hover:bg-gray-700">
             <button
               @click="submenuOpen = !submenuOpen"
@@ -49,9 +48,10 @@
       </nav>
     </aside>
 
-    <main class="flex-1 p-6 overflow-auto transition-all duration-300">
-      <router-view/>
+    <main class="p-6 transition-all duration-300">
+        <router-view />
     </main>
+
   </div>
 </template>
 

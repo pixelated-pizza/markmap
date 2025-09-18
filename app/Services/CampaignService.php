@@ -7,14 +7,15 @@ use Illuminate\Support\Collection;
 
 class CampaignService
 {
+  
     public function all(): Collection
     {
-        return Campaign::with('children')->get();
+        return Campaign::with('channel')->get(); 
     }
 
     public function find(string $id): ?Campaign
     {
-        return Campaign::with('children')->find($id);
+        return Campaign::with('channel')->find($id);
     }
 
     public function create(array $data): Campaign

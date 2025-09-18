@@ -1,32 +1,30 @@
-import axios from 'axios';
+import axios from "axios";
 
 const api = axios.create({
-    baseURL: '/api', 
-    headers: {
-        'Content-Type': 'application/json',
-        // If using Sanctum or Bearer token, you can add here
-        // 'Authorization': `Bearer ${token}`
-    },
+  baseURL: "/api",
 });
 
-export default {
-    getAll() {
-        return api.get('/campaigns');
-    },
+export async function fetchCampaigns() {
+  const { data } = await api.get("/campaigns");
+  return data;
+}
 
-    getById(id) {
-        return api.get(`/campaigns/${id}`);
-    },
+export async function createCampaign(campaign) {
+  const { data } = await api.post("/campaigns", campaign);
+  return data;
+}
 
-    create(data) {
-        return api.post('/campaigns', data);
-    },
+export async function updateCampaign(id, updates) {
+  const { data } = await api.put(`/campaigns/${id}`, updates);
+  return data;
+}
 
-    update(id, data) {
-        return api.put(`/campaigns/${id}`, data);
-    },
+export async function deleteCampaign(id) {
+  await api.delete(`/campaigns/${id}`);
+  return true;
+}
 
-    delete(id) {
-        return api.delete(`/campaigns/${id}`);
-    },
-};
+export async function fetchChannels() {
+  const { data } = await api.get("/category_channels");
+  return Array.isArray(data) ? data : [];
+}

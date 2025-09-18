@@ -4,35 +4,31 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Carbon\Carbon;
 
 class Campaign extends Model
 {
     use HasUuids;
 
-    protected $primaryKey = 'campaign_id'; 
-    public $incrementing = false;            
-    protected $keyType = 'string';           
+    protected $primaryKey = 'campaign_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    public $timestamps = false;
 
     protected $fillable = [
-        'parent_id',
+        'channel_id',
         'name',
         'start_date',
-        'duration',
-        'type'
+        'end_date',
     ];
 
-    public function parent()
+    protected $casts = [
+        'start_date' => 'date:Y-m-d',
+        'end_date' => 'date:Y-m-d',
+    ];
+    public function channel()
     {
-        return $this->belongsTo(Campaign::class, 'parent_id');
-    }
-
-    public function children()
-    {
-        return $this->hasMany(Campaign::class, 'parent_id');
-    }
-
-    public function getEndDateAttribute()
-    {
-        return \Carbon\Carbon::parse($this->start_date)->addDays($this->duration);
+        return $this->belongsTo(CategoryChannel::class, 'channel_id', 'channel_id');
     }
 }
