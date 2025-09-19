@@ -6,7 +6,7 @@ import KeyMarketingDates from './components/KeyMarketingDates.vue';
 const routes = [
   { path: '/', redirect: '/campaigns' }, 
   { path: '/campaigns', component: Campaigns },
-  { path: '/weekly-calendar', component: WebsiteSaleDetails },
+  { path: '/website-sale', component: WebsiteSaleDetails },
   { path: '/marketing-dates', component: KeyMarketingDates },
 ];
 

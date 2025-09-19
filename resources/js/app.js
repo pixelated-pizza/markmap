@@ -4,6 +4,7 @@ import App from './App.vue';
 import router from './router';
 import toastr from "toastr";
 import "toastr/build/toastr.min.css";
+import PrimeVue from 'primevue/config';
 
 toastr.options = {
   closeButton: true,

@@ -26,7 +26,7 @@
               class="w-full flex justify-between items-center focus:outline-none"
               v-show="sidebarOpen"
             >
-              <span>Campaign Calendar</span>
+              <span>Marketing Calendar</span>
               <svg :class="{ 'rotate-90': submenuOpen }" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -34,10 +34,10 @@
 
             <ul v-show="submenuOpen" class="pl-6 mt-2 space-y-1 text-sm">
               <li class="px-2 py-1 hover:bg-gray-600">
-                <router-link to="/campaigns" class="block" v-show="sidebarOpen">Campaigns</router-link>
+                <router-link to="/campaigns" class="block" v-show="sidebarOpen">Weekly Calendar</router-link>
               </li>
               <li class="px-2 py-1 hover:bg-gray-600">
-                <router-link to="/weekly-calendar" class="block" v-show="sidebarOpen">Website Sale Details</router-link>
+                <router-link to="/website-sale" class="block" v-show="sidebarOpen">Website Sale Details</router-link>
               </li>
               <li class="px-2 py-1 hover:bg-gray-600">
                 <router-link to="/marketing-dates" class="block" v-show="sidebarOpen">Key Marketing Dates</router-link>

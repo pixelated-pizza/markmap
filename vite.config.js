@@ -13,4 +13,15 @@ export default defineConfig({
         tailwindcss(),
         vue(),
     ],
+
+    resolve: {
+        alias: {
+            '@': '/resources/js',
+            '@/components': '/resources/js/components',
+            '@/api': '/resources/js/api',
+            '@/views': '/resources/js/views',
+            '@/router': '/resources/js/router.js',
+            'vue': 'vue/dist/vue.esm-bundler.js',
+        },
+    },
 });

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class>
     <button
       type="button"
       class="focus:outline-none text-white bg-green-700 hover:bg-green-800 
@@ -16,11 +16,11 @@
 </template>
 
 <script setup>
-import Swal from "sweetalert2";
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { getCurrentInstance } from "vue";
 import gantt from "dhtmlx-gantt";
 import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
+const selectedChannel = ref("");
 
 const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
 
@@ -30,7 +30,7 @@ import {
   updateCampaign,
   deleteCampaign,
   fetchChannels,
-} from "../services/campaign_service";
+} from "@/api/campaign_service";
 
 const ganttContainer = ref(null);
 const newTasks = new Set();
@@ -104,6 +104,13 @@ async function initGantt() {
       resize: true
     }
   ];
+
+  gantt.templates.grid_header_class = function(columnName, column){
+    if(columnName === "channel" || columnName === "text"){
+        return "gantt-bold-header";
+    }
+    return "";
+};
 
   gantt.config.xml_date = "%Y-%m-%d %H:%i";
   gantt.config.drag_move = true;
@@ -278,3 +285,7 @@ onBeforeUnmount(() => {
   } catch {}
 });
 </script>
+
+<style scoped>
+
+</style>
