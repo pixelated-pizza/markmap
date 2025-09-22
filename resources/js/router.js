@@ -1,13 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Campaigns from './components/Campaigns.vue';
-import WebsiteSaleDetails from './components/WebsiteSaleDetails.vue';
-import KeyMarketingDates from './components/KeyMarketingDates.vue';
 
 const routes = [
-  { path: '/', redirect: '/campaigns' }, 
-  { path: '/campaigns', component: Campaigns },
-  { path: '/website-sale', component: WebsiteSaleDetails },
-  { path: '/marketing-dates', component: KeyMarketingDates },
+  { path: '/', redirect: '/dashboard' }, 
+  { path: '/dashboard', component: () => import('@/components/Dashboard.vue') },
+  { path: '/campaigns', component: () => import('@/components/Campaigns.vue') },
+  { path: '/website_campaigns', component: () => import('@/components/WebsiteCampaigns.vue') },
+  { path: '/website-sale', component: () => import('@/components/WebsiteSaleDetails.vue') },
+  { path: '/marketing-dates', component: () => import('@/components/KeyMarketingDates.vue') },
+
 ];
 
 const router = createRouter({

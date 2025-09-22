@@ -24,6 +24,7 @@ class CampaignController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'background_color' => 'nullable|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'channel_id' => 'required|uuid|exists:category_channels,channel_id',
@@ -38,6 +39,7 @@ class CampaignController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'background_color' => 'nullable|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'channel_id' => 'required|uuid|exists:category_channels,channel_id',

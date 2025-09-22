@@ -5,6 +5,7 @@ import router from './router';
 import toastr from "toastr";
 import "toastr/build/toastr.min.css";
 import PrimeVue from 'primevue/config';
+import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 
 toastr.options = {
   closeButton: true,
@@ -28,4 +29,8 @@ const app = createApp(App);
 
 app.config.globalProperties.$toastr = toastr;
 
-app.use(router).mount('#app');
+for (const [name, comp] of Object.entries(ElementPlusIconsVue)) {
+  app.component(name, comp);
+}
+
+app.use(PrimeVue).use(ElementPlusIconsVue).use(router).mount('#app');

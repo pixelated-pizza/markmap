@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Carbon\Carbon;
 
-class Campaign extends Model
+class WebsiteCampaign extends Model
 {
     use HasUuids;
 
-    protected $primaryKey = 'campaign_id';
+    protected $primaryKey = 'wc_id';
     public $incrementing = false;
     protected $keyType = 'string';
 
@@ -19,7 +19,6 @@ class Campaign extends Model
     protected $fillable = [
         'channel_id',
         'name',
-        'background_color',
         'start_date',
         'end_date',
     ];

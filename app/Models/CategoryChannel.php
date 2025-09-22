@@ -9,6 +9,7 @@ class CategoryChannel extends Model
     protected $primaryKey = 'channel_id';
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = false;
 
     protected $fillable = [
         'name',

@@ -9,7 +9,7 @@
     @vite('resources/css/app.css')
 </head>
 
-<body class="flex h-screen bg-gray-100">
+<body class="flex h-screen bg-gray-300">
 
     <div id="app"></div>
 

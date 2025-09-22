@@ -1,17 +1,18 @@
 <template>
-  <div class>
-    <button
-      type="button"
-      class="focus:outline-none text-white bg-green-700 hover:bg-green-800 
-             focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm 
+  <div>
+    <div class="flex items-center justify-between align-middle gap-2 bg-white p-2 mb-2">
+      <button type="button" class="text-white bg-green-700 hover:bg-green-800 
+             font-medium rounded-lg text-sm 
              px-5 py-2.5 mb-2 dark:bg-green-600 dark:hover:bg-green-700 
-             dark:focus:ring-green-800"
-      @click="addCampaign"
-    >
-      Add Campaign / Promo
-    </button>
+             dark:focus:ring-green-800" @click="addCampaign">
+        Add Campaign / Promo
+      </button>
+      <h2 class="text-lg font-bold  text-center flex-1">Website Campaigns, Discount Codes, Adhoc Campaigns</h2>
+    </div>
+    <div ref="ganttContainer" class="gantt-container h-100 overflow-hidden w-400"></div>
 
-    <div ref="ganttContainer" class="gantt-container w-400 h-200"></div>
+    <div class="h-100 w-400 mt-5 bg-white p-5">
+    </div>
   </div>
 </template>
 
@@ -20,7 +21,7 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import { getCurrentInstance } from "vue";
 import gantt from "dhtmlx-gantt";
 import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
-const selectedChannel = ref("");
+import { ganttColors } from "@/colors/dhtmlxgantt_colorselector";
 
 const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
 
@@ -36,21 +37,16 @@ const ganttContainer = ref(null);
 const newTasks = new Set();
 const channels = ref([]);
 
+
 function parseLocalDate(dateStr) {
   const [year, month, day] = dateStr.split("-");
-  return new Date(year, month - 1, day); 
+  return new Date(year, month - 1, day);
 }
 
 function parseEndDate(dateStr) {
   const d = parseLocalDate(dateStr);
   d.setDate(d.getDate() + 1);
-  d.setHours(0,0,0,0);
-  return d;
-}
-
-function setEndOfDay(date) {
-  const d = new Date(date);
-  d.setHours(23, 59, 59, 999);
+  d.setHours(0, 0, 0, 0);
   return d;
 }
 
@@ -79,9 +75,6 @@ function formatLocalDateTime(date) {
   return `${y}-${m}-${day} ${h}:${min}:${sec}`;
 }
 
-async function loadChannels() {
-  channels.value = await fetchChannels(); 
-}
 
 async function initGantt() {
   gantt.config.grid_resize = true;
@@ -99,18 +92,11 @@ async function initGantt() {
     {
       name: "text",
       label: "Campaign Name/Discount Name",
-      width: 250,
+      width: 300,
       tree: false,
       resize: true
     }
   ];
-
-  gantt.templates.grid_header_class = function(columnName, column){
-    if(columnName === "channel" || columnName === "text"){
-        return "gantt-bold-header";
-    }
-    return "";
-};
 
   gantt.config.xml_date = "%Y-%m-%d %H:%i";
   gantt.config.drag_move = true;
@@ -128,17 +114,28 @@ async function initGantt() {
 
   gantt.config.scales = [{ step: 1, format: "%d %M" }];
 
+  gantt.templates.task_class = function (start, end, task) {
+    if (task.color) {
+      return "custom-task-" + task.color.replace("#", "");
+    }
+    return "";
+  };
+
   gantt.config.lightbox.sections = [
     { name: "description", height: 70, map_to: "text", type: "textarea", focus: true, label: "Campaign Name / Promo" },
-    { 
+    {
       name: "Category / Sales Channel",
       type: "select",
       options: channels.value.map(c => ({ key: c.channel_id, label: c.name })),
       map_to: "channel_id",
       label: "Channel"
     },
+    {
+      name: "color", height: 30, map_to: "color", type: "select", label: "Background Color",
+      options: ganttColors
+    },
     { name: "time", type: "time", map_to: "auto", label: "Time period (Start - End)" },
-    
+
   ];
 
   gantt.eachTask(task => {
@@ -148,27 +145,25 @@ async function initGantt() {
   });
 
   gantt.init(ganttContainer.value);
-  gantt.attachEvent("onAfterTaskAdd", autoAdjustTimeline);
-  gantt.attachEvent("onAfterTaskUpdate", autoAdjustTimeline);
-  gantt.attachEvent("onAfterTaskDelete", autoAdjustTimeline);
   loadCampaigns();
 
   gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
-  if (typeof id === "number") return;
+    if (typeof id === "number") return;
 
-  try {
-    await updateCampaign(id, {
-      name: task.text,
-      start_date: formatLocalDateTime(task.start_date),
-      end_date: formatDateForDB(task.end_date),  
-      channel_id: task.channel_id,
-    });
-    toastr.success("Campaign updated successfully.");
-  } catch (err) {
-    console.error("Error updating campaign:", err);
-    toastr.error("Failed to update campaign.");
-  }
-});
+    try {
+      await updateCampaign(id, {
+        name: task.text,
+        start_date: formatLocalDateTime(task.start_date),
+        end_date: formatDateForDB(task.end_date),
+        channel_id: task.channel_id,
+        background_color: task.color || null,
+      });
+      toastr.success("Campaign updated successfully.");
+    } catch (err) {
+      console.error("Error updating campaign:", err);
+      toastr.error("Failed to update campaign.");
+    }
+  });
 
   gantt.attachEvent("onAfterTaskDelete", async id => {
     if (typeof id === "number") return;
@@ -187,8 +182,9 @@ async function initGantt() {
         const payload = {
           name: task.text || "New Campaign / Promo",
           start_date: formatLocalDateTime(task.start_date),
-          end_date: formatDateForDB(task.end_date), 
+          end_date: formatDateForDB(task.end_date),
           channel_id: task.channel_id,
+          background_color: task.color,
         };
         const saved = await createCampaign(payload);
         gantt.changeTaskId(id, saved.campaign_id);
@@ -209,7 +205,7 @@ async function initGantt() {
 }
 
 function autoAdjustTimeline() {
-  const tasks = gantt.getTaskByTime(); 
+  const tasks = gantt.getTaskByTime();
 
   if (!tasks.length) return;
 
@@ -222,9 +218,9 @@ function autoAdjustTimeline() {
   });
 
   if (minDate && maxDate) {
-    const padding = 1; 
-    minDate = new Date(minDate.getTime() - padding * 24*60*60*1000);
-    maxDate = new Date(maxDate.getTime() + padding * 24*60*60*1000);
+    const padding = 1;
+    minDate = new Date(minDate.getTime() - padding * 24 * 60 * 60 * 1000);
+    maxDate = new Date(maxDate.getTime() + padding * 24 * 60 * 60 * 1000);
 
     gantt.config.start_date = minDate;
     gantt.config.end_date = maxDate;
@@ -239,9 +235,10 @@ async function loadCampaigns() {
       data: campaigns.map(c => ({
         id: c.campaign_id,
         text: c.name,
-        start_date: new Date(c.start_date), 
+        start_date: new Date(c.start_date),
         end_date: parseEndDate(c.end_date),
         channel_id: c.channel_id,
+        color: c.background_color,
       })),
     };
     gantt.parse(ganttTasks);
@@ -255,7 +252,7 @@ async function addCampaign() {
   const tempId = gantt.uid();
   const now = new Date();
 
-  const defaultEnd = new Date(now.getTime() + 13*24*60*60*1000);
+  const defaultEnd = new Date(now.getTime() + 13 * 24 * 60 * 60 * 1000);
   const endDate = normalizeEndDate(defaultEnd);
 
   const task = {
@@ -272,8 +269,8 @@ async function addCampaign() {
 }
 
 onMounted(async () => {
-  channels.value = await fetchChannels(); 
-  await initGantt(); 
+  channels.value = await fetchChannels();
+  await initGantt();
   window.addEventListener("resize", () => gantt.setSizes());
 });
 
@@ -282,10 +279,8 @@ onBeforeUnmount(() => {
   try {
     window.removeEventListener("resize", () => gantt.setSizes());
     gantt.clearAll();
-  } catch {}
+  } catch { }
 });
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
