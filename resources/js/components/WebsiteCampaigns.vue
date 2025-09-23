@@ -1,5 +1,5 @@
 <template>
-  <div class="overflow-auto w-full h-full mt-3 p-6">
+  <div class="overflow-auto w-full h-full mt-5">
     <div class="flex items-center justify-between align-middle gap-2 bg-gray-600 p-2 mb-2">
       <button type="button" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 
              focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm 

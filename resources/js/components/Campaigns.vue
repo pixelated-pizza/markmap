@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col w-full h-full p-6">
+  <div class="flex flex-col w-full h-full">
     <div class="flex items-center justify-between align-middle gap-2 bg-gray-600 p-2 mb-2">
       <button type="button" class="text-white bg-green-700 hover:bg-green-800 
              font-medium rounded-lg text-sm 
