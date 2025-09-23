@@ -23,3 +23,10 @@ Route::prefix('category_channels')->group(function () {
     Route::get('/{id}', [CategoryChannelController::class, 'show']);   
 });
 
+Route::prefix('website_campaign')->group(function() {
+    Route::get('/', [CampaignController::class, 'index']);     
+    Route::get('/{id}', [CampaignController::class, 'show']);   
+    Route::post('/', [CampaignController::class, 'store']);     
+    Route::put('/{id}', [CampaignController::class, 'update']); 
+    Route::delete('/{id}', [CampaignController::class, 'destroy']); 
+});

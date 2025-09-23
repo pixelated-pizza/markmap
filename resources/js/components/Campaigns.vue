@@ -1,19 +1,17 @@
 <template>
-  <div>
-    <div class="flex items-center justify-between align-middle gap-2 bg-white p-2 mb-2">
+  <div class="flex flex-col w-full h-full p-6">
+    <div class="flex items-center justify-between align-middle gap-2 bg-gray-600 p-2 mb-2">
       <button type="button" class="text-white bg-green-700 hover:bg-green-800 
              font-medium rounded-lg text-sm 
              px-5 py-2.5 mb-2 dark:bg-green-600 dark:hover:bg-green-700 
              dark:focus:ring-green-800" @click="addCampaign">
         Add Campaign / Promo
       </button>
-      <h2 class="text-lg font-bold  text-center flex-1">Website Campaigns, Discount Codes, Adhoc Campaigns</h2>
+      <h2 class="text-md font-bold  text-center flex-1 text-gray-50">Website Sales, Promotions, Marketplaces Campaigns</h2>
     </div>
-    <div ref="ganttContainer" class="gantt-container h-100 overflow-hidden w-400"></div>
-
-    <div class="h-100 w-400 mt-5 bg-white p-5">
-    </div>
+    <div ref="ganttContainer" class="gantt-container flex-1 overflow-hidden"></div>
   </div>
+  <WebsiteCampaigns />
 </template>
 
 <script setup>
@@ -32,11 +30,12 @@ import {
   deleteCampaign,
   fetchChannels,
 } from "@/api/campaign_service";
+import WebsiteCampaigns from "@/components/WebsiteCampaigns.vue";
 
 const ganttContainer = ref(null);
 const newTasks = new Set();
 const channels = ref([]);
-
+let resizeObserver;
 
 function parseLocalDate(dateStr) {
   const [year, month, day] = dateStr.split("-");
@@ -77,6 +76,8 @@ function formatLocalDateTime(date) {
 
 
 async function initGantt() {
+  gantt.setSkin("dark");
+
   gantt.config.grid_resize = true;
 
   gantt.config.columns = [
@@ -159,6 +160,7 @@ async function initGantt() {
         background_color: task.color || null,
       });
       toastr.success("Campaign updated successfully.");
+      loadCampaigns();
     } catch (err) {
       console.error("Error updating campaign:", err);
       toastr.error("Failed to update campaign.");
@@ -170,6 +172,7 @@ async function initGantt() {
     try {
       await deleteCampaign(id);
       toastr.success("Campaign deleted successfully.");
+      loadCampaigns();
     } catch (err) {
       console.error("Error deleting campaign:", err);
       toastr.error("Failed to delete campaign.");
@@ -191,6 +194,7 @@ async function initGantt() {
         newTasks.delete(id);
 
         toastr.success("Campaign created successfully.");
+        loadCampaigns();
       } catch (err) {
         console.error("Error saving campaign:", err);
         gantt.deleteTask(id);
@@ -271,14 +275,18 @@ async function addCampaign() {
 onMounted(async () => {
   channels.value = await fetchChannels();
   await initGantt();
-  window.addEventListener("resize", () => gantt.setSizes());
+  resizeObserver = new ResizeObserver(() => {
+    gantt.setSizes();
+  });
+  resizeObserver.observe(ganttContainer.value);
 });
 
 
 onBeforeUnmount(() => {
+
   try {
-    window.removeEventListener("resize", () => gantt.setSizes());
-    gantt.clearAll();
+    if (resizeObserver) resizeObserver.disconnect();
+  gantt.clearAll();
   } catch { }
 });
 </script>

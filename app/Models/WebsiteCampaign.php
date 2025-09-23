@@ -17,8 +17,8 @@ class WebsiteCampaign extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'channel_id',
         'name',
+        'channel_id',
         'start_date',
         'end_date',
     ];

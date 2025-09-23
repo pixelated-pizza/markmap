@@ -28,3 +28,5 @@ export async function fetchChannels() {
   const { data } = await api.get("/category_channels");
   return Array.isArray(data) ? data : [];
 }
+
+

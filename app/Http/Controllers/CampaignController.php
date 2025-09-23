@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\CampaignService;
+use App\Http\Requests\CreateCampaignRequest;
+use App\Http\Requests\UpdateCampaignRequest;
 
 class CampaignController extends Controller
 {
@@ -20,30 +22,19 @@ class CampaignController extends Controller
         return response()->json($this->service->all());
     }
 
-    public function store(Request $request)
+    public function store(CreateCampaignRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'background_color' => 'nullable|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'channel_id' => 'required|uuid|exists:category_channels,channel_id',
-        ]);
+
+        $validated = $request->validated();
 
         $campaign = $this->service->create($validated);
 
         return response()->json($campaign, 201);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateCampaignRequest $request, string $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'background_color' => 'nullable|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'channel_id' => 'required|uuid|exists:category_channels,channel_id',
-        ]);
+        $validated = $request->validated();
 
         $campaign = $this->service->update($id, $validated);
 
