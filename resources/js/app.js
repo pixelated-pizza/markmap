@@ -6,6 +6,7 @@ import toastr from "toastr";
 import "toastr/build/toastr.min.css";
 import PrimeVue from 'primevue/config';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
+import 'primeicons/primeicons.css';
 
 toastr.options = {
   closeButton: true,

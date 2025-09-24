@@ -1,17 +1,16 @@
 <template>
   <div class="flex flex-col w-full h-full">
-    <div class="flex items-center justify-between align-middle gap-2 bg-gray-600 p-2 mb-2">
-      <button type="button" class="text-white bg-green-700 hover:bg-green-800 
-             font-medium rounded-lg text-sm 
-             px-5 py-2.5 mb-2 dark:bg-green-600 dark:hover:bg-green-700 
-             dark:focus:ring-green-800" @click="addCampaign">
-        Add Campaign / Promo
-      </button>
-      <h2 class="text-md font-bold  text-center flex-1 text-gray-50">Website Sales, Promotions, Marketplaces Campaigns</h2>
+    <div class="flex items-center justify-between gap-2 p-4 mb-4 
+            bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
+      <h2 class="text-md font-bold text-center flex-1 text-white 
+             tracking-wide drop-shadow-lg">
+        Website Sales, Promotions, Marketplaces Campaigns
+      </h2>
     </div>
+
+
     <div ref="ganttContainer" class="gantt-container flex-1 overflow-hidden"></div>
   </div>
-  <WebsiteCampaigns />
 </template>
 
 <script setup>
@@ -30,7 +29,6 @@ import {
   deleteCampaign,
   fetchChannels,
 } from "@/api/campaign_service";
-import WebsiteCampaigns from "@/components/WebsiteCampaigns.vue";
 
 const ganttContainer = ref(null);
 const newTasks = new Set();
@@ -79,23 +77,33 @@ async function initGantt() {
   gantt.setSkin("dark");
 
   gantt.config.grid_resize = true;
+  gantt.config.grid_buttons = true;
 
   gantt.config.columns = [
     {
-      name: "channel",
-      label: "Category/Sales Channel",
-      width: 170,
+      name: "text",
+      label: "Sales Channels",
+      tree: true,
+      width: 350,
       template: function (task) {
-        const channel = channels.value.find(c => c.channel_id === task.channel_id);
-        return channel ? channel.name : "";
+        if (!task.parent || task.parent === 0) {
+          const channel = channels.value.find(c => c.channel_id === task.channel_id);
+          return channel ? channel.name : "Unknown Channel";
+        }
+        return task.text;
       }
     },
     {
-      name: "text",
-      label: "Campaign Name/Discount Name",
-      width: 300,
-      tree: false,
-      resize: true
+      name: "add",
+      label: "",
+      width: 44,
+      resize: false,
+      template: function (task) {
+        return task.type === "project"
+          ? "<div class='add_child'>+</div>"
+          : "";
+      }
+
     }
   ];
 
@@ -115,22 +123,8 @@ async function initGantt() {
 
   gantt.config.scales = [{ step: 1, format: "%d %M" }];
 
-  gantt.templates.task_class = function (start, end, task) {
-    if (task.color) {
-      return "custom-task-" + task.color.replace("#", "");
-    }
-    return "";
-  };
-
   gantt.config.lightbox.sections = [
     { name: "description", height: 70, map_to: "text", type: "textarea", focus: true, label: "Campaign Name / Promo" },
-    {
-      name: "Category / Sales Channel",
-      type: "select",
-      options: channels.value.map(c => ({ key: c.channel_id, label: c.name })),
-      map_to: "channel_id",
-      label: "Channel"
-    },
     {
       name: "color", height: 30, map_to: "color", type: "select", label: "Background Color",
       options: ganttColors
@@ -151,6 +145,8 @@ async function initGantt() {
   gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
     if (typeof id === "number") return;
 
+    task.parent = `channel_${task.channel_id}`;
+
     try {
       await updateCampaign(id, {
         name: task.text,
@@ -167,6 +163,15 @@ async function initGantt() {
     }
   });
 
+  gantt.attachEvent("onBeforeTaskDelete", function (id, task) {
+    if (task.type === "project" && !task.$virtual) {
+      toastr.warning("Channels cannot be deleted.");
+      return false;
+    }
+    return true;
+  });
+
+
   gantt.attachEvent("onAfterTaskDelete", async id => {
     if (typeof id === "number") return;
     try {
@@ -179,8 +184,31 @@ async function initGantt() {
     }
   });
 
+  gantt.attachEvent("onTaskCreated", function (task) {
+    const parent = gantt.getTask(task.parent);
+
+    if (parent.channel_id) {
+      task.channel_id = parent.channel_id;
+      task.type = "task";
+    }
+
+    task.text = "New Campaign";
+    task.start_date = new Date();
+    task.end_date = new Date(task.start_date.getTime() + 13 * 24 * 60 * 60 * 1000);
+
+    return true;
+  });
+
+
   gantt.attachEvent("onLightboxSave", async (id, task) => {
-    if (newTasks.has(id)) {
+    if (!task.channel_id && task.parent?.startsWith("channel_")) {
+      task.channel_id = task.parent.replace("channel_", "");
+    }
+    task.parent = `channel_${task.channel_id}`;
+
+    const isNew = newTasks.has(id) || typeof id === "number";
+
+    if (isNew) {
       try {
         const payload = {
           name: task.text || "New Campaign / Promo",
@@ -190,6 +218,7 @@ async function initGantt() {
           background_color: task.color,
         };
         const saved = await createCampaign(payload);
+
         gantt.changeTaskId(id, saved.campaign_id);
         newTasks.delete(id);
 
@@ -205,7 +234,6 @@ async function initGantt() {
     }
     return true;
   });
-
 }
 
 function autoAdjustTimeline() {
@@ -235,36 +263,72 @@ function autoAdjustTimeline() {
 async function loadCampaigns() {
   try {
     const campaigns = await fetchCampaigns();
-    const ganttTasks = {
-      data: campaigns.map(c => ({
+
+    const channelMap = {};
+    const data = [];
+
+    const preferredOrder = ["Edisons", "Mytopia"];
+
+    const sortedChannels = [...channels.value].sort((a, b) => {
+      const ai = preferredOrder.indexOf(a.name);
+      const bi = preferredOrder.indexOf(b.name);
+
+      if (ai !== -1 && bi !== -1) return ai - bi;
+      if (ai !== -1) return -1;
+      if (bi !== -1) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    sortedChannels.forEach(c => {
+      const parentId = `channel_${c.channel_id}`;
+      channelMap[c.channel_id] = parentId;
+
+      data.push({
+        id: parentId,
+        text: c.name,
+        channel_id: c.channel_id,
+        type: "project",
+        open: true,
+        hide_bar: true,
+      });
+    });
+
+    campaigns.forEach(c => {
+      data.push({
         id: c.campaign_id,
         text: c.name,
         start_date: new Date(c.start_date),
         end_date: parseEndDate(c.end_date),
         channel_id: c.channel_id,
         color: c.background_color,
-      })),
-    };
-    gantt.parse(ganttTasks);
+        parent: channelMap[c.channel_id],
+      });
+    });
+
+    gantt.parse({ data });
     autoAdjustTimeline();
   } catch (err) {
     console.error("Failed to load campaigns:", err);
   }
 }
 
+
 async function addCampaign() {
   const tempId = gantt.uid();
   const now = new Date();
-
   const defaultEnd = new Date(now.getTime() + 13 * 24 * 60 * 60 * 1000);
   const endDate = normalizeEndDate(defaultEnd);
+
+  const channelId = channels.value.length ? channels.value[0].channel_id : null;
 
   const task = {
     id: tempId,
     text: "New Campaign",
     start_date: formatLocalDateTime(now),
     end_date: formatLocalDateTime(endDate),
-    channel_id: channels.value.length ? channels.value[0].channel_id : null,
+    channel_id: channelId,
+    parent: `channel_${channelId}`,
+    type: "task",
   };
 
   gantt.addTask(task);
@@ -286,7 +350,7 @@ onBeforeUnmount(() => {
 
   try {
     if (resizeObserver) resizeObserver.disconnect();
-  gantt.clearAll();
+    gantt.clearAll();
   } catch { }
 });
 </script>

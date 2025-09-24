@@ -4,6 +4,7 @@
       :class="sidebarOpen ? 'w-64' : 'w-16'"
       class="bg-gradient-to-b from-gray-900 to-gray-800 text-gray-200 flex-shrink-0 transition-all duration-300 h-full shadow-lg"
     >
+      <!-- Sidebar header -->
       <div class="p-4 flex items-center justify-between border-b border-gray-700">
         <span class="font-bold text-xl tracking-wide" v-show="sidebarOpen">MarketMap</span>
         <button
@@ -33,7 +34,9 @@
         </button>
       </div>
 
+      <!-- Sidebar navigation -->
       <nav class="mt-4 space-y-2">
+        <!-- Dashboard -->
         <li>
           <router-link
             to="/dashboard"
@@ -41,17 +44,22 @@
             active-class="bg-gray-700 text-white border-l-4 border-blue-500"
             v-show="sidebarOpen"
           >
+            <i class="pi pi-home mr-3 w-5 text-center"></i>
             Dashboard
           </router-link>
         </li>
 
+        <!-- Marketing Calendar -->
         <li class="px-2">
           <button
             @click="calendarMenuOpen = !calendarMenuOpen"
             class="w-full flex justify-between items-center px-2 py-2 text-sm font-medium rounded-lg hover:bg-gray-700 hover:text-white transition"
             v-show="sidebarOpen"
           >
-            <span>Marketing Calendar</span>
+            <span class="flex items-center">
+              <i class="pi pi-calendar mr-2 w-4 text-center"></i>
+              Marketing Calendar
+            </span>
             <svg
               :class="{ 'rotate-90': calendarMenuOpen }"
               class="w-4 h-4 transition-transform text-gray-400"
@@ -63,14 +71,19 @@
             </svg>
           </button>
 
+          <!-- Calendar submenu -->
           <ul v-show="calendarMenuOpen" class="pl-6 mt-2 space-y-1 text-sm text-gray-300">
+            <!-- Weekly Calendar -->
             <li>
               <button
                 @click="weeklyMenuOpen = !weeklyMenuOpen"
                 class="w-full flex justify-between items-center px-2 py-1 rounded hover:bg-gray-600 transition"
                 v-show="sidebarOpen"
               >
-                <span>Weekly Calendar</span>
+                <span class="flex items-center">
+                  <i class="pi pi-calendar-week mr-2 w-4 text-center"></i>
+                  Weekly Calendar
+                </span>
                 <svg
                   :class="{ 'rotate-90': weeklyMenuOpen }"
                   class="w-4 h-4 transition-transform text-gray-400"
@@ -81,28 +94,30 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-
               <ul v-show="weeklyMenuOpen" class="pl-6 mt-2 space-y-1 text-xs text-gray-400">
                 <li class="px-2 py-1 rounded hover:bg-gray-600">
-                  <router-link to="/campaigns" class="block" v-show="sidebarOpen">
+                  <router-link to="/campaigns" class="flex items-center" v-show="sidebarOpen">
+                    <i class="pi pi-globe mr-2 w-4 text-center"></i>
                     Website & Marketplaces Campaigns
                   </router-link>
                 </li>
                 <li class="px-2 py-1 rounded hover:bg-gray-600">
-                  <router-link to="/website_campaigns" class="block" v-show="sidebarOpen">
+                  <router-link to="/website_campaigns" class="flex items-center" v-show="sidebarOpen">
+                    <i class="pi pi-globe mr-2 w-4 text-center"></i>
                     Website - Mytopia & Edisons
                   </router-link>
                 </li>
               </ul>
             </li>
-
             <li class="px-2 py-1 rounded hover:bg-gray-600">
-              <router-link to="/website-sale" class="block" v-show="sidebarOpen">
+              <router-link to="/website-sale" class="flex items-center" v-show="sidebarOpen">
+                <i class="pi pi-shopping-cart mr-2 w-4 text-center"></i>
                 Website Sale Details
               </router-link>
             </li>
             <li class="px-2 py-1 rounded hover:bg-gray-600">
-              <router-link to="/marketing-dates" class="block" v-show="sidebarOpen">
+              <router-link to="/marketing-dates" class="flex items-center" v-show="sidebarOpen">
+                <i class="pi pi-calendar-plus mr-2 w-4 text-center"></i>
                 Key Marketing Dates
               </router-link>
             </li>

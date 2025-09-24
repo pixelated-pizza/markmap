@@ -28,6 +28,7 @@
         "dhtmlx-gantt": "^9.0.14",
         "element-plus": "^2.11.3",
         "postcss": "^8.5.6",
+        "primeicons": "^7.0.0",
         "primevue": "^4.3.9",
         "toastr": "^2.1.4",
         "vue-router": "^4.5.1"
