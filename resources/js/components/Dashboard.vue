@@ -1,163 +1,37 @@
 <template>
-  <div class="items-center justify-between gap-2 p-4
-            bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
-      <h2 class="text-md font-bold flex-1 text-white 
-             tracking-wide drop-shadow-lg">
-        Internal Promotions
-      </h2>
+  <div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start">
+        <div class="text-gray-400 text-sm">Total Campaigns</div>
+        <div class="text-2xl font-bold text-white mt-2">128</div>
+      </div>
+
+      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start">
+        <div class="text-gray-400 text-sm">Active Campaigns</div>
+        <div class="text-2xl font-bold text-green-400 mt-2">42</div>
+      </div>
+
+      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start">
+        <div class="text-gray-400 text-sm">Upcoming</div>
+        <div class="text-2xl font-bold text-blue-400 mt-2">19</div>
+      </div>
+
+      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start">
+        <div class="text-gray-400 text-sm">Completed</div>
+        <div class="text-2xl font-bold text-purple-400 mt-2">67</div>
+      </div>
     </div>
-  <div class="w-full mt-3 bg-gray-900 rounded-lg p-3">
-  <FullCalendar
-    ref="calendarRef"
-    :options="calendarOptions"
-    class="w-full"
-  />
-</div>
+    <div class="mt-5">
+      <InternalPromotions />
+      <ExternalPromotions />
+    </div>
+    
+  </div>
 </template>
-
 <script setup>
-import { ref, onMounted } from "vue";
-import FullCalendar from "@fullcalendar/vue3";
-import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import { fetchWC } from "@/api/website_campaign_api.js";
-import { fetchChannels } from "@/api/campaign_service";
+import InternalPromotions from '@/components/InternalPromotions.vue';
+import ExternalPromotions from '@/components/ExternalPromotions.vue';
+import { fetchCampaigns } from '@/api/campaign_service.js';
 
-const calendarRef = ref(null);
-const channels = ref([]);
 
-const allowedChannels = [
-  "Mytopia",
-  "Edisons",
-  "Hot Deals",
-  "Additional Campaigns",
-  "Adhoc Promos/Coupons",
-];
-
-const calendarOptions = ref({
-  schedulerLicenseKey: "GPL-My-Project-Is-Open-Source",
-  plugins: [resourceTimelinePlugin, dayGridPlugin, interactionPlugin],
-  initialView: "resourceTimelineMonth",
-  headerToolbar: {
-    left: "prev,next today",
-    center: "title",
-    right: "resourceTimelineMonth", // 👈 only Month filter
-  },
-  resourceAreaHeaderContent: "Website",
-  resources: [],
-  events: [],
-  editable: false,
-  selectable: false,
-  aspectRatio: 2,
-  height: "auto",
-});
-
-function parseEndDate(dateStr) {
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() + 1);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().split("T")[0];
-}
-
-async function loadCampaigns() {
-  try {
-    const allChannels = await fetchChannels();
-
-    channels.value = allowedChannels
-      .map((name) => allChannels.find((c) => c.name === name))
-      .filter(Boolean);
-
-    const allowedIds = channels.value.map((c) => c.channel_id);
-
-    calendarOptions.value.resources = channels.value.map((c) => ({
-      id: String(c.channel_id),
-      title: c.name,
-    }));
-
-    const campaigns = await fetchWC();
-    const filteredCampaigns = campaigns.filter((c) =>
-      allowedIds.includes(c.channel_id)
-    );
-
-    filteredCampaigns.sort((a, b) => {
-      if (a.channel_id !== b.channel_id) {
-        return a.channel_id - b.channel_id;
-      }
-      return new Date(a.start_date) - new Date(b.start_date);
-    });
-
-    const adjusted = [];
-    const lastEndByChannel = {};
-
-    for (const c of filteredCampaigns) {
-      let start = new Date(c.start_date);
-      const end = new Date(parseEndDate(c.end_date));
-
-      if (lastEndByChannel[c.channel_id]) {
-        const prevEnd = new Date(lastEndByChannel[c.channel_id]);
-        if (start > prevEnd) {
-          start = new Date(prevEnd);
-        }
-      }
-
-      lastEndByChannel[c.channel_id] = end;
-
-      adjusted.push({
-        id: String(c.campaign_id),
-        resourceId: String(c.channel_id),
-        title: c.name,
-        start: start.toISOString().split("T")[0],
-        end: end.toISOString().split("T")[0],
-        backgroundColor: c.background_color || "#3b82f6", // blue-500 fallback
-        borderColor: c.background_color || "#3b82f6",
-        textColor: "#fff",
-      });
-    }
-
-    calendarOptions.value.events = adjusted;
-  } catch (err) {
-    console.error("Failed to load campaigns:", err);
-  }
-}
-
-onMounted(() => {
-  loadCampaigns();
-});
 </script>
-
-<style scoped>
-/* 🌙 Dark theme overrides */
-.fc {
-  --fc-border-color: #374151; /* slate-700 */
-  --fc-page-bg-color: #111827; /* gray-900 */
-  --fc-neutral-bg-color: #1f2937; /* gray-800 */
-  --fc-neutral-text-color: #d1d5db; /* gray-300 */
-  --fc-button-bg-color: #374151; /* slate-700 */
-  --fc-button-border-color: #4b5563; /* gray-600 */
-  --fc-button-text-color: #f9fafb; /* gray-50 */
-  --fc-button-hover-bg-color: #4b5563;
-  --fc-today-bg-color: #1d4ed8; /* blue-700 highlight */
-  border-radius: 0.75rem;
-  font-family: "Inter", sans-serif;
-  color: #e5e7eb; /* text-gray-200 */
-}
-
-/* Header */
-.fc-toolbar-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #f9fafb;
-}
-
-.fc-datagrid-cell-main {
-  font-weight: 500;
-  color: #f3f4f6;
-}
-
-.fc-event {
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
-  padding: 2px 4px;
-}
-</style>
