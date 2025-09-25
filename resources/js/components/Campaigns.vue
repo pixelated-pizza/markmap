@@ -156,7 +156,6 @@ async function initGantt() {
         background_color: task.color || null,
       });
       toastr.success("Campaign updated successfully.");
-      loadCampaigns();
     } catch (err) {
       console.error("Error updating campaign:", err);
       toastr.error("Failed to update campaign.");
@@ -223,7 +222,6 @@ async function initGantt() {
         newTasks.delete(id);
 
         toastr.success("Campaign created successfully.");
-        loadCampaigns();
       } catch (err) {
         console.error("Error saving campaign:", err);
         gantt.deleteTask(id);

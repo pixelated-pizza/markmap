@@ -70,10 +70,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
-
-          <!-- Calendar submenu -->
           <ul v-show="calendarMenuOpen" class="pl-6 mt-2 space-y-1 text-sm text-gray-300">
-            <!-- Weekly Calendar -->
             <li>
               <button
                 @click="weeklyMenuOpen = !weeklyMenuOpen"
@@ -81,7 +78,7 @@
                 v-show="sidebarOpen"
               >
                 <span class="flex items-center">
-                  <i class="pi pi-calendar-week mr-2 w-4 text-center"></i>
+                  <i class="pi pi-calendar mr-2 w-4 text-center"></i>
                   Weekly Calendar
                 </span>
                 <svg
