@@ -303,12 +303,14 @@ async function loadCampaigns() {
       });
     });
 
+    gantt.clearAll();  
     gantt.parse({ data });
     autoAdjustTimeline();
   } catch (err) {
     console.error("Failed to load campaigns:", err);
   }
 }
+
 
 
 async function addCampaign() {

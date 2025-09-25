@@ -85,7 +85,7 @@
       </nav>
     </aside>
 
-    <main class="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 p-6" style="width: 100%; height: 100%;">
+    <main class="flex-1 overflow-auto bg-gray-900 p-6" style="width: 100%; height: 100%;">
       <router-view />
     </main>
   </div>
