@@ -345,13 +345,14 @@ onMounted(async () => {
   resizeObserver.observe(ganttContainer.value);
 });
 
-
 onBeforeUnmount(() => {
-
   try {
     if (resizeObserver) resizeObserver.disconnect();
     gantt.clearAll();
-  } catch { }
+    gantt.detachAllEvents();
+  } catch (e) {
+    console.warn("Failed to cleanup gantt", e);
+  }
 });
 </script>
 

@@ -24,6 +24,9 @@ import { getCurrentInstance } from "vue";
 import gantt from "dhtmlx-gantt";
 import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
 import { ganttColors } from "@/colors/dhtmlxgantt_colorselector";
+
+import { renderGantt } from "@/utils/gantt_helper.js";
+
 import {
   fetchWC,
   createWC,
@@ -67,7 +70,6 @@ function formatLocalDateTime(date) {
   ).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
 }
 
-// --- Init Gantt ---
 async function initGantt() {
   gantt.setSkin("dark");
   gantt.config.grid_resize = true;
@@ -94,10 +96,11 @@ async function initGantt() {
     { name: "time", map_to: "auto", type: "time", label: "Time period" }
   ];
 
+  gantt.clearAll();
   gantt.init(websiteGantt.value);
-  loadWebsiteCampaigns();
 
-  // --- Update ---
+  await loadWebsiteCampaigns();
+
   gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
     if (typeof id === "number") return;
     try {
@@ -114,7 +117,6 @@ async function initGantt() {
     }
   });
 
-  // --- Delete ---
   gantt.attachEvent("onAfterTaskDelete", async id => {
     if (typeof id === "number") return;
     try {
@@ -126,7 +128,6 @@ async function initGantt() {
     }
   });
 
-  // --- Create ---
   gantt.attachEvent("onLightboxSave", async (id, task) => {
     const isNew = newTasks.has(id) || typeof id === "number";
     if (isNew) {
@@ -152,6 +153,7 @@ async function initGantt() {
     return true;
   });
 }
+
 
 async function loadWebsiteCampaigns() {
   try {
@@ -183,7 +185,10 @@ onBeforeUnmount(() => {
   try {
     if (resizeObserver) resizeObserver.disconnect();
     gantt.clearAll();
-  } catch {}
+    gantt.detachAllEvents();
+  } catch (e) {
+    console.warn("Failed to cleanup gantt", e);
+  }
 });
 </script>
 

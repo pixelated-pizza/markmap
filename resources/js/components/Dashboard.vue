@@ -94,9 +94,17 @@ function openModal(status) {
       return today >= start && today <= end;
     });
   } else if (status === "upcoming") {
-    filteredCampaigns.value = campaigns.value.filter(c => new Date(c.start_date) > today);
+    filteredCampaigns.value = campaigns.value.filter(c => {
+      const start = new Date(c.start_date);
+      start.setHours(0, 0, 0, 0);
+      return start > today;
+    });
   } else if (status === "completed") {
-    filteredCampaigns.value = campaigns.value.filter(c => new Date(c.end_date) < today);
+    filteredCampaigns.value = campaigns.value.filter(c => {
+      const end = new Date(c.end_date);
+      end.setHours(0, 0, 0, 0);
+      return end < today;
+    });
   }
 }
 

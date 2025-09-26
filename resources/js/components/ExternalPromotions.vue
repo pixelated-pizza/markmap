@@ -1,18 +1,14 @@
 <template>
   <div class="items-center justify-between gap-2 p-4 mt-5
             bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
-      <h2 class="text-md font-bold flex-1 text-white 
+    <h2 class="text-md font-bold flex-1 text-white 
              tracking-wide drop-shadow-lg">
-        External Promotions
-      </h2>
-    </div>
+      External Promotions
+    </h2>
+  </div>
   <div class="w-full mt-3 bg-gray-900 rounded-lg p-3">
-  <FullCalendar
-    ref="calendarRef"
-    :options="calendarOptions"
-    class="w-full"
-  />
-</div>
+    <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full" />
+  </div>
 </template>
 
 <script setup>
@@ -75,11 +71,11 @@ async function loadCampaigns() {
       const bPriority = priorityOrder.indexOf(b.name);
 
       if (aPriority !== -1 && bPriority !== -1) {
-        return aPriority - bPriority; 
+        return aPriority - bPriority;
       }
       if (aPriority !== -1) return -1;
-      if (bPriority !== -1) return 1; 
-      return a.name.localeCompare(b.name); 
+      if (bPriority !== -1) return 1;
+      return a.name.localeCompare(b.name);
     });
 
     const externalIds = channels.value.map((c) => c.channel_id);
@@ -146,18 +142,18 @@ onMounted(() => {
 
 <style scoped>
 .fc {
-  --fc-border-color: #374151; 
+  --fc-border-color: #374151;
   --fc-page-bg-color: #111827;
-  --fc-neutral-bg-color: #1f2937; 
-  --fc-neutral-text-color: #d1d5db; 
-  --fc-button-bg-color: #374151; 
-  --fc-button-border-color: #4b5563; 
-  --fc-button-text-color: #f9fafb; 
+  --fc-neutral-bg-color: #1f2937;
+  --fc-neutral-text-color: #d1d5db;
+  --fc-button-bg-color: #374151;
+  --fc-button-border-color: #4b5563;
+  --fc-button-text-color: #f9fafb;
   --fc-button-hover-bg-color: #4b5563;
-  --fc-today-bg-color: #1d4ed8; 
+  --fc-today-bg-color: #1d4ed8;
   border-radius: 0.75rem;
   font-family: "Inter", sans-serif;
-  color: #e5e7eb; 
+  color: #e5e7eb;
 }
 
 .fc-toolbar-title {
@@ -173,7 +169,7 @@ onMounted(() => {
 
 .fc-event {
   border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
   padding: 2px 4px;
 }
 </style>
