@@ -17,10 +17,10 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import FullCalendar from "@fullcalendar/vue3";
-import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import FullCalendar from "@fullcalendar/vue3"
+import interactionPlugin from "@fullcalendar/interaction"
+import dayGridPlugin from "@fullcalendar/daygrid"
+import resourceTimelinePlugin from "@fullcalendar/resource-timeline"
 import { fetchWC } from "@/api/website_campaign_api.js";
 import { fetchChannels } from "@/api/campaign_service";
 
@@ -64,13 +64,10 @@ function parseEndDate(dateStr) {
 async function loadCampaigns() {
   try {
     const allChannels = await fetchChannels();
-
-    // Keep only external (not in allowedChannels)
     channels.value = allChannels.filter(
       (c) => !allowedChannels.includes(c.name)
     );
 
-    // Define your preferred order
     const priorityOrder = ["eBay", "Amazon", "MyDeal/WMP"];
 
     channels.value.sort((a, b) => {

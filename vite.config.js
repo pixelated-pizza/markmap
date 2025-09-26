@@ -31,5 +31,6 @@ export default defineConfig({
             '@/router': '/resources/js/router.js',
             'vue': 'vue/dist/vue.esm-bundler.js',
         },
+        dedupe: ['@fullcalendar/core'],
     },
 });

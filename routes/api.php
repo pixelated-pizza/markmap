@@ -4,7 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\CategoryChannelController;
-
+use App\Http\Controllers\StoreController;
+use App\Http\Controllers\SectionController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -29,4 +30,13 @@ Route::prefix('website_campaign')->group(function() {
     Route::post('/', [CampaignController::class, 'store']);     
     Route::put('/{id}', [CampaignController::class, 'update']); 
     Route::delete('/{id}', [CampaignController::class, 'destroy']); 
+});
+
+
+Route::prefix('stores')->group(function() {
+    Route::get('/', [StoreController::class, 'index']);
+});
+
+Route::prefix('sections')->group(function() {
+    Route::get('/', [SectionController::class, 'index']);
 });

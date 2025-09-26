@@ -24,4 +24,14 @@ export async function deleteWC(id) {
   return true;
 }
 
+export async function fetchStores() {
+  const { data } = await api.get("/stores");
+  return Array.isArray(data) ? data : [];
+}
+
+export async function fetchSections() {
+  const { data } = await api.get("/sections");
+  return Array.isArray(data) ? data : [];
+}
+
 

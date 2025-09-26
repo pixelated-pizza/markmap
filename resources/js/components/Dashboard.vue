@@ -1,8 +1,6 @@
 <template>
   <div>
-    <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- Total Campaigns -->
       <div
         class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
         @click="openModal('total')">
@@ -10,7 +8,6 @@
         <div class="text-2xl font-bold text-white mt-2">{{ stats.total }}</div>
       </div>
 
-      <!-- Active -->
       <div
         class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
         @click="openModal('active')">
@@ -18,7 +15,6 @@
         <div class="text-2xl font-bold text-green-400 mt-2">{{ stats.active }}</div>
       </div>
 
-      <!-- Upcoming -->
       <div
         class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
         @click="openModal('upcoming')">
@@ -62,9 +58,8 @@
     </div>
   </div>
 </template>
-
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import InternalPromotions from '@/components/InternalPromotions.vue';
 import ExternalPromotions from '@/components/ExternalPromotions.vue';
 import { fetchCampaigns } from '@/api/campaign_service.js';
