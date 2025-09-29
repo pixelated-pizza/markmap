@@ -1,6 +1,7 @@
 <template>
-  <div class="flex w-screen h-screen">
-    <aside :class="sidebarOpen ? 'w-64' : 'w-16'"
+  <div class="flex flex-col w-full h-full">
+    <aside v-if="route.path !== '/login'"
+      :class="sidebarOpen ? 'w-64' : 'w-16'"
       class="bg-gradient-to-b from-gray-900 to-gray-800 text-gray-200 flex-shrink-0 transition-all duration-300 h-full shadow-lg">
       <div class="p-4 flex items-center border-b border-gray-700">
         <div class="flex-1 flex justify-center">
@@ -85,7 +86,7 @@
       </nav>
     </aside>
 
-    <main class="flex-1 overflow-auto bg-gray-900 p-6" style="width: 100%; height: 100%;">
+    <main class="flex-1 overflow-auto" style="width: 100%; height: 100%;">
       <router-view />
     </main>
   </div>
@@ -93,6 +94,8 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRoute } from "vue-router";
+const route = useRoute(); 
 
 const sidebarOpen = ref(true);
 const calendarMenuOpen = ref(false);

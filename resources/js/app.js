@@ -7,6 +7,7 @@ import "toastr/build/toastr.min.css";
 import PrimeVue from 'primevue/config';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import 'primeicons/primeicons.css';
+import Aura from '@primeuix/themes/aura';
 
 
 toastr.options = {
@@ -35,4 +36,13 @@ for (const [name, comp] of Object.entries(ElementPlusIconsVue)) {
   app.component(name, comp);
 }
 
-app.use(PrimeVue).use(ElementPlusIconsVue).use(router).mount('#app');
+app.use(PrimeVue, {
+  theme: {
+    preset: Aura,
+    options: {
+      prefix: 'p',
+      darkModeSelector: 'system',
+      cssLayer: false
+    }
+  }
+}).use(ElementPlusIconsVue).use(router).mount('#app');
