@@ -6,10 +6,16 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\CategoryChannelController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SectionController;
+use App\Http\Controllers\AuthController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout']);
+Route::post('/get-name', [AuthController::class, 'get_name']);
+
 
 Route::prefix('campaigns')->group(function () {
     Route::get('/', [CampaignController::class, 'index']);     

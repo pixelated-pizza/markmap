@@ -1,18 +1,13 @@
 <template>
-  <div class="flex flex-col w-full h-full">
-    <div class="flex items-center justify-between gap-2 p-4 mb-4 
-            bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
-      <h2 class="text-md font-bold flex-1 text-white 
-             tracking-wide drop-shadow-lg">
-        Website - Mytopia & Edisons
-      </h2>
-    </div>
-
-    
+  <div class="flex h-screen w-screen items-center justify-center h-screen bg-gray-100">
+    <h1 class="text-4xl font-bold text-gray-700">🚧 Under Construction 🚧</h1>
   </div>
 </template>
-<script setup>
 
+<script setup>
+// No script needed for a static message
 </script>
 
-<style scoped></style>
+<style scoped>
+/* Optional: add some animation or styling if you want */
+</style>

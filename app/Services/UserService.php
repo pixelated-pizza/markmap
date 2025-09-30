@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+
 use Illuminate\Support\Collection;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -15,17 +16,31 @@ class UserService
      * @param string $password
      * @return User|null
      */
-    public function login(string $email, string $password): ?User
+    public function login(string $email, string $password, bool $remember = false): ?User
     {
-        if (Auth::attempt(['email' => $email, 'password' => $password])) {
-            return Auth::user(); 
+        if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
+            return Auth::user();
         }
 
         return null;
     }
+
+    public function logout(): void
+    {
+        $user = Auth::user();
+
+        if ($user) {
+            // Delete token if exists (for API/SPAs)
+            if (method_exists($user, 'currentAccessToken') && $user->currentAccessToken()) {
+                $user->currentAccessToken()->delete();
+            }
+
+            Auth::logout();
+        }
+    }
     public function all(): Collection
     {
-        return User::get(); 
+        return User::get();
     }
 
     public function find(int $id): ?User
@@ -57,5 +72,20 @@ class UserService
         }
 
         return (bool) $user->delete();
+    }
+
+    public function current(): ?User
+    {
+        return Auth::user();
+    }
+
+    /**
+     * Get only the authenticated user's name.
+     *
+     * @return string|null
+     */
+    public function currentName(): ?string
+    {
+        return Auth::check() ? Auth::user()->name : null;
     }
 }
