@@ -109,8 +109,12 @@ async function loadCampaigns() {
 
       if (lastEndByChannel[c.channel_id]) {
         const prevEnd = new Date(lastEndByChannel[c.channel_id]);
-        if (start > prevEnd) {
-          start = new Date(prevEnd);
+        if (start.getTime() === prevEnd.getTime()) {
+          const lastEvent = adjusted[adjusted.length - 1];
+          lastEvent.end = end.toISOString().split("T")[0];
+
+          lastEndByChannel[c.channel_id] = end;
+          continue;
         }
       }
 

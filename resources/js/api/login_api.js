@@ -12,11 +12,12 @@ export async function login(credentials) {
 
 export async function getName() {
   const token = localStorage.getItem("auth_token");
-  const { data } = await axios.get("/get-name", {
+  const { data } = await api.get("/get-name", {
     headers: { Authorization: `Bearer ${token}` }
   });
-  return data;
+  return data; 
 }
+
 
 export async function logout() {
   const { data } = await api.post("/logout");

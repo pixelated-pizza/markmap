@@ -14,8 +14,7 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
-Route::post('/get-name', [AuthController::class, 'get_name']);
-
+Route::get('/get-name', [AuthController::class, 'getUser'])->middleware('auth:sanctum');
 
 Route::prefix('campaigns')->group(function () {
     Route::get('/', [CampaignController::class, 'index']);     

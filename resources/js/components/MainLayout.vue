@@ -79,18 +79,46 @@
       </nav>
     </aside>
 
-    <header class="col-start-2 flex items-center justify-between bg-gray-800 text-white px-6 py-3 shadow-md"
-      v-if="route.path !== '/login'">
-      <h1 class="text-lg font-bold">MarketMap</h1>
-      <div class="flex items-center gap-4">
-        <span class="text-sm font-medium">Hi, {{ userName }}</span>
-        <Button icon="pi pi-power-off" class="p-button-sm p-button-danger" @click="handleLogout" />
+    <header v-if="route.path !== '/login'" class="col-start-2 flex items-center justify-between bg-gray-900/90 
+         backdrop-blur-md text-white px-6 py-3 shadow-lg border-b border-gray-700">
+      <!-- Left side: Title -->
+      <h1 class="text-xl font-semibold tracking-wide drop-shadow-sm">
+        MarketMap
+      </h1>
+
+      <!-- Right side: User & Logout -->
+      <div class="flex items-center gap-5">
+        <span class="text-sm font-medium text-gray-300">
+          <span class="font-semibold text-white">{{ userName }}</span>
+        </span>
+        <Button icon="pi pi-power-off" severity="primary" rounded outlined
+          class="p-button-sm" @click="handleLogout" />
       </div>
     </header>
 
+
     <main class="col-start-2 overflow-auto bg-gray-50">
-      <router-view />
+      <transition name="fade" mode="out-in">
+        <router-view v-slot="{ Component }">
+          <Suspense>
+            <component :is="Component" />
+            <template #fallback>
+              <div class="p-6 space-y-6">
+                <Skeleton width="40%" height="2rem" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div v-for="i in 6" :key="i" class="p-4 rounded-lg shadow bg-white">
+                    <Skeleton width="80%" height="1.5rem" class="mb-2" />
+                    <Skeleton width="100%" height="6rem" />
+                  </div>
+                </div>
+              </div>
+            </template>
+          </Suspense>
+        </router-view>
+      </transition>
     </main>
+
 
     <Dialog header="Logging out" :visible.sync="loggingOut" modal closable="false" :dismissable-mask="false">
       <div class="flex items-center gap-2">
@@ -109,6 +137,9 @@ import Dialog from "primevue/dialog";
 import { logout, getName } from "@/api/login_api.js";
 const loggingOut = ref(false);
 
+import { Suspense } from "vue";
+import { Skeleton } from "primevue";
+
 const { appContext } = getCurrentInstance();
 const $toastr = appContext.config.globalProperties.$toastr
 
@@ -124,12 +155,14 @@ const isLoggedIn = ref(!!localStorage.getItem("auth_token"));
 
 onMounted(async () => {
   try {
-    const { name } = await getName();
-    userName.value = name;
+    const user = await getName();
+    console.log("getName response:", user);
+    userName.value = user.name;
   } catch (err) {
     console.error("Failed to fetch user name:", err);
   }
 });
+
 
 async function handleLogout() {
   try {

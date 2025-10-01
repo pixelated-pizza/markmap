@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-900 p-15">
+  <div class="bg-gray-900 p-10">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div
         class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"

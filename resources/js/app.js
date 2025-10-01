@@ -8,6 +8,20 @@ import PrimeVue from 'primevue/config';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import 'primeicons/primeicons.css';
 import Aura from '@primeuix/themes/aura';
+import { ref } from "vue";
+
+export const isPageLoading = ref(false);
+
+router.beforeEach((to, from, next) => {
+  isPageLoading.value = true;
+  next();
+});
+
+router.afterEach(() => {
+  setTimeout(() => {
+    isPageLoading.value = false;
+  }, 200);
+});
 
 
 toastr.options = {

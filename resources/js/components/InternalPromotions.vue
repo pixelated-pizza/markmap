@@ -1,18 +1,14 @@
 <template>
   <div class="items-center justify-between gap-2 p-4
             bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
-      <h2 class="text-md font-bold flex-1 text-white 
+    <h2 class="text-md font-bold flex-1 text-white 
              tracking-wide drop-shadow-lg">
-        Internal Promotions
-      </h2>
-    </div>
+      Internal Promotions
+    </h2>
+  </div>
   <div class="w-full mt-3 bg-gray-900 rounded-lg p-3">
-  <FullCalendar
-    ref="calendarRef"
-    :options="calendarOptions"
-    class="w-full"
-  />
-</div>
+    <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full" />
+  </div>
 </template>
 
 <script setup>
@@ -42,7 +38,7 @@ const calendarOptions = ref({
   headerToolbar: {
     left: "prev,next today",
     center: "title",
-    right: "resourceTimelineMonth", 
+    right: "resourceTimelineMonth",
   },
   resourceAreaHeaderContent: "Website",
   resources: [],
@@ -96,9 +92,14 @@ async function loadCampaigns() {
 
       if (lastEndByChannel[c.channel_id]) {
         const prevEnd = new Date(lastEndByChannel[c.channel_id]);
-        if (start > prevEnd) {
-          start = new Date(prevEnd);
+        if (start.getTime() === prevEnd.getTime()) {
+          const lastEvent = adjusted[adjusted.length - 1];
+          lastEvent.end = end.toISOString().split("T")[0];
+
+          lastEndByChannel[c.channel_id] = end;
+          continue;
         }
+
       }
 
       lastEndByChannel[c.channel_id] = end;
@@ -109,7 +110,7 @@ async function loadCampaigns() {
         title: c.name,
         start: start.toISOString().split("T")[0],
         end: end.toISOString().split("T")[0],
-        backgroundColor: c.background_color || "#3b82f6", 
+        backgroundColor: c.background_color || "#3b82f6",
         borderColor: c.background_color || "#3b82f6",
         textColor: "#fff",
       });
@@ -128,18 +129,18 @@ onMounted(() => {
 
 <style scoped>
 .fc {
-  --fc-border-color: #374151; 
-  --fc-page-bg-color: #111827; 
-  --fc-neutral-bg-color: #1f2937; 
-  --fc-neutral-text-color: #d1d5db; 
-  --fc-button-bg-color: #374151; 
-  --fc-button-border-color: #4b5563; 
-  --fc-button-text-color: #f9fafb; 
+  --fc-border-color: #374151;
+  --fc-page-bg-color: #111827;
+  --fc-neutral-bg-color: #1f2937;
+  --fc-neutral-text-color: #d1d5db;
+  --fc-button-bg-color: #374151;
+  --fc-button-border-color: #4b5563;
+  --fc-button-text-color: #f9fafb;
   --fc-button-hover-bg-color: #4b5563;
-  --fc-today-bg-color: #1d4ed8; 
+  --fc-today-bg-color: #1d4ed8;
   border-radius: 0.75rem;
   font-family: "Inter", sans-serif;
-  color: #e5e7eb; 
+  color: #e5e7eb;
 }
 
 .fc-toolbar-title {
@@ -155,7 +156,7 @@ onMounted(() => {
 
 .fc-event {
   border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
   padding: 2px 4px;
 }
 </style>
