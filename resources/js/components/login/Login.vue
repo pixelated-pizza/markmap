@@ -32,7 +32,7 @@
                             <span class="text-sm text-blue-600 hover:underline">Forgot password?</span>
                         </router-link>
                     </div>
-                    <Button type="submit" label="Login" fluid :loading="loading" class="login-btn"/>
+                    <Button type="submit" icon="pi pi-unlock" label="Login" fluid :loading="loading" severity="contrast"/>
                 </form>
             </div>
         </div>
@@ -83,7 +83,4 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.login-btn {
-  background-color: white;
-}
 </style>

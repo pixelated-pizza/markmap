@@ -90,7 +90,7 @@
           <i class="pi pi-user text-gray-400"></i>
           <span class="font-semibold text-white">{{ userName }}</span>
         </div>
-        <Button icon="pi pi-power-off" severity="primary" rounded outlined class="p-button-sm" @click="handleLogout" />
+        <Button icon="pi pi-power-off" severity="primary" rounded outlined @click="handleLogout" />
       </div>
     </header>
 
@@ -128,11 +128,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance, watch, computed } from "vue";
+import { ref, getCurrentInstance, watch, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
-import { logout, getName } from "@/api/login_api.js";
+import { logout } from "@/api/login_api.js";
 import { useUserStore } from '@/utils/user.js';
 const loggingOut = ref(false);
 
