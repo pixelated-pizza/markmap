@@ -25,6 +25,7 @@
         "@fullcalendar/interaction": "^6.1.19",
         "@fullcalendar/resource-timeline": "^6.1.19",
         "@fullcalendar/vue3": "^6.1.19",
+        "@infectoone/vue-ganttastic": "^2.3.2",
         "@primeuix/themes": "^1.2.3",
         "@primevue/auto-import-resolver": "^4.3.9",
         "@tailwindcss/postcss": "^4.1.13",

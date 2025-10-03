@@ -1,5 +1,6 @@
 import './bootstrap';
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
 import toastr from "toastr";
@@ -9,6 +10,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import 'primeicons/primeicons.css';
 import Aura from '@primeuix/themes/aura';
 import { ref } from "vue";
+import ganttastic from '@infectoone/vue-ganttastic';
 
 export const isPageLoading = ref(false);
 
@@ -44,6 +46,8 @@ toastr.options = {
 
 const app = createApp(App);
 
+const pinia = createPinia();
+
 app.config.globalProperties.$toastr = toastr;
 
 for (const [name, comp] of Object.entries(ElementPlusIconsVue)) {
@@ -59,4 +63,7 @@ app.use(PrimeVue, {
       cssLayer: false
     }
   }
-}).use(ElementPlusIconsVue).use(router).mount('#app');
+}).use(pinia)
+.use(ganttastic)
+.use(ElementPlusIconsVue)
+.use(router).mount('#app');

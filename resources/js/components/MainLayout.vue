@@ -1,7 +1,7 @@
 <template>
   <div class="w-screen h-screen grid grid-rows-[auto,1fr] grid-cols-[auto,1fr]">
     <aside v-if="route.path !== '/login'" :class="sidebarOpen ? 'w-64' : 'w-16'"
-      class="row-span-2 bg-gradient-to-b from-gray-900 to-gray-800 text-gray-200 transition-all duration-300 shadow-lg">
+      class="row-span-2 bg-black text-gray-200 transition-all duration-300 shadow-lg">
 
       <div class="p-4 flex items-center border-b border-gray-700">
         <div class="flex-1 flex justify-center">
@@ -18,7 +18,7 @@
           <router-link to="/dashboard"
             class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition"
             active-class="bg-gray-700 text-white border-l-4 border-blue-500" v-show="sidebarOpen">
-            <i class="pi pi-home mr-3 w-5 text-center"></i>
+            <i class="pi pi-home mr-2 w-4 text-center"></i>
             Dashboard
           </router-link>
         </li>
@@ -81,18 +81,16 @@
 
     <header v-if="route.path !== '/login'" class="col-start-2 flex items-center justify-between bg-gray-900/90 
          backdrop-blur-md text-white px-6 py-3 shadow-lg border-b border-gray-700">
-      <!-- Left side: Title -->
       <h1 class="text-xl font-semibold tracking-wide drop-shadow-sm">
         MarketMap
       </h1>
 
-      <!-- Right side: User & Logout -->
       <div class="flex items-center gap-5">
-        <span class="text-sm font-medium text-gray-300">
+        <div class="flex items-center gap-2 text-sm font-medium text-gray-300">
+          <i class="pi pi-user text-gray-400"></i>
           <span class="font-semibold text-white">{{ userName }}</span>
-        </span>
-        <Button icon="pi pi-power-off" severity="primary" rounded outlined
-          class="p-button-sm" @click="handleLogout" />
+        </div>
+        <Button icon="pi pi-power-off" severity="primary" rounded outlined class="p-button-sm" @click="handleLogout" />
       </div>
     </header>
 
@@ -130,12 +128,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from "vue";
+import { ref, onMounted, getCurrentInstance, watch, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import { logout, getName } from "@/api/login_api.js";
+import { useUserStore } from '@/utils/user.js';
 const loggingOut = ref(false);
+
+const userStore = useUserStore();
 
 import { Suspense } from "vue";
 import { Skeleton } from "primevue";
@@ -149,20 +150,20 @@ const router = useRouter();
 const sidebarOpen = ref(true);
 const calendarMenuOpen = ref(false);
 const weeklyMenuOpen = ref(false);
-const userName = ref(null);
 
 const isLoggedIn = ref(!!localStorage.getItem("auth_token"));
 
-onMounted(async () => {
-  try {
-    const user = await getName();
-    console.log("getName response:", user);
-    userName.value = user.name;
-  } catch (err) {
-    console.error("Failed to fetch user name:", err);
-  }
-});
+watch(
+  () => route.path,
+  async () => {
+    if (localStorage.getItem("auth_token") && !userStore.name) {
+      await userStore.fetchUser();
+    }
+  },
+  { immediate: true }
+);
 
+const userName = computed(() => userStore.name);
 
 async function handleLogout() {
   try {
@@ -175,7 +176,6 @@ async function handleLogout() {
     router.push("/login");
     $toastr.success("Logged out successfully!");
   } catch (err) {
-    console.error("Logout failed:", err);
     $toastr.error("Logout failed.");
   } finally {
     loggingOut.value = false;
