@@ -11,7 +11,7 @@ class UpdateWCRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,10 +23,10 @@ class UpdateWCRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'background_color' => 'nullable|string',
+            'section_id' => 'required|uuid|exists:sections,section_id',
+            'store_id' => 'required|uuid|exists:stores,store_id',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
-            'section_id' => 'required|uuid|exists:category_channels,section_id',
         ];
     }
 }

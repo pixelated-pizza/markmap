@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col w-full h-full bg-gray-900 p-10" v-cloak>
+  <div class="flex flex-col w-full h-full bg-gray-900 p-10" >
     <div class="flex items-center justify-between gap-2 p-4 mb-4 
             bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
       <h2 class="text-md font-bold  flex-1 text-white 
@@ -310,8 +310,6 @@ async function loadCampaigns() {
     console.error("Failed to load campaigns:", err);
   }
 }
-
-
 
 async function addCampaign() {
   const tempId = gantt.uid();

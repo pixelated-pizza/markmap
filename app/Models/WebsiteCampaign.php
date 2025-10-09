@@ -18,7 +18,8 @@ class WebsiteCampaign extends Model
 
     protected $fillable = [
         'name',
-        'channel_id',
+        'section_id',
+        'store_id',
         'start_date',
         'end_date',
     ];
@@ -27,8 +28,13 @@ class WebsiteCampaign extends Model
         'start_date' => 'date:Y-m-d',
         'end_date' => 'date:Y-m-d',
     ];
-    public function channel()
+    public function store()
     {
-        return $this->belongsTo(CategoryChannel::class, 'channel_id', 'channel_id');
+        return $this->belongsTo(Store::class, 'store_id', 'store_id');
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class, 'section_id', 'section_id');
     }
 }

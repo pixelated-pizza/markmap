@@ -80,7 +80,8 @@
     </aside>
 
     <header v-if="route.path !== '/login'" class="col-start-2 flex items-center justify-between bg-gray-900/90 
-         backdrop-blur-md text-white px-6 py-3 shadow-lg border-b border-gray-700">
+         backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700
+         h-16 min-h-[4rem] shrink-0">
       <h1 class="text-xl font-semibold tracking-wide drop-shadow-sm">
         MarketMap
       </h1>

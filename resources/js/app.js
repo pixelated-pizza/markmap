@@ -10,6 +10,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import 'primeicons/primeicons.css';
 import Aura from '@primeuix/themes/aura';
 import { ref } from "vue";
+import ganttastic from '@infectoone/vue-ganttastic';
 
 export const isPageLoading = ref(false);
 
@@ -63,5 +64,5 @@ app.use(PrimeVue, {
     }
   }
 }).use(pinia)
-.use(ElementPlusIconsVue)
+.use(ElementPlusIconsVue).use(ganttastic)
 .use(router).mount('#app');

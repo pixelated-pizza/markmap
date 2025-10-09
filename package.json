@@ -25,6 +25,7 @@
         "@fullcalendar/interaction": "^6.1.19",
         "@fullcalendar/resource-timeline": "^6.1.19",
         "@fullcalendar/vue3": "^6.1.19",
+        "@infectoone/vue-ganttastic": "^2.3.2",
         "@primeuix/themes": "^1.2.3",
         "@primevue/auto-import-resolver": "^4.3.9",
         "@tailwindcss/postcss": "^4.1.13",
@@ -32,11 +33,13 @@
         "alpinejs": "^3.15.0",
         "dhtmlx-gantt": "^9.0.14",
         "element-plus": "^2.11.3",
+        "jsgantt-improved": "^2.8.10",
         "pinia": "^3.0.3",
         "postcss": "^8.5.6",
         "primeicons": "^7.0.0",
         "primevue": "^4.3.9",
         "toastr": "^2.1.4",
-        "vue-router": "^4.5.1"
+        "vue-router": "^4.5.1",
+        "vuex": "^4.0.2"
     }
 }

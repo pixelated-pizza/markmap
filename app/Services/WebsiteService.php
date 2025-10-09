@@ -8,12 +8,12 @@ class WebsiteService
 {
     public function all(): Collection
     {
-        return WebsiteCampaign::with('channel')->get(); 
+        return WebsiteCampaign::with(['store','section'])->get(); 
     }
 
     public function find(string $id): ?WebsiteCampaign
     {
-        return WebsiteCampaign::with('channel')->find($id);
+        return WebsiteCampaign::with(['store','section'])->find($id);
     }
 
     public function create(array $data): WebsiteCampaign

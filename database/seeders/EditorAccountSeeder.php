@@ -17,19 +17,19 @@ class EditorAccountSeeder extends Seeder
     {
         $editor_id = Roles::get()->where('role_name', 'Editor')->value('role_id');
 
-        DB::table('users')->insert([
-            'name' => 'Sabina Jaculina',
-            'role_id' => $editor_id,
-            'email' => 'millstrading.sabina.jaculina@gmail.com',
-            'password' => Hash::make('SnowFall18@@')
-        ]);
+        // DB::table('users')->insert([
+        //     'name' => 'Sabina Jaculina',
+        //     'role_id' => $editor_id,
+        //     'email' => 'millstrading.sabina.jaculina@gmail.com',
+        //     'password' => Hash::make('SnowFall18@@')
+        // ]);
 
         
-        // DB::table('users')->insert([
-        //     'name' => 'Kenn Labra',
-        //     'role_id' => $editor_id,
-        //     'email' => 'millstrading.kenn@gmail.com',
-        //     'password' => Hash::make('Trend19Size!!')
-        // ]);
+        DB::table('users')->insert([
+            'name' => 'Kenn Labra',
+            'role_id' => $editor_id,
+            'email' => 'millstrading.kenn@gmail.com',
+            'password' => Hash::make('Trend19Size!!')
+        ]);
     }
 }

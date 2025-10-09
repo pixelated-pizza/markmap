@@ -1,0 +1,83 @@
+import { defineStore } from 'pinia';
+import { fetchOnsiteCampaign, createOnsiteCampaign, updateOnsiteCampaign, deleteOnsiteCampaign } from '@/api/onsite_campaigns_api.js';
+import { fetchStores } from '@/api/website_campaign_api';
+import { fetchSections } from '@/api/website_campaign_api';
+
+export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
+    state: () => ({
+        campaigns: [],
+        stores: [],
+        sections: [],
+        loading: false,
+    }),
+    actions: {
+        async loadCampaigns() {
+            this.loading = true;
+            try {
+                this.campaigns = await fetchOnsiteCampaign();
+            } catch (error) {
+                console.error('Failed to load campaigns', error);
+            }
+            this.loading = false;
+        },
+        async addCampaign(campaign) {
+            try {
+                const payload = {
+                    name: campaign.name,
+                    section_id: campaign.section_id,
+                    store_id: campaign.store_id,
+                    start_date: campaign.start_date
+                        ? new Date(campaign.start_date).toISOString().split("T")[0]
+                        : null,
+                    end_date: campaign.end_date
+                        ? new Date(campaign.end_date).toISOString().split("T")[0]
+                        : null,
+                };
+                const newCampaign = await createOnsiteCampaign(payload);
+                this.campaigns.push(newCampaign);
+            } catch (error) {
+                console.error('Failed to add campaign', error);
+            }
+        },
+        async editCampaign(id, updates) {
+            try {
+                const updatedCampaign = await updateOnsiteCampaign(id, updates);
+                const index = this.campaigns.findIndex(c => c.wc_id === id);
+                if (index !== -1) {
+                    this.campaigns[index] = updatedCampaign;
+                }
+            } catch (error) {
+                console.error('Failed to update campaign', error);
+            }
+        },
+        async removeCampaign(id) {
+            try {
+                await deleteOnsiteCampaign(id);
+                this.campaigns = this.campaigns.filter(c => c.wc_id !== id);
+            } catch (error) {
+                console.error('Failed to delete campaign', error);
+            }
+        },
+
+        async loadStores() {
+            try {
+                this.stores = await fetchStores();
+                return this.stores;
+            } catch (error) {
+                console.error('Failed to load stores', error);
+            }
+        },
+
+        async loadSections() {
+            try {
+                this.sections = await fetchSections();
+            } catch (error) {
+                console.error('Failed to load sections', error);
+            }
+        },
+    },
+    getters: {
+        allCampaigns: (state) => state.campaigns,
+        isLoading: (state) => state.loading,
+    }
+});

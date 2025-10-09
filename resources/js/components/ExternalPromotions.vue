@@ -80,7 +80,6 @@ async function loadCampaigns() {
 
     const externalIds = channels.value.map((c) => c.channel_id);
 
-    // Assign sorted channels as resources
     calendarOptions.value.resources = channels.value.map((c) => ({
       id: String(c.channel_id),
       title: c.name,
@@ -92,7 +91,6 @@ async function loadCampaigns() {
       externalIds.includes(c.channel_id)
     );
 
-    // Keep sorting campaigns per channel
     filteredCampaigns.sort((a, b) => {
       if (a.channel_id !== b.channel_id) {
         return a.channel_id - b.channel_id;
