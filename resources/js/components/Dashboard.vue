@@ -30,39 +30,88 @@
       </div>
     </div>
 
-    <div v-if="showModal" class="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
-      <div class="bg-gray-900 text-white rounded-lg shadow-xl relative w-96 max-h-[80vh] flex flex-col">
-
-        <div class="flex justify-between items-center p-4 border-b border-gray-700">
-          <h2 class="text-lg font-bold capitalize">{{ selectedStatus }} Campaigns</h2>
-          <button @click="showModal = false" class="text-gray-400 hover:text-white text-xl font-bold">
+    <Dialog v-model:visible="showModal" modal :draggable="false" :closable="false" class="campaign-dialog min-h-[200px]"
+      :style="{ width: '480px', maxHeight: '85vh' }">
+      <template #header>
+        <div class="flex justify-between items-center w-full">
+          <h2 class="text-xl font-bold capitalize text-white tracking-wide">
+            {{ selectedStatus }} Campaigns
+          </h2>
+          <button @click="showModal = false" class="text-gray-400 hover:text-white text-xl font-bold transition">
             ✕
           </button>
         </div>
-
-        <div class="p-4 overflow-y-auto flex-1">
-          <ul v-if="filteredCampaigns.length > 0" class="space-y-2">
-            <li v-for="c in filteredCampaigns" :key="c.id" class="p-2 bg-gray-800 rounded">
-              <div class="font-semibold">{{ c.name }}</div>
-              <div class="text-xs text-gray-400">{{ c.start_date }} → {{ c.end_date }}</div>
-            </li>
-          </ul>
-          <p v-else class="text-gray-400 text-sm">No campaigns found.</p>
-        </div>
+      </template>
+      <div class="px-3 pb-3 mt-5">
+        <input v-model="searchTerm" type="text" placeholder="Search campaign..."
+          class="w-full px-3 py-2 bg-gray-800 text-gray-200 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
       </div>
-    </div>
+
+      <div class="p-2 overflow-y-auto max-h-[65vh] space-y-3">
+        <transition-group name="list" tag="div">
+          <div v-for="c in filteredCampaignsSorted"
+            :key="c.id"
+            class="cursor-pointer p-4 bg-gray-800 rounded-lg border border-gray-700 hover:border-blue-500 hover:bg-gray-700 transition duration-300 ease-in-out group">
+            <div class="flex justify-between items-center mb-1">
+              <h3 class="font-semibold text-white group-hover:text-blue-400 transition">
+                {{ c.name }}
+              </h3>
+              <span class="text-xs px-2 py-1 rounded-full" :class="{
+                'bg-green-600/20 text-green-400 border border-green-600/40': selectedStatus === 'active',
+                'bg-yellow-600/20 text-yellow-400 border border-yellow-600/40': selectedStatus === 'upcoming',
+                'bg-red-600/20 text-red-400 border border-red-600/40': selectedStatus === 'expired'
+              }">
+                {{ selectedStatus }}
+              </span>
+            </div>
+            <div class="text-xs text-gray-400">
+              {{ c.start_date }} → {{ c.end_date }}
+            </div>
+          </div>
+        </transition-group>
+
+        <p v-if="filteredCampaigns.length === 0" class="text-gray-400 text-sm text-center mt-4">
+          No campaigns found.
+        </p>
+      </div>
+    </Dialog>
+
 
     <div class="mt-5">
-      <InternalPromotions />
-      <ExternalPromotions />
+      <Tabs v-model:value="activeTab">
+        <TabList>
+          <Tab value="0">Internal Promotions</Tab>
+          <Tab value="1">External Promotions</Tab>
+        </TabList>
+
+        <TabPanels>
+          <TabPanel value="0">
+            <InternalPromotions />
+          </TabPanel>
+          <TabPanel value="1">
+            <!-- Render only when visible to avoid FullCalendar layout issues -->
+            <ExternalPromotions v-if="activeTab === '1'" />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </div>
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import InternalPromotions from '@/components/InternalPromotions.vue';
 import ExternalPromotions from '@/components/ExternalPromotions.vue';
 import { fetchCampaigns } from '@/api/campaign_service.js';
+
+import Tabs from 'primevue/tabs';
+import TabList from 'primevue/tablist';
+import Tab from 'primevue/tab';
+import TabPanels from 'primevue/tabpanels';
+import TabPanel from 'primevue/tabpanel';
+import Dialog from 'primevue/dialog';
+
+const activeTab = ref("0");
+const searchTerm = ref("");
 
 const stats = ref({
   total: 0,
@@ -108,6 +157,13 @@ function openModal(status) {
   }
 }
 
+const filteredCampaignsSorted = computed(() => {
+  if (!filteredCampaigns?.value) return [];
+  return filteredCampaigns.value.filter((c) =>
+    c?.name?.toLowerCase().includes(searchTerm.value.toLowerCase())
+  );
+});
+
 onMounted(async () => {
   try {
     const result = await fetchCampaigns();
@@ -138,3 +194,36 @@ onMounted(async () => {
   }
 });
 </script>
+<style scoped>
+:deep(.campaign-dialog .p-dialog-content) {
+  background-color: #111827; 
+  color: white;
+  padding: 0;
+  border-radius: 0.75rem;
+}
+
+:deep(.campaign-dialog .p-dialog-header) {
+  background-color: #1f2937; 
+  border-bottom: 1px solid #374151; 
+  padding: 1rem;
+}
+
+:deep(.p-dialog-mask) {
+  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.25s ease;
+}
+.list-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+</style>

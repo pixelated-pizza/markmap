@@ -6,7 +6,7 @@
       External Promotions
     </h2>
   </div>
-  <div class="w-full mt-3 bg-gray-900 rounded-lg p-3">
+  <div class="w-full mt-3 bg-gray-900 rounded-lg p-3 min-h-[500px]">
     <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full" />
   </div>
 </template>

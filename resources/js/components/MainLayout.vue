@@ -1,97 +1,108 @@
 <template>
   <div class="w-screen h-screen grid grid-rows-[auto,1fr] grid-cols-[auto,1fr]">
     <aside v-if="route.path !== '/login'" :class="sidebarOpen ? 'w-64' : 'w-16'"
-      class="row-span-2 bg-black text-gray-200 transition-all duration-300 shadow-lg">
+      class="row-span-2 bg-black text-gray-200 transition-all duration-300 shadow-lg flex flex-col justify-between">
 
-      <div class="p-4 flex items-center border-b border-gray-700">
-        <div class="flex-1 flex justify-center">
-          <img v-show="sidebarOpen" :src="'/app_icon.png'" alt="MarketMap" class="w-24 h-24 rounded-full" />
+      <div>
+        <div class="p-4 flex items-center border-b border-gray-700">
+          <div class="flex-1 flex justify-center">
+            <img v-show="sidebarOpen" :src="'/app_icon.png'" alt="MarketMap" class="w-24 h-24 rounded-full" />
+          </div>
+          <button @click="sidebarOpen = !sidebarOpen"
+            class="focus:outline-none text-gray-400 hover:text-white transition ml-2">
+            <i class="pi pi-bars text-xl"></i>
+          </button>
         </div>
-        <button @click="sidebarOpen = !sidebarOpen"
-          class="focus:outline-none text-gray-400 hover:text-white transition ml-2">
-          <i class="pi pi-bars text-xl"></i>
-        </button>
+
+        <nav class="mt-4 space-y-2">
+          <li>
+            <router-link to="/dashboard"
+              class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition"
+              active-class="bg-gray-700 text-white border-l-4 border-blue-500" v-show="sidebarOpen">
+              <i class="pi pi-home mr-2 w-4 text-center"></i>
+              Dashboard
+            </router-link>
+          </li>
+
+          <li class="px-2">
+            <button @click="calendarMenuOpen = !calendarMenuOpen"
+              class="w-full flex justify-between items-center px-2 py-2 text-sm font-medium rounded-lg hover:bg-gray-700 hover:text-white transition"
+              v-show="sidebarOpen">
+              <span class="flex items-center">
+                <i class="pi pi-calendar mr-2 w-4 text-center"></i>
+                Marketing Calendar
+              </span>
+              <i :class="['pi pi-chevron-right transition-transform', { 'rotate-90': calendarMenuOpen }]"></i>
+            </button>
+
+            <ul v-show="calendarMenuOpen" class="pl-6 mt-2 space-y-1 text-sm text-gray-300">
+              <li>
+                <button @click="weeklyMenuOpen = !weeklyMenuOpen"
+                  class="w-full flex justify-between items-center px-2 py-1 rounded hover:bg-gray-600 transition"
+                  v-show="sidebarOpen">
+                  <span class="flex items-center">
+                    <i class="pi pi-calendar mr-2 w-4 text-center"></i>
+                    Weekly Calendar
+                  </span>
+                  <i :class="['pi pi-chevron-right transition-transform', { 'rotate-90': weeklyMenuOpen }]"></i>
+                </button>
+
+                <ul v-show="weeklyMenuOpen" class="pl-6 mt-2 space-y-1 text-xs text-gray-400">
+                  <li class="px-2 py-1 rounded hover:bg-gray-600">
+                    <router-link to="/campaigns" class="flex items-center" v-show="sidebarOpen">
+                      <i class="pi pi-globe mr-2 w-4 text-center"></i>
+                      Website & Marketplaces Campaigns
+                    </router-link>
+                  </li>
+                  <li class="px-2 py-1 rounded hover:bg-gray-600">
+                    <router-link to="/website_campaigns" class="flex items-center" v-show="sidebarOpen">
+                      <i class="pi pi-globe mr-2 w-4 text-center"></i>
+                      Website - Mytopia & Edisons
+                    </router-link>
+                  </li>
+                </ul>
+              </li>
+
+              <li class="px-2 py-1 rounded hover:bg-gray-600">
+                <router-link to="/website-sale" class="flex items-center" v-show="sidebarOpen">
+                  <i class="pi pi-shopping-cart mr-2 w-4 text-center"></i>
+                  Website Sale Details
+                </router-link>
+              </li>
+              <li class="px-2 py-1 rounded hover:bg-gray-600">
+                <router-link to="/marketing-dates" class="flex items-center" v-show="sidebarOpen">
+                  <i class="pi pi-calendar-plus mr-2 w-4 text-center"></i>
+                  Key Marketing Dates
+                </router-link>
+              </li>
+            </ul>
+          </li>
+        </nav>
       </div>
 
-      <nav class="mt-4 space-y-2">
-        <li>
-          <router-link to="/dashboard"
-            class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition"
-            active-class="bg-gray-700 text-white border-l-4 border-blue-500" v-show="sidebarOpen">
-            <i class="pi pi-home mr-2 w-4 text-center"></i>
-            Dashboard
-          </router-link>
-        </li>
-
-        <li class="px-2">
-          <button @click="calendarMenuOpen = !calendarMenuOpen"
-            class="w-full flex justify-between items-center px-2 py-2 text-sm font-medium rounded-lg hover:bg-gray-700 hover:text-white transition"
-            v-show="sidebarOpen">
-            <span class="flex items-center">
-              <i class="pi pi-calendar mr-2 w-4 text-center"></i>
-              Marketing Calendar
-            </span>
-            <i :class="['pi pi-chevron-right transition-transform', { 'rotate-90': calendarMenuOpen }]"></i>
-          </button>
-
-          <ul v-show="calendarMenuOpen" class="pl-6 mt-2 space-y-1 text-sm text-gray-300">
-            <li>
-              <button @click="weeklyMenuOpen = !weeklyMenuOpen"
-                class="w-full flex justify-between items-center px-2 py-1 rounded hover:bg-gray-600 transition"
-                v-show="sidebarOpen">
-                <span class="flex items-center">
-                  <i class="pi pi-calendar mr-2 w-4 text-center"></i>
-                  Weekly Calendar
-                </span>
-                <i :class="['pi pi-chevron-right transition-transform', { 'rotate-90': weeklyMenuOpen }]"></i>
-              </button>
-
-              <ul v-show="weeklyMenuOpen" class="pl-6 mt-2 space-y-1 text-xs text-gray-400">
-                <li class="px-2 py-1 rounded hover:bg-gray-600">
-                  <router-link to="/campaigns" class="flex items-center" v-show="sidebarOpen">
-                    <i class="pi pi-globe mr-2 w-4 text-center"></i>
-                    Website & Marketplaces Campaigns
-                  </router-link>
-                </li>
-                <li class="px-2 py-1 rounded hover:bg-gray-600">
-                  <router-link to="/website_campaigns" class="flex items-center" v-show="sidebarOpen">
-                    <i class="pi pi-globe mr-2 w-4 text-center"></i>
-                    Website - Mytopia & Edisons
-                  </router-link>
-                </li>
-              </ul>
-            </li>
-
-            <li class="px-2 py-1 rounded hover:bg-gray-600">
-              <router-link to="/website-sale" class="flex items-center" v-show="sidebarOpen">
-                <i class="pi pi-shopping-cart mr-2 w-4 text-center"></i>
-                Website Sale Details
-              </router-link>
-            </li>
-            <li class="px-2 py-1 rounded hover:bg-gray-600">
-              <router-link to="/marketing-dates" class="flex items-center" v-show="sidebarOpen">
-                <i class="pi pi-calendar-plus mr-2 w-4 text-center"></i>
-                Key Marketing Dates
-              </router-link>
-            </li>
-          </ul>
-        </li>
-      </nav>
+      <div class="border-t border-gray-700 p-4 flex items-center justify-between">
+        <div v-show="sidebarOpen" class="flex items-center gap-2 text-sm font-medium text-gray-300">
+          <i class="pi pi-user text-gray-400"></i>
+          <span class="font-semibold text-white truncate">{{ userName }}</span>
+        </div>
+        <Button icon="pi pi-signout" label="Sign out" size="small" severity="contrast" @click="handleLogout" />
+      </div>
     </aside>
 
-    <header v-if="route.path !== '/login'" class="col-start-2 flex items-center justify-between bg-gray-900/90 
-         backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700
-         h-16 min-h-[4rem] shrink-0">
+    <header v-if="route.path !== '/login'"
+      class="col-start-2 flex items-center justify-between bg-gray-900/90 backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700 h-16 min-h-[4rem] shrink-0">
       <h1 class="text-xl font-semibold tracking-wide drop-shadow-sm">
         MarketMap
       </h1>
 
-      <div class="flex items-center gap-5">
-        <div class="flex items-center gap-2 text-sm font-medium text-gray-300">
-          <i class="pi pi-user text-gray-400"></i>
-          <span class="font-semibold text-white">{{ userName }}</span>
-        </div>
-        <Button icon="pi pi-power-off" severity="primary" rounded outlined @click="handleLogout" />
+      <div class="relative flex gap-2 items-center">
+        <span class="font-semibold">Updates</span>
+        <Button icon="pi pi-bell" rounded outlined severity="contrast" class="hover:text-yellow-400 transition"
+          @click="toggleNotifications" />
+        <span v-if="notifications.length"
+          class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
+          {{ notifications.length }}
+        </span>
       </div>
     </header>
 
@@ -104,7 +115,6 @@
             <template #fallback>
               <div class="p-6 space-y-6">
                 <Skeleton width="40%" height="2rem" />
-
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div v-for="i in 6" :key="i" class="p-4 rounded-lg shadow bg-white">
                     <Skeleton width="80%" height="1.5rem" class="mb-2" />
@@ -118,7 +128,6 @@
       </transition>
     </main>
 
-
     <Dialog header="Logging out" :visible.sync="loggingOut" modal closable="false" :dismissable-mask="false">
       <div class="flex items-center gap-2">
         <i class="pi pi-spin pi-spinner text-xl"></i>
@@ -127,6 +136,7 @@
     </Dialog>
   </div>
 </template>
+
 
 <script setup>
 import { ref, getCurrentInstance, watch, computed } from "vue";
@@ -140,7 +150,7 @@ const loggingOut = ref(false);
 const userStore = useUserStore();
 
 import { Suspense } from "vue";
-import { Skeleton } from "primevue";
+import Skeleton from "primevue/skeleton";
 
 const { appContext } = getCurrentInstance();
 const $toastr = appContext.config.globalProperties.$toastr
@@ -153,6 +163,16 @@ const calendarMenuOpen = ref(false);
 const weeklyMenuOpen = ref(false);
 
 const isLoggedIn = ref(!!localStorage.getItem("auth_token"));
+
+const notifications = ref([
+  // Example data
+  { id: 1, message: "Campaign updated successfully" },
+  { id: 2, message: "New marketing date added" },
+]);
+
+function toggleNotifications() {
+  $toastr.info("Notifications clicked! (You can replace this with a dropdown)");
+}
 
 watch(
   () => route.path,

@@ -16,7 +16,7 @@
       <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full" />
 
       <!-- ✅ Scrollable, with sticky header -->
-      <div class="mt-5 h-[450px] overflow-hidden rounded-lg">
+      <div class="mt-5 h-[500px] overflow-y-auto rounded-lg">
         <DataTable :value="store.campaigns" dataKey="wc_id" scrollable scrollHeight="100%" tableStyle="min-width: 60rem"
           :loading="loading" class="p-datatable-sm" tableLayout="fixed">
           <template #header>
@@ -32,21 +32,21 @@
 
           <Column field="name" header="Banner Name" class="w-1/4">
             <template #body="{ data }">
-              <InputText v-if="isEditing" v-model="data.name" class="w-full" />
+              <InputText v-if="isEditing" v-model="data.name" class="w-full"  @input="markAsModified(data.wc_id)"/>
               <span v-else>{{ data.name }}</span>
             </template>
           </Column>
 
           <Column field="start_date" header="Start Date" class="w-1/6">
             <template #body="{ data }">
-              <Calendar v-if="isEditing" v-model="data.start_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
+              <Calendar v-if="isEditing" v-model="data.start_date" dateFormat="yy-mm-dd" showIcon class="w-full"  @input="markAsModified(data.wc_id)"/>
               <span v-else>{{ new Date(data.start_date).toLocaleDateString() }}</span>
             </template>
           </Column>
 
           <Column field="end_date" header="End Date" class="w-1/6">
             <template #body="{ data }">
-              <Calendar v-if="isEditing" v-model="data.end_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
+              <Calendar v-if="isEditing" v-model="data.end_date" dateFormat="yy-mm-dd" showIcon class="w-full"  @input="markAsModified(data.wc_id)"/>
               <span v-else>{{ new Date(data.end_date).toLocaleDateString() }}</span>
             </template>
           </Column>
@@ -54,7 +54,7 @@
           <Column field="store_id" header="Website" class="w-1/6">
             <template #body="{ data }">
               <Select v-if="isEditing" v-model="data.store_id" :options="store.stores" optionLabel="store_name"
-                optionValue="store_id" placeholder="Select Website" class="w-full" />
+                optionValue="store_id" placeholder="Select Website" class="w-full"  @input="markAsModified(data.wc_id)"/>
               <span v-else>{{ data.store?.store_name }}</span>
             </template>
           </Column>
@@ -62,7 +62,7 @@
           <Column field="section_id" header="Section" class="w-1/6">
             <template #body="{ data }">
               <Select v-if="isEditing" v-model="data.section_id" :options="store.sections" optionLabel="name"
-                optionValue="section_id" placeholder="Select Section" class="w-full" />
+                optionValue="section_id" placeholder="Select Section" class="w-full"  @input="markAsModified(data.wc_id)"/>
               <span v-else>{{ data.section?.name }}</span>
             </template>
           </Column>
@@ -82,6 +82,14 @@
                     : 'Active'
                 }}
               </span>
+            </template>
+          </Column>
+          <Column header="Action" class="w-1/6" v-if="isEditing">
+            <template #body="{ data }">
+              <Button type="button" icon="pi pi-trash" label="Remove" size="small" severity="danger" :loading="loading"
+                @click="deleteRow(data)" />
+                <Button type="button" icon="pi pi-folder" label="Archive" size="small" severity="info" class="mt-5" :loading="loading"
+                @click="archiveData(data)" />
             </template>
           </Column>
 
@@ -155,6 +163,7 @@ const showDialog = ref(false);
 const editMode = ref(false);
 const loading = ref(false);
 const isEditing = ref(false);
+const modifiedCampaigns = ref (new Set());
 
 const form = ref({
   name: "",
@@ -179,11 +188,64 @@ const calendarOptions = ref({
   editable: true,
   selectable: true,
   height: "auto",
-  eventClick: (info) => {
-    const campaign = store.campaigns.find((c) => c.wc_id === info.event.id);
-    if (campaign) openEditModal(campaign);
+
+  // ✅ triggered when event bar is dragged to a new date
+  eventDrop: async (info) => {
+    const { id, start, end } = info.event;
+    const campaign = store.campaigns.find((c) => String(c.wc_id) === id);
+    if (!campaign) return;
+
+    try {
+      await store.editCampaign(id, {
+        ...campaign,
+        start_date: start ? start.toISOString().split("T")[0] : null,
+        end_date: end ? end.toISOString().split("T")[0] : null,
+      });
+
+      toastr.success({
+        severity: "success",
+        summary: "Campaign Updated",
+        detail: `${campaign.name} date updated.`,
+        life: 2000,
+      });
+
+      // Update table + chart
+      await store.loadCampaigns();
+      updateCalendarResourcesAndEvents();
+    } catch (error) {
+      toastr.error("Failed to update campaign date.");
+      info.revert(); // revert drag if error
+    }
+  },
+
+  eventResize: async (info) => {
+    const { id, start, end } = info.event;
+    const campaign = store.campaigns.find((c) => String(c.wc_id) === id);
+    if (!campaign) return;
+
+    try {
+      await store.editCampaign(id, {
+        ...campaign,
+        start_date: start ? start.toISOString().split("T")[0] : null,
+        end_date: end ? end.toISOString().split("T")[0] : null,
+      });
+
+      toastr.success({
+        severity: "success",
+        summary: "Campaign Resized",
+        detail: `${campaign.name} duration updated.`,
+        life: 2000,
+      });
+
+      await store.loadCampaigns();
+      updateCalendarResourcesAndEvents();
+    } catch (error) {
+      toastr.error("Failed to update campaign duration.");
+      info.revert();
+    }
   },
 });
+
 
 async function loadCampaigns() {
   loading.value = true;
@@ -196,7 +258,6 @@ async function loadCampaigns() {
 
 
 function updateCalendarResourcesAndEvents() {
-  // ✅ Make sure all IDs are strings
   const resources = store.stores.map(st => {
     const sections = store.sections
       .filter(sec => store.campaigns.some(
@@ -236,7 +297,9 @@ function updateCalendarResourcesAndEvents() {
   }
 }
 
-
+function markAsModified(id) {
+  modifiedCampaigns.value.add(id);
+}
 
 function openAddModal() {
   form.value = { id: null, name: "", section_id: "", store_id: "", start_date: "", end_date: "" };
@@ -262,29 +325,37 @@ const toggleEdit = async () => {
 
   if (!isEditing.value) {
     loading.value = true;
-
     try {
       for (const campaign of store.campaigns) {
-        await store.editCampaign(campaign.wc_id, {
-          name: campaign.name,
-          section_id: campaign.section_id,
-          store_id: campaign.store_id,
-          start_date: campaign.start_date
-            ? new Date(campaign.start_date).toISOString().split("T")[0]
-            : null,
-          end_date: campaign.end_date
-            ? new Date(campaign.end_date).toISOString().split("T")[0]
-            : null,
-        });
+        if (modifiedCampaigns.value.has(campaign.wc_id)) {
+          await store.editCampaign(campaign.wc_id, {
+            name: campaign.name,
+            section_id: campaign.section_id,
+            store_id: campaign.store_id,
+            start_date: campaign.start_date
+              ? new Date(campaign.start_date).toISOString().split("T")[0]
+              : null,
+            end_date: campaign.end_date
+              ? new Date(campaign.end_date).toISOString().split("T")[0]
+              : null,
+          });
+        }
       }
-      await store.loadCampaigns();
 
+      await store.loadCampaigns();
       updateCalendarResourcesAndEvents();
 
-      toastr.success({ severity: 'success', summary: 'Saved', detail: 'All campaign updates saved!', life: 3000 });
+      toastr.success({
+        severity: "success",
+        summary: "Saved",
+        detail: `${modifiedCampaigns.value.size} campaign(s) updated.`,
+        life: 3000,
+      });
+
+      modifiedCampaigns.value.clear();
 
     } catch (error) {
-      toastr.err("❌ Error saving edited table data:", error);
+      toastr.error("❌ Error saving edited table data:", error);
     } finally {
       loading.value = false;
     }
