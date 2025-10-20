@@ -20,6 +20,11 @@ export async function deleteOnsiteCampaign(id) {
   return true;
 }
 
+export async function archiveOnsiteCampaign(id, is_archived) {
+  const { data } = await api.patch(`/onsite_campaign/archive/${id}`, { is_archived });
+  return data;
+}
+
 export async function fetchStores() {
   const { data } = await api.get("/stores");
   return Array.isArray(data) ? data : [];

@@ -1,7 +1,7 @@
 <template>
-  <div class="w-screen h-screen grid grid-rows-[auto,1fr] grid-cols-[auto,1fr]">
+  <div class="flex w-screen h-screen overflow-hidden">
     <aside v-if="route.path !== '/login'" :class="sidebarOpen ? 'w-64' : 'w-16'"
-      class="row-span-2 bg-black text-gray-200 transition-all duration-300 shadow-lg flex flex-col justify-between">
+      class="bg-black text-gray-200 transition-all duration-300 shadow-lg flex flex-col justify-between h-full">
 
       <div>
         <div class="p-4 flex items-center border-b border-gray-700">
@@ -80,53 +80,55 @@
         </nav>
       </div>
 
-      <div class="border-t border-gray-700 p-4 flex items-center justify-between">
+      <div class="border-t border-gray-700 p-4 items-center justify-between">
         <div v-show="sidebarOpen" class="flex items-center gap-2 text-sm font-medium text-gray-300">
           <i class="pi pi-user text-gray-400"></i>
           <span class="font-semibold text-white truncate">{{ userName }}</span>
         </div>
-        <Button icon="pi pi-signout" label="Sign out" size="small" severity="contrast" @click="handleLogout" />
+        <div class="mt-5">
+          <Button @click="handleLogout" icon="pi pi-sign-out" label="Logout" rounded outlined severity="contrast"
+            class="w-full hover:text-red-400 transition" v-show="sidebarOpen" />
+          <Button @click="handleLogout" icon="pi pi-sign-out" rounded outlined severity="contrast"
+            class="w-full hover:text-red-400 transition" v-show="!sidebarOpen" />
+        </div>
+
       </div>
     </aside>
 
-    <header v-if="route.path !== '/login'"
-      class="col-start-2 flex items-center justify-between bg-gray-900/90 backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700 h-16 min-h-[4rem] shrink-0">
-      <h1 class="text-xl font-semibold tracking-wide drop-shadow-sm">
-        MarketMap
-      </h1>
+    <div class="flex flex-col flex-1 h-full">
 
-      <div class="relative flex gap-2 items-center">
-        <span class="font-semibold">Updates</span>
-        <Button icon="pi pi-bell" rounded outlined severity="contrast" class="hover:text-yellow-400 transition"
-          @click="toggleNotifications" />
-        <span v-if="notifications.length"
-          class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
-          {{ notifications.length }}
-        </span>
-      </div>
-    </header>
+      <header v-if="route.path !== '/login'"
+        class="col-start-2 flex items-center justify-between bg-gray-900/90 backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700 h-16 min-h-[4rem] shrink-0">
+        <h1 class="text-xl font-semibold tracking-wide drop-shadow-sm">
+          MarketMap
+        </h1>
 
+        <div class="relative flex gap-2 items-center">
+          <span class="font-semibold">Updates</span>
+          <Button icon="pi pi-bell" rounded outlined severity="contrast" class="hover:text-yellow-400 transition"
+            @click="toggleNotifications" />
+          <span v-if="notifications.length"
+            class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
+            {{ notifications.length }}
+          </span>
+        </div>
+      </header>
 
-    <main class="col-start-2 overflow-auto bg-gray-50">
-      <transition name="fade" mode="out-in">
-        <router-view v-slot="{ Component }">
-          <Suspense>
-            <component :is="Component" />
-            <template #fallback>
-              <div class="p-6 space-y-6">
-                <Skeleton width="40%" height="2rem" />
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div v-for="i in 6" :key="i" class="p-4 rounded-lg shadow bg-white">
-                    <Skeleton width="80%" height="1.5rem" class="mb-2" />
-                    <Skeleton width="100%" height="6rem" />
-                  </div>
+      <main class="flex-1 overflow-auto bg-gray-900">
+        <transition name="fade" mode="out-in">
+          <router-view v-slot="{ Component }">
+            <Suspense>
+              <component :is="Component" />
+              <template #fallback>
+                <div class="p-6 space-y-6">
+                  <div v-for="n in 3" :key="n" class="h-6 bg-gray-800 rounded animate-pulse"></div>
                 </div>
-              </div>
-            </template>
-          </Suspense>
-        </router-view>
-      </transition>
-    </main>
+              </template>
+            </Suspense>
+          </router-view>
+        </transition>
+      </main>
+    </div>
 
     <Dialog header="Logging out" :visible.sync="loggingOut" modal closable="false" :dismissable-mask="false">
       <div class="flex items-center gap-2">
@@ -140,6 +142,8 @@
 
 <script setup>
 import { ref, getCurrentInstance, watch, computed } from "vue";
+import { Suspense } from "vue";
+import Skeleton from "primevue/skeleton";
 import { useRoute, useRouter } from "vue-router";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
@@ -149,8 +153,6 @@ const loggingOut = ref(false);
 
 const userStore = useUserStore();
 
-import { Suspense } from "vue";
-import Skeleton from "primevue/skeleton";
 
 const { appContext } = getCurrentInstance();
 const $toastr = appContext.config.globalProperties.$toastr

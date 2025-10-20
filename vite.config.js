@@ -6,7 +6,7 @@ import Components from 'unplugin-vue-components/vite';
 import {PrimeVueResolver} from "@primevue/auto-import-resolver";
 
 export default defineConfig({
-    server: {
+   server: {
     host: '192.168.23.132', 
     port: 5173,
     cors: true      

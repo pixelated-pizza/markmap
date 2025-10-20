@@ -8,7 +8,9 @@ class WebsiteService
 {
     public function all(): Collection
     {
-        return WebsiteCampaign::with(['store','section'])->get(); 
+        return WebsiteCampaign::with(['store','section'])
+            ->where('is_archived', false)
+            ->get(); 
     }
 
     public function find(string $id): ?WebsiteCampaign
@@ -40,5 +42,18 @@ class WebsiteService
         }
 
         return (bool) $campaign->delete();
+    }
+
+    public function archive(string $id): ?WebsiteCampaign
+    {
+        $campaign = WebsiteCampaign::find($id);
+        if (!$campaign) {
+            return null;
+        }
+
+        $campaign->is_archived = true;
+        $campaign->save();
+
+        return $campaign;
     }
 }

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col w-full h-full bg-gray-900 p-10 overflow-x-auto">
+  <div class="flex flex-col w-full h-full bg-gray-900 px-6 py-8 overflow-x-auto">
     <div
       class="items-center justify-between gap-2 p-4 bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
       <h2 class="text-md font-bold flex-1 text-white tracking-wide drop-shadow-lg">
@@ -13,40 +13,44 @@
           @click="openAddModal" />
       </div>
 
-      <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full" />
+      <div class="h-[550px] overflow-hidden rounded-lg">
+        <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full h-full" />
+      </div>
 
-      <!-- ✅ Scrollable, with sticky header -->
-      <div class="mt-5 h-[500px] overflow-y-auto rounded-lg">
-        <DataTable :value="store.campaigns" dataKey="wc_id" scrollable scrollHeight="100%" tableStyle="min-width: 60rem"
-          :loading="loading" class="p-datatable-sm" tableLayout="fixed">
+      <div class="mt-5 h-[500px] rounded-lg">
+
+        <DataTable :value="store.campaigns" dataKey="wc_id" scrollable scrollHeight="500px" stickyHeader
+          tableStyle="min-width: 60rem" :loading="loading" class="p-datatable-sm" tableLayout="fixed">
           <template #header>
             <h3 class="text-lg font-semibold text-white text-center">On-site Campaigns</h3>
-            <div class="table-header flex justify-end gap-2 items-center">
-              
+            <div class="table-header flex justify-start gap-2 items-center p-2">
+
               <Button type="button" icon="pi pi-pencil" :label="isEditing ? 'Save Changes' : 'Edit Table'" size="small"
                 severity="success" :loading="loading" @click="toggleEdit" />
-                <Button type="button" icon="pi pi-times" label="Cancel" size="small"
-                severity="danger" :loading="loading" @click="cancelEdit" v-if="isEditing"/>
+              <Button type="button" icon="pi pi-times" label="Cancel" size="small" severity="danger" :loading="loading"
+                @click="cancelEdit" v-if="isEditing" />
             </div>
           </template>
 
           <Column field="name" header="Banner Name" class="w-1/4">
             <template #body="{ data }">
-              <InputText v-if="isEditing" v-model="data.name" class="w-full"  @input="markAsModified(data.wc_id)"/>
+              <InputText v-if="isEditing" v-model="data.name" class="w-full" @input="markAsModified(data.wc_id)" />
               <span v-else>{{ data.name }}</span>
             </template>
           </Column>
 
           <Column field="start_date" header="Start Date" class="w-1/6">
             <template #body="{ data }">
-              <Calendar v-if="isEditing" v-model="data.start_date" dateFormat="yy-mm-dd" showIcon class="w-full"  @input="markAsModified(data.wc_id)"/>
+              <Calendar v-if="isEditing" v-model="data.start_date" dateFormat="yy-mm-dd" showIcon class="w-full"
+                @input="markAsModified(data.wc_id)" />
               <span v-else>{{ new Date(data.start_date).toLocaleDateString() }}</span>
             </template>
           </Column>
 
           <Column field="end_date" header="End Date" class="w-1/6">
             <template #body="{ data }">
-              <Calendar v-if="isEditing" v-model="data.end_date" dateFormat="yy-mm-dd" showIcon class="w-full"  @input="markAsModified(data.wc_id)"/>
+              <Calendar v-if="isEditing" v-model="data.end_date" dateFormat="yy-mm-dd" showIcon class="w-full"
+                @input="markAsModified(data.wc_id)" />
               <span v-else>{{ new Date(data.end_date).toLocaleDateString() }}</span>
             </template>
           </Column>
@@ -54,7 +58,8 @@
           <Column field="store_id" header="Website" class="w-1/6">
             <template #body="{ data }">
               <Select v-if="isEditing" v-model="data.store_id" :options="store.stores" optionLabel="store_name"
-                optionValue="store_id" placeholder="Select Website" class="w-full"  @input="markAsModified(data.wc_id)"/>
+                optionValue="store_id" placeholder="Select Website" class="w-full"
+                @input="markAsModified(data.wc_id)" />
               <span v-else>{{ data.store?.store_name }}</span>
             </template>
           </Column>
@@ -62,7 +67,8 @@
           <Column field="section_id" header="Section" class="w-1/6">
             <template #body="{ data }">
               <Select v-if="isEditing" v-model="data.section_id" :options="store.sections" optionLabel="name"
-                optionValue="section_id" placeholder="Select Section" class="w-full"  @input="markAsModified(data.wc_id)"/>
+                optionValue="section_id" placeholder="Select Section" class="w-full"
+                @input="markAsModified(data.wc_id)" />
               <span v-else>{{ data.section?.name }}</span>
             </template>
           </Column>
@@ -86,12 +92,15 @@
           </Column>
           <Column header="Action" class="w-1/6" v-if="isEditing">
             <template #body="{ data }">
-              <Button type="button" icon="pi pi-trash" label="Remove" size="small" severity="danger" :loading="loading"
-                @click="deleteRow(data)" />
-                <Button type="button" icon="pi pi-folder" label="Archive" size="small" severity="info" class="mt-5" :loading="loading"
-                @click="archiveData(data)" />
+              <div class="flex flex-col gap-2">
+                <Button type="button" icon="pi pi-folder" label="Archive" size="small" severity="info"
+                  :loading="loading" @click="confirmArchive(data)" />
+                <Button type="button" icon="pi pi-trash" label="Delete" size="small" severity="danger"
+                  :loading="loading" @click="confirmDelete(data)" />
+              </div>
             </template>
           </Column>
+
 
           <template #empty>
             <div class="p-4 text-center text-gray-400">No Data available.</div>
@@ -135,12 +144,32 @@
           <Button :label="Save" icon="pi pi-check" severity="success" @click="saveCampaign" />
         </template>
       </Dialog>
+
+      <Dialog v-model:visible="showArchiveDialog" header="Confirm Archive" :modal="true" :closable="false"
+        :style="{ width: '400px' }">
+        <p>Are you sure you want to archive the campaign "{{ campaignToArchive?.name }}"?</p>
+
+        <template #footer>
+          <Button label="No" severity="danger" text @click="showArchiveDialog = false" />
+          <Button label="Yes" severity="success" @click="archiveConfirmed" />
+        </template>
+      </Dialog>
+
+      <Dialog v-model:visible="showDeleteDialog" header="Delete Campaign" :modal="true" :closable="false"
+        :style="{ width: '400px' }">
+        <p>Are you sure you want to delete the campaign "{{ campaignToDelete?.name }}"?</p>
+
+        <template #footer>
+          <Button label="No" severity="danger" text @click="showDeleteDialog = false" />
+          <Button label="Yes" severity="success" @click="deleteConfirmed" />
+        </template>
+      </Dialog>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { getCurrentInstance } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -154,16 +183,21 @@ import { useOnsiteCampaignStore } from "@/stores/onsite_campaign_store.js";
 import { DatePicker, Select } from "primevue";
 
 const store = useOnsiteCampaignStore();
+const showArchiveDialog = ref(false);
+const campaignToArchive = ref(null);
 
+const showDeleteDialog = ref(false);
+const campaignToDelete = ref(null);
 
 const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
+
 
 const calendarRef = ref(null);
 const showDialog = ref(false);
 const editMode = ref(false);
 const loading = ref(false);
 const isEditing = ref(false);
-const modifiedCampaigns = ref (new Set());
+const modifiedCampaigns = ref(new Set());
 
 const form = ref({
   name: "",
@@ -187,9 +221,12 @@ const calendarOptions = ref({
   events: [],
   editable: true,
   selectable: true,
-  height: "auto",
+  height: "100%",
+  slotMinHeight: 40, 
+  slotLabelDidMount: (info) => {
+    info.el.style.padding = "6px 0";
+  },
 
-  // ✅ triggered when event bar is dragged to a new date
   eventDrop: async (info) => {
     const { id, start, end } = info.event;
     const campaign = store.campaigns.find((c) => String(c.wc_id) === id);
@@ -209,12 +246,11 @@ const calendarOptions = ref({
         life: 2000,
       });
 
-      // Update table + chart
       await store.loadCampaigns();
       updateCalendarResourcesAndEvents();
     } catch (error) {
       toastr.error("Failed to update campaign date.");
-      info.revert(); // revert drag if error
+      info.revert();
     }
   },
 
@@ -307,11 +343,6 @@ function openAddModal() {
   showDialog.value = true;
 }
 
-function openEditModal(campaign) {
-  form.value = { ...campaign };
-  editMode.value = true;
-  showDialog.value = true;
-}
 
 const cancelEdit = async () => {
   isEditing.value = false;
@@ -362,6 +393,67 @@ const toggleEdit = async () => {
   }
 };
 
+function confirmArchive(data) {
+  campaignToArchive.value = data;
+  showArchiveDialog.value = true;
+}
+
+async function archiveConfirmed() {
+  showArchiveDialog.value = false;
+  if (!campaignToArchive.value) return;
+
+  loading.value = true;
+  try {
+    await store.archiveCampaign(campaignToArchive.value.wc_id, true);
+    await store.loadCampaigns();
+    updateCalendarResourcesAndEvents();
+
+    toastr.success("Campaign Archived", `Campaign "${campaignToArchive.value.name}" is now archived.`);
+
+  } catch (error) {
+    $toastr.error(
+      "Failed to archive campaign.",
+      "Error"
+    );
+
+  } finally {
+    loading.value = false;
+    campaignToArchive.value = null;
+  }
+}
+
+function confirmDelete(data) {
+  campaignToDelete.value = data;
+  showDeleteDialog.value = true;
+}
+
+async function deleteConfirmed() {
+  showDeleteDialog.value = false;
+  if (!campaignToDelete.value) return;
+
+  loading.value = true;
+  try {
+    await store.removeCampaign(campaignToDelete.value.wc_id);
+    await store.loadCampaigns();
+    updateCalendarResourcesAndEvents();
+
+    $toastr.success(
+      `Campaign "${campaignToDelete.value.name}" has been successfully deleted.`,
+      "Campaign Deleted"
+    );
+
+  } catch (error) {
+    $toastr.error(
+      "Failed to delete campaign.",
+      "Error"
+    );
+
+  } finally {
+    loading.value = false;
+    campaignToDelete.value = null;
+  }
+}
+
 
 async function saveCampaign() {
 
@@ -396,8 +488,15 @@ onMounted(async () => {
   color: #e5e7eb;
 }
 
+:deep(.fc-event) {
+  border-radius: 8px !important;
+  font-size: 0.85rem !important;
+  padding: 4px 6px !important;
+}
+
+
 .fc-toolbar-title {
-  font-size: 1.1rem;
+  font-size: 14px;
   font-weight: 600;
   color: #f9fafb;
 }
@@ -406,5 +505,9 @@ onMounted(async () => {
   border-radius: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
   padding: 2px 4px;
+}
+
+:deep(.fc-event-title) {
+  font-size: 11px !important;
 }
 </style>

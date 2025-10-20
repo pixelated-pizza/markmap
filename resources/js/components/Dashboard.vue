@@ -54,7 +54,7 @@
             class="cursor-pointer p-4 bg-gray-800 rounded-lg border border-gray-700 hover:border-blue-500 hover:bg-gray-700 transition duration-300 ease-in-out group">
             <div class="flex justify-between items-center mb-1">
               <h3 class="font-semibold text-white group-hover:text-blue-400 transition">
-                {{ c.name }}
+                {{ c.channel_name ? `${c.channel_name} - ${c.name}` : c.name }}
               </h3>
               <span class="text-xs px-2 py-1 rounded-full" :class="{
                 'bg-green-600/20 text-green-400 border border-green-600/40': selectedStatus === 'active',
@@ -89,7 +89,6 @@
             <InternalPromotions />
           </TabPanel>
           <TabPanel value="1">
-            <!-- Render only when visible to avoid FullCalendar layout issues -->
             <ExternalPromotions v-if="activeTab === '1'" />
           </TabPanel>
         </TabPanels>

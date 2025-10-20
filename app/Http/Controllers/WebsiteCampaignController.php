@@ -52,4 +52,15 @@ class WebsiteCampaignController extends Controller
 
         return response()->json(['message' => 'Deleted']);
     }
+
+    public function archive_campaign(string $id)
+    {
+        $campaign = $this->service->archive($id);
+
+        if (!$campaign) {
+            return response()->json(['message' => 'Website Campaign not found'], 404);
+        }
+
+        return response()->json($campaign);
+    }
 }

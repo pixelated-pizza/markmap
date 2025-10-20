@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { fetchOnsiteCampaign, createOnsiteCampaign, updateOnsiteCampaign, deleteOnsiteCampaign } from '@/api/onsite_campaigns_api.js';
+import { fetchOnsiteCampaign, createOnsiteCampaign, updateOnsiteCampaign, deleteOnsiteCampaign, archiveOnsiteCampaign } from '@/api/onsite_campaigns_api.js';
 import { fetchStores } from '@/api/website_campaign_api';
 import { fetchSections } from '@/api/website_campaign_api';
 
@@ -56,6 +56,18 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
                 this.campaigns = this.campaigns.filter(c => c.wc_id !== id);
             } catch (error) {
                 console.error('Failed to delete campaign', error);
+            }
+        },
+
+        async archiveCampaign(id, is_archived) {
+            try {
+                const updatedCampaign = await archiveOnsiteCampaign(id, is_archived);
+                const index = this.campaigns.findIndex(c => c.wc_id === id);
+                if (index !== -1) {
+                    this.campaigns[index] = updatedCampaign;
+                }
+            } catch (error) {
+                console.error('Failed to archive campaign', error);
             }
         },
 

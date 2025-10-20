@@ -11,6 +11,10 @@ import 'primeicons/primeicons.css';
 import Aura from '@primeuix/themes/aura';
 import { ref } from "vue";
 import ganttastic from '@infectoone/vue-ganttastic';
+import ConfirmationService from 'primevue/confirmationservice';
+import ToastService from 'primevue/toastservice';
+
+
 
 export const isPageLoading = ref(false);
 
@@ -64,5 +68,7 @@ app.use(PrimeVue, {
     }
   }
 }).use(pinia)
+.use(ToastService)
+.use(ConfirmationService)
 .use(ElementPlusIconsVue).use(ganttastic)
 .use(router).mount('#app');

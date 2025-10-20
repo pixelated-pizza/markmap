@@ -52,5 +52,9 @@ Route::prefix('onsite_campaign')->group(function() {
     Route::get('/{id}', [WebsiteCampaignController::class, 'show']);   
     Route::post('/', [WebsiteCampaignController::class, 'store']);     
     Route::put('/{id}', [WebsiteCampaignController::class, 'update']); 
-    Route::delete('/{id}', [WebsiteCampaignController::class, 'destroy']); 
+    Route::delete('/{id}', [WebsiteCampaignController::class, 'destroy']);
+
+    Route::patch('/archive/{id}', [WebsiteCampaignController::class, 'archive_campaign']);
+
+
 });
