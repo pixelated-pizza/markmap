@@ -17,12 +17,12 @@
         <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full h-full" />
       </div>
 
-      <div class="mt-5 h-[500px] rounded-lg">
+      <div class="mt-5 h-[300px] rounded-lg">
 
         <DataTable :value="store.campaigns" dataKey="wc_id" scrollable scrollHeight="500px" stickyHeader
           tableStyle="min-width: 60rem" :loading="loading" class="p-datatable-sm" tableLayout="fixed">
           <template #header>
-            <h3 class="text-lg font-semibold text-white text-center">On-site Campaigns</h3>
+            <h3 class="text-lg font-semibold text-white text-center p-2 bg-gray-800 rounded-full mb-5">On-site Campaigns</h3>
             <div class="table-header flex justify-start gap-2 items-center p-2">
 
               <Button type="button" icon="pi pi-pencil" :label="isEditing ? 'Save Changes' : 'Edit Table'" size="small"

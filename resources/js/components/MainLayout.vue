@@ -84,10 +84,8 @@
         <div v-show="sidebarOpen" class="flex items-center gap-2 text-sm font-medium text-gray-300">
           <i class="pi pi-user text-gray-400"></i>
           <span class="font-semibold text-white truncate">{{ userName }}</span>
-        </div>
-        <div class="mt-5">
-          <Button @click="handleLogout" icon="pi pi-sign-out" label="Logout" rounded outlined severity="contrast"
-            class="w-full hover:text-red-400 transition" v-show="sidebarOpen" />
+          <Button @click="handleLogout" icon="pi pi-sign-out" rounded outlined severity="contrast"
+            class="hover:text-red-400 transition ml-auto" v-show="sidebarOpen" />
           <Button @click="handleLogout" icon="pi pi-sign-out" rounded outlined severity="contrast"
             class="w-full hover:text-red-400 transition" v-show="!sidebarOpen" />
         </div>
