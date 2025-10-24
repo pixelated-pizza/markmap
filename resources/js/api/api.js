@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const needsCSRF = ["post", "put", "delete"].includes(config.method);
+  const needsCSRF = ["post", "put", "delete", "patch"].includes(config.method);
   if (needsCSRF) {
     await axios.get(`${baseURL.replace("/api", "")}/sanctum/csrf-cookie`, {
       withCredentials: true,

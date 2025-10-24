@@ -12,11 +12,10 @@ class WebsiteSaleDetails extends Model
 
     protected $fillable = [
         'wc_id',
-        'callout_text',
         'terms_conditions',
         'mockup_banner_locations',
-        'sku_feature_main_banner',
         'event_master_sheet_url',
+        'run_sheet_url',
         'is_sku_list_to_feature',
         'ess',
         'cms_to_audit',

@@ -1,33 +1,25 @@
 <template>
-  <div class="flex flex-col w-full h-full bg-gray-900 px-6 py-8 overflow-x-auto">
-    <div
-      class="items-center justify-between gap-2 p-4 bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
-      <h2 class="text-md font-bold flex-1 text-white tracking-wide drop-shadow-lg">
-        On-site Campaigns - Edisons and Mytopia
-      </h2>
-    </div>
+  <div class="flex flex-col w-full h-full bg-gray-900 px-6 overflow-x-auto">
 
-    <div class="mt-3 bg-gray-900 rounded-lg p-3">
-      <div class="mb-5 flex justify-between items-center">
-        <Button type="button" icon="pi pi-plus" label="Add Campaign" size="small" severity="success" :loading="loading"
-          @click="openAddModal" />
-      </div>
+    <div class="bg-gray-900 rounded-lg p-3 mt-2">
 
-      <div class="h-[550px] overflow-hidden rounded-lg">
+      <div class="h-[450px] overflow-hidden rounded-lg">
         <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full h-full" />
       </div>
 
-      <div class="mt-5 h-[300px] rounded-lg">
-
-        <DataTable :value="store.campaigns" dataKey="wc_id" scrollable scrollHeight="500px" stickyHeader
-          tableStyle="min-width: 60rem" :loading="loading" class="p-datatable-sm" tableLayout="fixed">
+      <div class="mb-5">
+        <DataTable :value="store.campaigns" dataKey="wc_id" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
+          showGridlines scrollable scrollHeight="500px" stickyHeader tableStyle="min-width: 60rem" :loading="loading"
+          class="p-datatable-sm" tableLayout="fixed">
           <template #header>
-            <h3 class="text-lg font-semibold text-white text-center p-2 bg-gray-800 rounded-full mb-5">On-site Campaigns</h3>
             <div class="table-header flex justify-start gap-2 items-center p-2">
+
+              <Button type="button" icon="pi pi-plus" label="Add Campaign" size="small" severity="success"
+                :loading="loading" @click="openAddModal" v-if="!isEditing"/>
 
               <Button type="button" icon="pi pi-pencil" :label="isEditing ? 'Save Changes' : 'Edit Table'" size="small"
                 severity="success" :loading="loading" @click="toggleEdit" />
-              <Button type="button" icon="pi pi-times" label="Cancel" size="small" severity="danger" :loading="loading"
+              <Button type="button" icon="pi pi-times" label="Close" size="small" severity="danger" :loading="loading"
                 @click="cancelEdit" v-if="isEditing" />
             </div>
           </template>
@@ -42,7 +34,7 @@
           <Column field="start_date" header="Start Date" class="w-1/6">
             <template #body="{ data }">
               <Calendar v-if="isEditing" v-model="data.start_date" dateFormat="yy-mm-dd" showIcon class="w-full"
-                @input="markAsModified(data.wc_id)" />
+                @update:modelValue="markAsModified(data.wc_id)" />
               <span v-else>{{ new Date(data.start_date).toLocaleDateString() }}</span>
             </template>
           </Column>
@@ -50,7 +42,7 @@
           <Column field="end_date" header="End Date" class="w-1/6">
             <template #body="{ data }">
               <Calendar v-if="isEditing" v-model="data.end_date" dateFormat="yy-mm-dd" showIcon class="w-full"
-                @input="markAsModified(data.wc_id)" />
+                @update:modelValue="markAsModified(data.wc_id)" />
               <span v-else>{{ new Date(data.end_date).toLocaleDateString() }}</span>
             </template>
           </Column>
@@ -59,7 +51,7 @@
             <template #body="{ data }">
               <Select v-if="isEditing" v-model="data.store_id" :options="store.stores" optionLabel="store_name"
                 optionValue="store_id" placeholder="Select Website" class="w-full"
-                @input="markAsModified(data.wc_id)" />
+                @update:modelValue="markAsModified(data.wc_id)" />
               <span v-else>{{ data.store?.store_name }}</span>
             </template>
           </Column>
@@ -68,7 +60,7 @@
             <template #body="{ data }">
               <Select v-if="isEditing" v-model="data.section_id" :options="store.sections" optionLabel="name"
                 optionValue="section_id" placeholder="Select Section" class="w-full"
-                @input="markAsModified(data.wc_id)" />
+                @update:modelValue="markAsModified(data.wc_id)" />
               <span v-else>{{ data.section?.name }}</span>
             </template>
           </Column>
@@ -207,6 +199,7 @@ const form = ref({
   end_date: "",
 });
 
+
 const calendarOptions = ref({
   schedulerLicenseKey: "GPL-My-Project-Is-Open-Source",
   plugins: [resourceTimelinePlugin, dayGridPlugin, interactionPlugin],
@@ -221,8 +214,8 @@ const calendarOptions = ref({
   events: [],
   editable: true,
   selectable: true,
-  height: "100%",
-  slotMinHeight: 40, 
+  height: 400,
+  slotMinHeight: 40,
   slotLabelDidMount: (info) => {
     info.el.style.padding = "6px 0";
   },
@@ -235,8 +228,8 @@ const calendarOptions = ref({
     try {
       await store.editCampaign(id, {
         ...campaign,
-        start_date: start ? start.toISOString().split("T")[0] : null,
-        end_date: end ? end.toISOString().split("T")[0] : null,
+        start_date: start ? start.toLocaleDateString("en-CA") : null,
+        end_date: end ? end.toLocaleDateString("en-CA") : null,
       });
 
       toastr.success({
@@ -262,8 +255,8 @@ const calendarOptions = ref({
     try {
       await store.editCampaign(id, {
         ...campaign,
-        start_date: start ? start.toISOString().split("T")[0] : null,
-        end_date: end ? end.toISOString().split("T")[0] : null,
+        start_date: start ? start.toLocaleDateString("en-CA") : null,
+        end_date: end ? end.toLocaleDateString("en-CA") : null,
       });
 
       toastr.success({
@@ -315,8 +308,8 @@ function updateCalendarResourcesAndEvents() {
     id: String(c.wc_id),
     resourceId: `${String(c.store_id)}-${String(c.section_id)}`,
     title: c.name,
-    start: c.start_date ? new Date(c.start_date).toISOString().split("T")[0] : null,
-    end: c.end_date ? new Date(c.end_date).toISOString().split("T")[0] : null,
+    start: c.start_date ? new Date(c.start_date).toLocaleDateString("en-CA") : null,
+    end: c.end_date ? new Date(c.end_date).toLocaleDateString("en-CA") : null,
   }));
 
   calendarOptions.value = {
@@ -364,24 +357,24 @@ const toggleEdit = async () => {
             section_id: campaign.section_id,
             store_id: campaign.store_id,
             start_date: campaign.start_date
-              ? new Date(campaign.start_date).toISOString().split("T")[0]
+              ? new Date(campaign.start_date).toLocaleDateString("en-CA")
               : null,
             end_date: campaign.end_date
-              ? new Date(campaign.end_date).toISOString().split("T")[0]
+              ? new Date(campaign.end_date).toLocaleDateString("en-CA")
               : null,
           });
         }
       }
 
-      await store.loadCampaigns();
-      updateCalendarResourcesAndEvents();
 
-      toastr.success({
-        severity: "success",
-        summary: "Saved",
-        detail: `${modifiedCampaigns.value.size} campaign(s) updated.`,
-        life: 3000,
-      });
+      updateCalendarResourcesAndEvents();
+      await store.loadCampaigns();
+
+      toastr.success(
+        "Saved",
+        `${modifiedCampaigns.value.size} campaign(s) updated successfully.`
+      );
+
 
       modifiedCampaigns.value.clear();
 
@@ -459,6 +452,7 @@ async function saveCampaign() {
 
   await store.addCampaign(form.value);
   showDialog.value = false;
+  await store.loadCampaigns();
   updateCalendarResourcesAndEvents();
 }
 
@@ -488,17 +482,15 @@ onMounted(async () => {
   color: #e5e7eb;
 }
 
-:deep(.fc-event) {
-  border-radius: 8px !important;
-  font-size: 0.85rem !important;
-  padding: 4px 6px !important;
-}
-
-
 .fc-toolbar-title {
-  font-size: 14px;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #f9fafb;
+}
+
+.fc-datagrid-cell-main {
+  font-weight: 500;
+  color: #f3f4f6;
 }
 
 .fc-event {

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateWCRequest extends FormRequest
+class CreateWSDRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,12 +22,7 @@ class UpdateWCRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'section_id' => 'required|uuid|exists:sections,section_id',
-            'store_id' => 'required|uuid|exists:stores,store_id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'is_archived' => 'sometimes|boolean',
+            ''
         ];
     }
 }

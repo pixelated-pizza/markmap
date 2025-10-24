@@ -42,14 +42,20 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
         async editCampaign(id, updates) {
             try {
                 const updatedCampaign = await updateOnsiteCampaign(id, updates);
-                const index = this.campaigns.findIndex(c => c.wc_id === id);
+                const index = this.campaigns.findIndex(c => String(c.wc_id) === String(id));
+
                 if (index !== -1) {
-                    this.campaigns[index] = updatedCampaign;
+                    if (updatedCampaign && typeof updatedCampaign === "object") {
+                        this.campaigns[index] = { ...this.campaigns[index], ...updatedCampaign };
+                    } else {
+                        this.campaigns[index] = { ...this.campaigns[index], ...updates };
+                    }
                 }
             } catch (error) {
-                console.error('Failed to update campaign', error);
+                console.error("Failed to update campaign", error);
             }
         },
+
         async removeCampaign(id) {
             try {
                 await deleteOnsiteCampaign(id);

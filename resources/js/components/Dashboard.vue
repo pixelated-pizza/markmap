@@ -1,34 +1,64 @@
 <template>
   <div class="bg-gray-900 p-10">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Total Campaigns -->
       <div
         class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
         @click="openModal('total')">
-        <div class="text-gray-400 text-sm">Total Campaigns</div>
-        <div class="text-2xl font-bold text-white mt-2">{{ stats.total }}</div>
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-gray-700/60 rounded-lg">
+            <ListChecks class="w-6 h-6 text-gray-300" />
+          </div>
+          <div>
+            <div class="text-gray-400 text-sm">Total Campaigns</div>
+            <div class="text-2xl font-bold text-white mt-1">{{ stats.total }}</div>
+          </div>
+        </div>
       </div>
 
       <div
         class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
         @click="openModal('active')">
-        <div class="text-gray-400 text-sm">Active Campaigns</div>
-        <div class="text-2xl font-bold text-green-400 mt-2">{{ stats.active }}</div>
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-green-600/20 rounded-lg">
+            <PlayCircle class="w-6 h-6 text-green-400" />
+          </div>
+          <div>
+            <div class="text-gray-400 text-sm">Active Campaigns</div>
+            <div class="text-2xl font-bold text-white mt-1">{{ stats.active }}</div>
+          </div>
+        </div>
       </div>
 
       <div
         class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
         @click="openModal('upcoming')">
-        <div class="text-gray-400 text-sm">Upcoming</div>
-        <div class="text-2xl font-bold text-blue-400 mt-2">{{ stats.upcoming }}</div>
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-blue-600/20 rounded-lg">
+            <CalendarClock class="w-6 h-6 text-blue-400" />
+          </div>
+          <div>
+            <div class="text-gray-400 text-sm">Upcoming</div>
+            <div class="text-2xl font-bold text-white mt-1">{{ stats.upcoming }}</div>
+          </div>
+        </div>
       </div>
 
       <div
         class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
         @click="openModal('completed')">
-        <div class="text-gray-400 text-sm">Completed</div>
-        <div class="text-2xl font-bold text-purple-400 mt-2">{{ stats.completed }}</div>
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-purple-600/20 rounded-lg">
+            <CheckCircle2 class="w-6 h-6 text-purple-400" />
+          </div>
+          <div>
+            <div class="text-gray-400 text-sm">Completed</div>
+            <div class="text-2xl font-bold text-white mt-1">{{ stats.completed }}</div>
+          </div>
+        </div>
       </div>
     </div>
+
 
     <Dialog v-model:visible="showModal" modal :draggable="false" :closable="false" class="campaign-dialog min-h-[200px]"
       :style="{ width: '480px', maxHeight: '85vh' }">
@@ -49,8 +79,7 @@
 
       <div class="p-2 overflow-y-auto max-h-[65vh] space-y-3">
         <transition-group name="list" tag="div">
-          <div v-for="c in filteredCampaignsSorted"
-            :key="c.id"
+          <div v-for="c in filteredCampaignsSorted" :key="c.id"
             class="cursor-pointer p-4 bg-gray-800 rounded-lg border border-gray-700 hover:border-blue-500 hover:bg-gray-700 transition duration-300 ease-in-out group">
             <div class="flex justify-between items-center mb-1">
               <h3 class="font-semibold text-white group-hover:text-blue-400 transition">
@@ -101,6 +130,8 @@ import { ref, onMounted, computed } from "vue";
 import InternalPromotions from '@/components/InternalPromotions.vue';
 import ExternalPromotions from '@/components/ExternalPromotions.vue';
 import { fetchCampaigns } from '@/api/campaign_service.js';
+import { ListChecks, PlayCircle, CalendarClock, CheckCircle2 } from 'lucide-vue-next';
+
 
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
@@ -195,15 +226,15 @@ onMounted(async () => {
 </script>
 <style scoped>
 :deep(.campaign-dialog .p-dialog-content) {
-  background-color: #111827; 
+  background-color: #111827;
   color: white;
   padding: 0;
   border-radius: 0.75rem;
 }
 
 :deep(.campaign-dialog .p-dialog-header) {
-  background-color: #1f2937; 
-  border-bottom: 1px solid #374151; 
+  background-color: #1f2937;
+  border-bottom: 1px solid #374151;
   padding: 1rem;
 }
 
@@ -216,13 +247,14 @@ onMounted(async () => {
 .list-leave-active {
   transition: all 0.25s ease;
 }
+
 .list-enter-from {
   opacity: 0;
   transform: translateY(10px);
 }
+
 .list-leave-to {
   opacity: 0;
   transform: translateY(-10px);
 }
-
 </style>

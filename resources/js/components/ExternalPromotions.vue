@@ -1,11 +1,4 @@
 <template>
-  <div class="items-center justify-between gap-2 p-4 mt-5
-            bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
-    <h2 class="text-md text-center font-bold flex-1 text-white 
-             tracking-wide drop-shadow-lg">
-      External Promotions
-    </h2>
-  </div>
   <div class="w-full mt-3 bg-gray-900 rounded-lg p-3 min-h-[500px]">
     <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full" />
   </div>
@@ -47,7 +40,7 @@ const calendarOptions = ref({
   editable: false,
   selectable: false,
   aspectRatio: 2,
-  height: "auto",
+  height: 500,
 });
 
 function parseEndDate(dateStr) {

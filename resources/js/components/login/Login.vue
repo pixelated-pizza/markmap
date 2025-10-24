@@ -4,7 +4,12 @@
       
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1),transparent_70%)] animate-pulse"></div>
 
-      <div class="absolute ecommerce-world">
+      <div class="relative z-10 text-center">
+        <h1 class="text-3xl font-bold tracking-wide mb-2">MillsBrands&copy;</h1>
+        <p class="text-gray-300 text-sm">The world of seamless eCommerce</p>
+      </div>
+
+      <div class="absolute ecommerce-world ml-10">
         <div class="globe"></div>
 
         <i class="pi pi-shopping-cart float-icon" style="--i:1"></i>
@@ -12,11 +17,6 @@
         <i class="pi pi-truck float-icon" style="--i:3"></i>
         <i class="pi pi-globe float-icon" style="--i:4"></i>
         <i class="pi pi-store float-icon" style="--i:5"></i>
-      </div>
-
-      <div class="relative z-10 text-center ml-5">
-        <h1 class="text-3xl font-bold tracking-wide mb-2">MillsBrands&copy;</h1>
-        <p class="text-gray-300 text-sm">The world of seamless eCommerce</p>
       </div>
     </div>
 
@@ -108,7 +108,7 @@ const handleLogin = async () => {
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, #4ade80, #1e3a8a 70%);
   box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
-  animation: spinGlobe 12s linear infinite;
+  /* animation: spinGlobe 12s linear infinite; */
 }
 
 .float-icon {

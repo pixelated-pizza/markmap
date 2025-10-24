@@ -96,7 +96,7 @@
     <div class="flex flex-col flex-1 h-full">
 
       <header v-if="route.path !== '/login'"
-        class="col-start-2 flex items-center justify-between bg-gray-900/90 backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700 h-16 min-h-[4rem] shrink-0">
+        class="col-start-2 flex items-center justify-between bg-black backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700 h-16 min-h-[4rem] shrink-0">
         <h1 class="text-xl font-semibold tracking-wide drop-shadow-sm">
           MarketMap
         </h1>
@@ -165,7 +165,7 @@ const weeklyMenuOpen = ref(false);
 const isLoggedIn = ref(!!localStorage.getItem("auth_token"));
 
 const notifications = ref([
-  // Example data
+  
   { id: 1, message: "Campaign updated successfully" },
   { id: 2, message: "New marketing date added" },
 ]);

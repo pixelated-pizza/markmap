@@ -14,10 +14,8 @@ return new class extends Migration
         Schema::create('website_sale_details', function (Blueprint $table) {
             $table->uuid('wsd_id')->primary();
             $table->uuid('wc_id');
-            $table->string('callout_text')->nullable();
             $table->string('terms_conditions')->nullable();
             $table->string('mockup_banner_locations')->nullable();
-            $table->string('sku_feature_main_banner')->nullable();
             $table->string('event_master_sheet_url')->nullable();
             $table->boolean('is_sku_list_to_feature')->default(false);
             $table->string('ess')->default('Tonni & Ralph');

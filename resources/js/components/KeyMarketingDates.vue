@@ -5,9 +5,7 @@
 </template>
 
 <script setup>
-// No script needed for a static message
 </script>
 
 <style scoped>
-/* Optional: add some animation or styling if you want */
 </style>

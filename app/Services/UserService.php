@@ -30,7 +30,6 @@ class UserService
         $user = Auth::user();
 
         if ($user) {
-            // Delete token if exists (for API/SPAs)
             if (method_exists($user, 'currentAccessToken') && $user->currentAccessToken()) {
                 $user->currentAccessToken()->delete();
             }

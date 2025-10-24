@@ -9,6 +9,7 @@ class WSDService
      */
     public function __construct()
     {
-        //
+        
     }
+    
 }
