@@ -8,8 +8,11 @@ class SKUFeatureCategory extends Model
 {
     public $timestamps = false;
 
+    public $primaryKey = 'uuid';
+    public $incrementing = false;
+
     protected $fillable = [
-        'category_name',
         'wsd_id',
+        'category_name',
     ];
 }
