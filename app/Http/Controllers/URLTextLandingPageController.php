@@ -43,6 +43,19 @@ class URLTextLandingPageController extends Controller
         return response()->json($landingPage, 201);
     }
 
+    public function update(Request $request, string $id)
+    {
+        $data = $request->all();
+
+        $landingPage = $this->service->update($id, $data);
+
+        if (!$landingPage) {
+            return response()->json(['message' => 'URL Text Landing Page not found'], 404);
+        }
+
+        return response()->json($landingPage);
+    }
+
     public function destroy(string $id)
     {
         if (!$this->service->delete($id)) {

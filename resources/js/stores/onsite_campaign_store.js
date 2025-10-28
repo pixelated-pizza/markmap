@@ -2,12 +2,14 @@ import { defineStore } from 'pinia';
 import { fetchOnsiteCampaign, createOnsiteCampaign, updateOnsiteCampaign, deleteOnsiteCampaign, archiveOnsiteCampaign } from '@/api/onsite_campaigns_api.js';
 import { fetchStores } from '@/api/website_campaign_api';
 import { fetchSections } from '@/api/website_campaign_api';
+import { fetchCampaignTypes } from '@/api/onsite_campaigns_api';
 
 export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
     state: () => ({
         campaigns: [],
         stores: [],
         sections: [],
+        campaign_types: [],
         loading: false,
     }),
     actions: {
@@ -24,6 +26,7 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
             try {
                 const payload = {
                     name: campaign.name,
+                    campaign_type_id: campaign.campaign_type_id,
                     section_id: campaign.section_id,
                     store_id: campaign.store_id,
                     start_date: campaign.start_date
@@ -93,6 +96,14 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
                 console.error('Failed to load sections', error);
             }
         },
+
+        async loadCampaignTypes() {
+            try {
+                this.campaign_types = await fetchCampaignTypes();
+            } catch (error) {
+                console.error('Failed to load campaign types', error);
+            }
+        }
     },
     getters: {
         allCampaigns: (state) => state.campaigns,

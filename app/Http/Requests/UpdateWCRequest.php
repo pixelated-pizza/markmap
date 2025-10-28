@@ -23,6 +23,7 @@ class UpdateWCRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'campaign_type_id' => 'required|uuid|exists:website_campaign_types,campaign_type_id',
             'section_id' => 'required|uuid|exists:sections,section_id',
             'store_id' => 'required|uuid|exists:stores,store_id',
             'start_date' => 'required|date',

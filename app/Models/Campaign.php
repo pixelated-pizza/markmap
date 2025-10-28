@@ -16,6 +16,8 @@ class Campaign extends Model
 
     public $timestamps = false;
 
+    protected $appends = ['channel_name'];
+
     protected $fillable = [
         'channel_id',
         'name',
@@ -31,5 +33,10 @@ class Campaign extends Model
     public function channel()
     {
         return $this->belongsTo(CategoryChannel::class, 'channel_id', 'channel_id');
+    }
+
+    public function getChannelNameAttribute()
+    {
+        return $this->channel->name ?? null;
     }
 }

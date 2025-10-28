@@ -18,6 +18,7 @@ class WebsiteCampaign extends Model
 
     protected $fillable = [
         'name',
+        'campaign_type_id',
         'section_id',
         'store_id',
         'start_date',
@@ -36,5 +37,10 @@ class WebsiteCampaign extends Model
     public function section()
     {
         return $this->belongsTo(Section::class, 'section_id', 'section_id');
+    }
+
+    public function campaignType()
+    {
+        return $this->belongsTo(WebsiteCampaignType::class, 'campaign_type_id', 'campaign_type_id');
     }
 }

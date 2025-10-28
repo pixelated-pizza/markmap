@@ -3,19 +3,46 @@
 
     <div class="bg-gray-900 rounded-lg p-3 mt-2">
 
-      <div class="h-[450px] overflow-hidden rounded-lg">
-        <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full h-full" />
+      <div class="h-[450px] overflow-hidden rounded-lg bg-black p-5 mb-5 rounded-md">
+        <template v-if="loading">
+          <div class="flex flex-col gap-4 w-full h-full">
+            <p class="text-gray-400 text-lg">Loading Gantt Chart...</p>
+            <Skeleton height="2rem" width="70%" />
+            <Skeleton height="2rem" width="50%" />
+            <Skeleton height="1rem" width="90%" />
+            <Skeleton height="1rem" width="85%" />
+            <Skeleton height="1rem" width="95%" />
+            <div class="flex-1 mt-2">
+              <Skeleton height="100%" borderRadius="8px" />
+            </div>
+          </div>
+        </template>
+
+        <FullCalendar v-else ref="calendarRef" :options="calendarOptions" class="w-full h-full" />
       </div>
 
-      <div class="mb-5">
-        <DataTable :value="store.campaigns" dataKey="wc_id" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
-          showGridlines scrollable scrollHeight="500px" stickyHeader tableStyle="min-width: 60rem" :loading="loading"
+      <div class="mb-5 rounded-sm">
+        <template v-if="loading">
+          <div class="flex flex-col gap-4 w-full h-full bg-black p-5 rounded-md">
+            <p class="text-gray-400 text-lg">Loading data table...</p>
+            <Skeleton height="2rem" width="70%" />
+            <Skeleton height="2rem" width="50%" />
+            <Skeleton height="1rem" width="90%" />
+            <Skeleton height="1rem" width="85%" />
+            <Skeleton height="1rem" width="95%" />
+            <div class="flex-1 mt-2">
+              <Skeleton height="100%" borderRadius="8px" />
+            </div>
+          </div>
+        </template>
+        <DataTable v-else :value="store.campaigns" dataKey="wc_id" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
+          showGridlines scrollable scrollHeight="500px" stickyHeader tableStyle="min-width: 60rem;" :loading="loading"
           class="p-datatable-sm" tableLayout="fixed">
           <template #header>
             <div class="table-header flex justify-start gap-2 items-center p-2">
 
               <Button type="button" icon="pi pi-plus" label="Add Campaign" size="small" severity="success"
-                :loading="loading" @click="openAddModal" v-if="!isEditing"/>
+                :loading="loading" @click="openAddModal" v-if="!isEditing" />
 
               <Button type="button" icon="pi pi-pencil" :label="isEditing ? 'Save Changes' : 'Edit Table'" size="small"
                 severity="success" :loading="loading" @click="toggleEdit" />
@@ -35,7 +62,7 @@
             <template #body="{ data }">
               <Calendar v-if="isEditing" v-model="data.start_date" dateFormat="yy-mm-dd" showIcon class="w-full"
                 @update:modelValue="markAsModified(data.wc_id)" />
-              <span v-else>{{ new Date(data.start_date).toLocaleDateString() }}</span>
+              <span v-else>{{ new Date(data.start_date).toLocaleDateString('en-GB') }}</span>
             </template>
           </Column>
 
@@ -43,7 +70,7 @@
             <template #body="{ data }">
               <Calendar v-if="isEditing" v-model="data.end_date" dateFormat="yy-mm-dd" showIcon class="w-full"
                 @update:modelValue="markAsModified(data.wc_id)" />
-              <span v-else>{{ new Date(data.end_date).toLocaleDateString() }}</span>
+              <span v-else>{{ new Date(data.end_date).toLocaleDateString('en-GB') }}</span>
             </template>
           </Column>
 
@@ -92,20 +119,23 @@
               </div>
             </template>
           </Column>
-
-
           <template #empty>
             <div class="p-4 text-center text-gray-400">No Data available.</div>
           </template>
         </DataTable>
       </div>
 
-
       <Dialog v-model:visible="showDialog" modal header="Campaign Details" :style="{ width: '30vw' }">
         <div class="flex flex-col gap-3">
           <div>
             <label class="block text-gray-300 mb-1">Name</label>
             <InputText v-model="form.name" class="w-full" placeholder="Name of the Banner?" />
+          </div>
+
+          <div>
+            <label class="block text-gray-300 mb-1">Campaign Category</label>
+            <Select v-model="form.campaign_type_id" :options="store.campaign_types" optionLabel="campaign_type_name"
+              optionValue="campaign_type_id" class="w-full" placeholder="Campaign Category" />
           </div>
 
           <div>
@@ -173,6 +203,7 @@ import InputText from "primevue/inputtext";
 import Calendar from "primevue/calendar";
 import { useOnsiteCampaignStore } from "@/stores/onsite_campaign_store.js";
 import { DatePicker, Select } from "primevue";
+import Skeleton from 'primevue/skeleton';
 
 const store = useOnsiteCampaignStore();
 const showArchiveDialog = ref(false);
@@ -193,6 +224,7 @@ const modifiedCampaigns = ref(new Set());
 
 const form = ref({
   name: "",
+  campaign_type_id: "",
   section_id: "",
   store_id: "",
   start_date: "",
@@ -281,6 +313,9 @@ async function loadCampaigns() {
   await store.loadCampaigns();
   await store.loadStores();
   await store.loadSections();
+  await store.loadCampaignTypes();
+
+  console.log("campaign types:", store.campaign_types);
   updateCalendarResourcesAndEvents();
   loading.value = false;
 }
@@ -331,7 +366,7 @@ function markAsModified(id) {
 }
 
 function openAddModal() {
-  form.value = { id: null, name: "", section_id: "", store_id: "", start_date: "", end_date: "" };
+  form.value = { id: null, name: "", campaign_type_id: "", section_id: "", store_id: "", start_date: "", end_date: "" };
   editMode.value = false;
   showDialog.value = true;
 }
@@ -354,6 +389,7 @@ const toggleEdit = async () => {
         if (modifiedCampaigns.value.has(campaign.wc_id)) {
           await store.editCampaign(campaign.wc_id, {
             name: campaign.name,
+            campaign_type_id: campaign.campaign_type_id,
             section_id: campaign.section_id,
             store_id: campaign.store_id,
             start_date: campaign.start_date
@@ -461,6 +497,7 @@ onMounted(async () => {
   await store.loadStores();
   await store.loadSections();
   await store.loadCampaigns();
+  await store.loadCampaignTypes();
   updateCalendarResourcesAndEvents();
 });
 
@@ -480,6 +517,10 @@ onMounted(async () => {
   border-radius: 0.75rem;
   font-family: "Inter", sans-serif;
   color: #e5e7eb;
+}
+
+.animate-pulse {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .fc-toolbar-title {

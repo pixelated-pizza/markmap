@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col w-full h-full bg-gray-900 p-10" >
+  <div class="flex flex-col w-full h-full bg-gray-900 p-10">
     <div class="flex items-center justify-between gap-2 p-4 mb-4 
             bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
       <h2 class="text-md font-bold  flex-1 text-white 
@@ -8,19 +8,36 @@
       </h2>
     </div>
 
+    <template v-if="loading">
+      <div class="flex flex-col gap-4 w-full h-full">
+        <p class="text-gray-400 text-lg">Loading calendar...</p>
+        <Skeleton height="2rem" width="70%" />
+        <Skeleton height="2rem" width="50%" />
+        <Skeleton height="1rem" width="90%" />
+        <Skeleton height="1rem" width="85%" />
+        <Skeleton height="1rem" width="95%" />
+        <div class="flex-1 mt-2">
+          <Skeleton height="100%" borderRadius="8px" />
+        </div>
+      </div>
+    </template>
 
-    <div ref="ganttContainer" class="gantt-container flex-1 overflow-hidden"></div>
+
+    <div v-else ref="ganttContainer" class="gantt-container flex-1 overflow-hidden"></div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { getCurrentInstance } from "vue";
 import gantt from "dhtmlx-gantt";
 import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
 import { ganttColors } from "@/colors/dhtmlxgantt_colorselector";
+import Skeleton from 'primevue/skeleton';
 
 const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
+
+const loading = ref(true);
 
 import {
   fetchCampaigns,
@@ -303,7 +320,7 @@ async function loadCampaigns() {
       });
     });
 
-    gantt.clearAll();  
+    gantt.clearAll();
     gantt.parse({ data });
     autoAdjustTimeline();
   } catch (err) {
@@ -336,12 +353,21 @@ async function addCampaign() {
 
 onMounted(async () => {
   channels.value = await fetchChannels();
-  await initGantt();
-  resizeObserver = new ResizeObserver(() => {
-    gantt.setSizes();
-  });
-  resizeObserver.observe(ganttContainer.value);
+  await loadCampaigns(); 
+  loading.value = false; 
 });
+
+watch(loading, async (val) => {
+  if (!val) {
+    await nextTick(); 
+    await initGantt();
+    resizeObserver = new ResizeObserver(() => {
+      gantt.setSizes();
+    });
+    resizeObserver.observe(ganttContainer.value);
+  }
+});
+
 
 onBeforeUnmount(() => {
   try {

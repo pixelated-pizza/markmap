@@ -34,3 +34,8 @@ export async function fetchSections() {
   const { data } = await api.get("/sections");
   return Array.isArray(data) ? data : [];
 }
+
+export async function fetchCampaignTypes() {
+  const { data } = await api.get("/website_campaign_types");
+  return Array.isArray(data) ? data : [];
+}

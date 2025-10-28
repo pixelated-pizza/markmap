@@ -1,6 +1,19 @@
 <template>
   <div class="w-full mt-3 bg-gray-900 rounded-lg p-3 min-h-[500px]">
-    <FullCalendar ref="calendarRef" :options="calendarOptions" class="w-full" />
+    <template v-if="loading">
+      <div class="flex flex-col h-full gap-4">
+        <p class="text-gray-400 text-lg">Loading Gantt Chart...</p>
+        <Skeleton height="1.5rem" width="60%" />
+        <Skeleton height="1.5rem" width="80%" />
+        <Skeleton height="1.5rem" width="40%" />
+        <Skeleton height="1.5rem" width="60%" />
+        <Skeleton height="1.5rem" width="70%" />
+        <Skeleton height="1.5rem" width="90%" />
+        <Skeleton height="1.5rem" width="40%" />
+        <Skeleton height="1.5rem" width="60%" />
+      </div>
+    </template>
+    <FullCalendar v-else ref="calendarRef" :options="calendarOptions" class="w-full" />
   </div>
 </template>
 
@@ -12,9 +25,12 @@ import dayGridPlugin from "@fullcalendar/daygrid"
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline"
 import { fetchWC } from "@/api/website_campaign_api.js";
 import { fetchChannels } from "@/api/campaign_service";
+import Skeleton from 'primevue/skeleton';
 
 const calendarRef = ref(null);
 const channels = ref([]);
+
+const loading = ref(true);
 
 const allowedChannels = [
   "Mytopia",
@@ -126,6 +142,8 @@ async function loadCampaigns() {
     calendarOptions.value.events = adjusted;
   } catch (err) {
     console.error("Failed to load campaigns:", err);
+  } finally {
+    loading.value = false;
   }
 }
 

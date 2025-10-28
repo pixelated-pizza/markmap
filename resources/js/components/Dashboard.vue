@@ -1,11 +1,17 @@
 <template>
   <div class="bg-gray-900 p-10">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <!-- Total Campaigns -->
-      <div
-        class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
+      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start transition"
         @click="openModal('total')">
-        <div class="flex items-center gap-3">
+        <div v-if="loading" class="flex items-center gap-3 w-full">
+          <Skeleton shape="circle" size="2.5rem" />
+          <div class="flex flex-col gap-2 w-full">
+            <Skeleton width="60%" height="1rem" />
+            <Skeleton width="40%" height="1.5rem" />
+          </div>
+        </div>
+
+        <div v-else class="flex items-center gap-3">
           <div class="p-2 bg-gray-700/60 rounded-lg">
             <ListChecks class="w-6 h-6 text-gray-300" />
           </div>
@@ -16,10 +22,17 @@
         </div>
       </div>
 
-      <div
-        class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
+      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start transition"
         @click="openModal('active')">
-        <div class="flex items-center gap-3">
+        <div v-if="loading" class="flex items-center gap-3 w-full">
+          <Skeleton shape="circle" size="2.5rem" />
+          <div class="flex flex-col gap-2 w-full">
+            <Skeleton width="60%" height="1rem" />
+            <Skeleton width="40%" height="1.5rem" />
+          </div>
+        </div>
+
+        <div v-else class="flex items-center gap-3">
           <div class="p-2 bg-green-600/20 rounded-lg">
             <PlayCircle class="w-6 h-6 text-green-400" />
           </div>
@@ -30,10 +43,17 @@
         </div>
       </div>
 
-      <div
-        class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
+      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start transition"
         @click="openModal('upcoming')">
-        <div class="flex items-center gap-3">
+        <div v-if="loading" class="flex items-center gap-3 w-full">
+          <Skeleton shape="circle" size="2.5rem" />
+          <div class="flex flex-col gap-2 w-full">
+            <Skeleton width="60%" height="1rem" />
+            <Skeleton width="40%" height="1.5rem" />
+          </div>
+        </div>
+
+        <div v-else class="flex items-center gap-3">
           <div class="p-2 bg-blue-600/20 rounded-lg">
             <CalendarClock class="w-6 h-6 text-blue-400" />
           </div>
@@ -44,10 +64,17 @@
         </div>
       </div>
 
-      <div
-        class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start cursor-pointer hover:bg-gray-700/80 transition"
+      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start transition"
         @click="openModal('completed')">
-        <div class="flex items-center gap-3">
+        <div v-if="loading" class="flex items-center gap-3 w-full">
+          <Skeleton shape="circle" size="2.5rem" />
+          <div class="flex flex-col gap-2 w-full">
+            <Skeleton width="60%" height="1rem" />
+            <Skeleton width="40%" height="1.5rem" />
+          </div>
+        </div>
+
+        <div v-else class="flex items-center gap-3">
           <div class="p-2 bg-purple-600/20 rounded-lg">
             <CheckCircle2 class="w-6 h-6 text-purple-400" />
           </div>
@@ -94,7 +121,9 @@
               </span>
             </div>
             <div class="text-xs text-gray-400">
-              {{ c.start_date }} → {{ c.end_date }}
+              {{ new Date(c.start_date).toLocaleDateString('en-GB') }} → {{ new
+                Date(c.end_date).toLocaleDateString('en-GB')
+              }}
             </div>
           </div>
         </transition-group>
@@ -105,9 +134,20 @@
       </div>
     </Dialog>
 
-
     <div class="mt-5">
-      <Tabs v-model:value="activeTab">
+      <template v-if="loading">
+        <div class="flex flex-col gap-4 w-full h-full">
+          <Skeleton height="2rem" width="70%" />
+          <Skeleton height="2rem" width="50%" />
+          <Skeleton height="1rem" width="90%" />
+          <Skeleton height="1rem" width="85%" />
+          <Skeleton height="1rem" width="95%" />
+          <div class="flex-1 mt-2">
+            <Skeleton height="100%" borderRadius="8px" />
+          </div>
+        </div>
+      </template>
+      <Tabs v-else v-model:value="activeTab">
         <TabList>
           <Tab value="0">Internal Promotions</Tab>
           <Tab value="1">External Promotions</Tab>
@@ -131,6 +171,7 @@ import InternalPromotions from '@/components/InternalPromotions.vue';
 import ExternalPromotions from '@/components/ExternalPromotions.vue';
 import { fetchCampaigns } from '@/api/campaign_service.js';
 import { ListChecks, PlayCircle, CalendarClock, CheckCircle2 } from 'lucide-vue-next';
+import Skeleton from 'primevue/skeleton';
 
 
 import Tabs from 'primevue/tabs';
@@ -142,6 +183,9 @@ import Dialog from 'primevue/dialog';
 
 const activeTab = ref("0");
 const searchTerm = ref("");
+
+const loading = ref(true);
+
 
 const stats = ref({
   total: 0,
@@ -197,6 +241,7 @@ const filteredCampaignsSorted = computed(() => {
 onMounted(async () => {
   try {
     const result = await fetchCampaigns();
+
     campaigns.value = result;
     stats.value.total = result.length;
 
@@ -218,9 +263,10 @@ onMounted(async () => {
         stats.value.completed++;
       }
     });
-
   } catch (err) {
     console.error("Failed to fetch campaigns:", err);
+  } finally {
+    loading.value = false;
   }
 });
 </script>

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\WebsiteCampaignController;
+use App\Http\Controllers\WebsiteCampaignTypeController;
 use App\Http\Controllers\CategoryChannelController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SectionController;
@@ -45,6 +46,10 @@ Route::prefix('stores')->group(function() {
 
 Route::prefix('sections')->group(function() {
     Route::get('/', [SectionController::class, 'index']);
+});
+
+Route::prefix('website_campaign_types')->group(function() {
+    Route::get('/', [WebsiteCampaignTypeController::class, 'index']);
 });
 
 Route::prefix('onsite_campaign')->group(function() {
