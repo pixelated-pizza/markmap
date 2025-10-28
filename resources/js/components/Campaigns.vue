@@ -328,29 +328,6 @@ async function loadCampaigns() {
   }
 }
 
-async function addCampaign() {
-  const tempId = gantt.uid();
-  const now = new Date();
-  const defaultEnd = new Date(now.getTime() + 13 * 24 * 60 * 60 * 1000);
-  const endDate = normalizeEndDate(defaultEnd);
-
-  const channelId = channels.value.length ? channels.value[0].channel_id : null;
-
-  const task = {
-    id: tempId,
-    text: "New Campaign",
-    start_date: formatLocalDateTime(now),
-    end_date: formatLocalDateTime(endDate),
-    channel_id: channelId,
-    parent: `channel_${channelId}`,
-    type: "task",
-  };
-
-  gantt.addTask(task);
-  newTasks.add(tempId);
-  gantt.showLightbox(tempId);
-}
-
 onMounted(async () => {
   channels.value = await fetchChannels();
   await loadCampaigns(); 

@@ -320,7 +320,6 @@ async function loadCampaigns() {
   loading.value = false;
 }
 
-
 function updateCalendarResourcesAndEvents() {
   const resources = store.stores.map(st => {
     const sections = store.sections
@@ -401,7 +400,6 @@ const toggleEdit = async () => {
           });
         }
       }
-
 
       updateCalendarResourcesAndEvents();
       await store.loadCampaigns();
