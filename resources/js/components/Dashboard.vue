@@ -85,8 +85,7 @@
         </div>
       </div>
     </div>
-
-
+    
     <Dialog v-model:visible="showModal" modal :draggable="false" :closable="false" class="campaign-dialog min-h-[200px]"
       :style="{ width: '480px', maxHeight: '85vh' }">
       <template #header>

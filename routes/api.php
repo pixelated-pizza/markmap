@@ -9,6 +9,7 @@ use App\Http\Controllers\CategoryChannelController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\WebsiteSaleDetailsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -62,5 +63,5 @@ Route::prefix('onsite_campaign')->group(function() {
 });
 
 Route::prefix('website_sale_details')->group(function() {
-    Route::get('/', [WebsiteCampaignController::class, 'index']);     
+    Route::get('/', [WebsiteSaleDetailsController::class, 'index']);     
 });
