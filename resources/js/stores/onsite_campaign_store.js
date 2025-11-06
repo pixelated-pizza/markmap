@@ -4,6 +4,20 @@ import { fetchStores } from '@/api/website_campaign_api';
 import { fetchSections } from '@/api/website_campaign_api';
 import { fetchCampaignTypes } from '@/api/onsite_campaigns_api';
 
+const toAUDate = (date) => {
+  if (!date) return null;
+  const auDate = new Date(
+    new Date(date).toLocaleString("en-US", { timeZone: "Australia/Sydney" })
+  );
+
+  const year = auDate.getFullYear();
+  const month = String(auDate.getMonth() + 1).padStart(2, "0");
+  const day = String(auDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`; 
+};
+
+
 export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
     state: () => ({
         campaigns: [],
@@ -23,6 +37,7 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
             this.loading = false;
         },
         async addCampaign(campaign) {
+
             try {
                 const payload = {
                     name: campaign.name,
@@ -30,10 +45,10 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
                     section_id: campaign.section_id,
                     store_id: campaign.store_id,
                     start_date: campaign.start_date
-                        ? new Date(campaign.start_date).toISOString().split("T")[0]
+                        ? toAUDate(campaign.start_date)
                         : null,
                     end_date: campaign.end_date
-                        ? new Date(campaign.end_date).toISOString().split("T")[0]
+                        ? toAUDate(campaign.end_date)
                         : null,
                 };
                 const newCampaign = await createOnsiteCampaign(payload);
@@ -41,6 +56,8 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
             } catch (error) {
                 console.error('Failed to add campaign', error);
             }
+
+
         },
         async editCampaign(id, updates) {
             try {
@@ -110,3 +127,5 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
         isLoading: (state) => state.loading,
     }
 });
+
+

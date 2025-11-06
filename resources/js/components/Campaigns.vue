@@ -21,9 +21,9 @@
         </div>
       </div>
     </template>
-
-
+    
     <div v-else ref="ganttContainer" class="gantt-container flex-1 overflow-hidden"></div>
+
   </div>
 </template>
 

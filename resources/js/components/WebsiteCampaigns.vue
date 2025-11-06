@@ -35,9 +35,9 @@
             </div>
           </div>
         </template>
-        <DataTable v-else :value="store.campaigns" dataKey="wc_id" paginator :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]"
-          showGridlines scrollable scrollHeight="500px" stickyHeader tableStyle="min-width: 60rem;" :loading="loading"
-          class="p-datatable-sm" tableLayout="fixed">
+        <DataTable v-else :value="store.campaigns" dataKey="wc_id" paginator :rows="5"
+          :rowsPerPageOptions="[5, 10, 20, 50]" showGridlines scrollable scrollHeight="500px" stickyHeader
+          tableStyle="min-width: 60rem;" :loading="loading" class="p-datatable-sm" tableLayout="fixed">
           <template #header>
             <div class="table-header flex justify-start gap-2 items-center p-2">
 
@@ -247,7 +247,6 @@ const calendarOptions = ref({
   editable: true,
   selectable: true,
   height: 400,
-  slotMinHeight: 40,
   slotLabelDidMount: (info) => {
     info.el.style.padding = "6px 0";
   },
@@ -343,8 +342,11 @@ function updateCalendarResourcesAndEvents() {
     resourceId: `${String(c.store_id)}-${String(c.section_id)}`,
     title: c.name,
     start: c.start_date ? new Date(c.start_date).toLocaleDateString("en-CA") : null,
-    end: c.end_date ? new Date(c.end_date).toLocaleDateString("en-CA") : null,
+    end: c.end_date
+      ? new Date(new Date(c.end_date).setDate(new Date(c.end_date).getDate() + 1)).toLocaleDateString("en-CA")
+      : null,
   }));
+
 
   calendarOptions.value = {
     ...calendarOptions.value,

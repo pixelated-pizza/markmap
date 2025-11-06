@@ -96,7 +96,7 @@
     <div class="flex flex-col flex-1 h-full">
 
       <header v-if="route.path !== '/login'"
-        class="col-start-2 flex items-center justify-between bg-black backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700 h-16 min-h-[4rem] shrink-0">
+        class="relative col-start-2 flex items-center justify-between bg-black backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700 h-16 min-h-[4rem] shrink-0">
         <h1 class="text-xl font-semibold tracking-wide drop-shadow-sm">
           MarketMap
         </h1>
@@ -104,13 +104,122 @@
         <div class="relative flex gap-2 items-center">
           <span class="font-semibold">Updates</span>
           <Button icon="pi pi-bell" rounded outlined severity="contrast" class="hover:text-yellow-400 transition"
-            @click="toggleNotifications" />
-          <span v-if="notifications.length"
-            class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
-            {{ notifications.length }}
+            @click="notificationsOpen = !notificationsOpen" />
+          <span v-if="newNotifications.length"
+            class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
+            {{ newNotifications.length }}
           </span>
         </div>
+
       </header>
+
+      <teleport to="body">
+        <div v-if="notificationsOpen"
+          class="fixed top-14 right-6 w-96 bg-[#1c1e21] text-gray-200 shadow-2xl rounded-xl z-[3000] border border-gray-800 overflow-hidden">
+          <!-- Tabs Header -->
+          <div class="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-[#242526]">
+            <div class="flex space-x-2 text-sm font-medium">
+              <button v-for="tab in ['All', 'Upcoming', 'Active', 'Completed']" :key="tab" @click="activeTab = tab"
+                :class="[
+                  'px-3 py-1 rounded-full transition',
+                  activeTab === tab
+                    ? 'bg-blue-500 text-white'
+                    : 'hover:bg-[#3a3b3c] text-gray-400'
+                ]">
+                {{ tab }}
+              </button>
+            </div>
+
+            <button class="text-gray-400 hover:text-gray-200 transition" @click="notificationsOpen = false">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          <div class="max-h-96 overflow-y-auto divide-y divide-gray-800">
+            <template v-if="newNotificationsSorted.length">
+              <div
+                class="px-4 py-2 text-xs uppercase tracking-wide text-gray-400 bg-[#242526] border-b border-gray-800">
+                New
+              </div>
+
+              <div v-for="c in newNotificationsSorted" :key="`new-${c.campaign_id}`"
+                class="p-3 hover:bg-[#3a3b3c] transition cursor-pointer flex items-start gap-3">
+                <div class="flex items-center justify-center w-10 h-10 rounded-full flex-shrink-0"
+                  :class="iconColor(c.channel_name)">
+                  <i :class="channelIcon(c.channel_name)"></i>
+                </div>
+
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-100 leading-tight flex items-center gap-1">
+                    {{ c.name }}
+                    <span v-if="dayjs(c.start_date).isAfter(dayjs().subtract(1, 'day'))"
+                      class="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                  </p>
+                  <p class="text-xs text-gray-400 mt-0.5">
+                    {{ c.channel_name }} —
+                    <span v-if="today.isBefore(dayjs(c.start_date))">
+                      Starts {{ dayjs(c.start_date).fromNow() }}
+                    </span>
+                    <span v-else-if="today.isAfter(dayjs(c.end_date))">
+                      Ended {{ dayjs(c.end_date).fromNow() }}
+                    </span>
+                    <span v-else>
+                      Now live
+                    </span>
+                  </p>
+                </div>
+
+                <span class="text-xs text-gray-500 whitespace-nowrap self-center">
+                  {{ formatDate(c.start_date) }}
+                </span>
+              </div>
+            </template>
+
+            <!-- ⚫ Earlier Notifications -->
+            <template v-if="earlierNotificationsSorted.length">
+              <div
+                class="px-4 py-2 text-xs uppercase tracking-wide text-gray-400 bg-[#242526] border-b border-gray-800">
+                Earlier
+              </div>
+
+              <div v-for="c in earlierNotificationsSorted" :key="`old-${c.campaign_id}`"
+                class="p-3 hover:bg-[#3a3b3c] transition cursor-pointer flex items-start gap-3">
+                <div class="flex items-center justify-center w-10 h-10 rounded-full flex-shrink-0"
+                  :class="iconColor(c.channel_name)">
+                  <i :class="channelIcon(c.channel_name)"></i>
+                </div>
+
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-100 leading-tight">
+                    {{ c.name }}
+                  </p>
+                  <p class="text-xs text-gray-400 mt-0.5">
+                    {{ c.channel_name }} —
+                    <span v-if="today.isBefore(dayjs(c.start_date))">
+                      Starts {{ dayjs(c.start_date).fromNow() }}
+                    </span>
+                    <span v-else-if="today.isAfter(dayjs(c.end_date))">
+                      Ended {{ dayjs(c.end_date).fromNow() }}
+                    </span>
+                    <span v-else>
+                      Now live
+                    </span>
+                  </p>
+                </div>
+
+                <span class="text-xs text-gray-500 whitespace-nowrap self-center">
+                  {{ formatDate(c.start_date) }}
+                </span>
+              </div>
+            </template>
+
+            <div v-if="!filteredNotifications.length" class="p-4 text-center text-sm text-gray-500">
+              No notifications yet
+            </div>
+          </div>
+
+        </div>
+      </teleport>
 
       <main class="flex-1 overflow-auto bg-gray-900">
         <transition name="fade" mode="out-in">
@@ -137,20 +246,32 @@
   </div>
 </template>
 
-
 <script setup>
-import { ref, getCurrentInstance, watch, computed } from "vue";
+import { ref, getCurrentInstance, watch, computed, onMounted, onUnmounted } from "vue";
 import { Suspense } from "vue";
-import Skeleton from "primevue/skeleton";
 import { useRoute, useRouter } from "vue-router";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import { logout } from "@/api/login_api.js";
 import { useUserStore } from '@/utils/user.js';
+import { fetchCampaigns } from '@/api/campaign_service.js';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 const loggingOut = ref(false);
 
 const userStore = useUserStore();
+const notificationsOpen = ref(false);
+const campaigns = ref([]);
+const today = dayjs();
 
+let timer;
 
 const { appContext } = getCurrentInstance();
 const $toastr = appContext.config.globalProperties.$toastr
@@ -164,15 +285,20 @@ const weeklyMenuOpen = ref(false);
 
 const isLoggedIn = ref(!!localStorage.getItem("auth_token"));
 
-const notifications = ref([
-  
-  { id: 1, message: "Campaign updated successfully" },
-  { id: 2, message: "New marketing date added" },
-]);
+const activeTab = ref('All');
 
-function toggleNotifications() {
-  $toastr.info("Notifications clicked! (You can replace this with a dropdown)");
-}
+const filteredNotifications = computed(() => {
+  switch (activeTab.value) {
+    case 'Upcoming':
+      return upcomingCampaigns.value;
+    case 'Active':
+      return latestCampaigns.value;
+    case 'Completed':
+      return endedCampaigns.value;
+    default:
+      return allNotifications.value;
+  }
+});
 
 watch(
   () => route.path,
@@ -203,5 +329,94 @@ async function handleLogout() {
     $toastr.success("Logged out successfully!");
   }
 }
+
+
+const newNotifications = computed(() => {
+  const cutoff = dayjs().subtract(1, 'day');
+  return allNotifications.value.filter(n => dayjs(n.start_date).isAfter(cutoff));
+});
+
+const newNotificationsSorted = computed(() =>
+  filteredNotifications.value
+    .filter(c => dayjs(c.start_date).isAfter(dayjs().subtract(1, 'day')))
+    .sort((a, b) => dayjs(b.start_date) - dayjs(a.start_date))
+);
+
+const earlierNotificationsSorted = computed(() =>
+  filteredNotifications.value
+    .filter(c => dayjs(c.start_date).isBefore(dayjs().subtract(1, 'day')))
+    .sort((a, b) => dayjs(b.start_date) - dayjs(a.start_date))
+);
+
+onMounted(async () => {
+  campaigns.value = await fetchCampaigns();
+});
+
+const latestCampaigns = computed(() =>
+  campaigns.value.filter(c => today.isAfter(dayjs(c.start_date).startOf('day')) && today.isBefore(dayjs(c.end_date).endOf('day')))
+);
+
+const upcomingCampaigns = computed(() =>
+  campaigns.value.filter(c => today.isBefore(dayjs(c.start_date).startOf('day')))
+);
+
+const endedCampaigns = computed(() =>
+  campaigns.value.filter(c => today.isAfter(dayjs(c.end_date).endOf('day')))
+);
+
+const allNotifications = computed(() => [
+  ...latestCampaigns.value,
+  ...upcomingCampaigns.value,
+  ...endedCampaigns.value
+]);
+
+function channelIcon(channel) {
+  const map = {
+    Edisons: "pi pi-bolt",
+    Mytopia: "pi pi-star",
+    eBay: "pi pi-shopping-cart",
+    BigW: "pi pi-tag",
+    Amazon: "pi pi-amazon",
+    Kogan: "pi pi-globe",
+    "Hot Deals": "pi pi=fire"
+  };
+  return map[channel] || "pi pi-bullhorn";
+}
+
+function iconColor(channel) {
+  const map = {
+    Facebook: "bg-blue-600/20 text-blue-400",
+    Edisons: "bg-yellow-600/20 text-yellow-400",
+    Mytopia: "bg-pink-600/20 text-pink-400",
+    eBay: "bg-red-600/20 text-red-400",
+    BigW: "bg-indigo-600/20 text-indigo-400",
+    Amazon: "bg-orange-600/20 text-orange-400",
+    Kogan: "bg-green-600/20 text-green-400",
+    "Hot Deals": "bg-red-600/20 text-red-400",
+  };
+  return map[channel] || "bg-gray-700/40 text-gray-300";
+}
+
+watch(notificationsOpen, (isOpen) => {
+  if (isOpen) {
+    setTimeout(() => {
+      newNotifications.value.splice(0);
+    }, 1500);
+  }
+});
+
+
+function formatDate(date) {
+  return dayjs(date).format('DD MMM YYYY');
+}
+
+onMounted(() => {
+  timer = setInterval(() => {
+    today.value = dayjs();
+  }, 6000);
+});
+
+onUnmounted(() => clearInterval(timer));
+
 
 </script>

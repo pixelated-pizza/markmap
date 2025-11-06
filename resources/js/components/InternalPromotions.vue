@@ -59,12 +59,19 @@ const calendarOptions = ref({
   height: 500,
 });
 
+function formatLocalDate(d) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function parseEndDate(dateStr) {
   const d = new Date(dateStr);
   d.setDate(d.getDate() + 1);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().split("T")[0];
+  return d;
 }
+
 
 async function loadCampaigns() {
   try {
@@ -97,20 +104,28 @@ async function loadCampaigns() {
     const lastEndByChannel = {};
 
     for (const c of filteredCampaigns) {
-      let start = new Date(c.start_date);
-      const end = new Date(parseEndDate(c.end_date));
+      const start = new Date(c.start_date);
+      const end = new Date(c.end_date);
+
+      end.setDate(end.getDate() + 1);
+
+      const formatLocalDate = (d) =>
+        new Date(d.toLocaleString("en-US", { timeZone: "Australia/Sydney" }))
+          .toISOString()
+          .split("T")[0];
 
       if (lastEndByChannel[c.channel_id]) {
         const prevEnd = new Date(lastEndByChannel[c.channel_id]);
-        if (start.getTime() === prevEnd.getTime()) {
-          const lastEvent = adjusted[adjusted.length - 1];
-          lastEvent.end = end.toISOString().split("T")[0];
+        const diffDays = (start - prevEnd) / (1000 * 60 * 60 * 24);
 
+        if (diffDays < 0) {
+          const lastEvent = adjusted[adjusted.length - 1];
+          lastEvent.end = formatLocalDate(end);
           lastEndByChannel[c.channel_id] = end;
           continue;
         }
-
       }
+
 
       lastEndByChannel[c.channel_id] = end;
 
@@ -118,13 +133,37 @@ async function loadCampaigns() {
         id: String(c.campaign_id),
         resourceId: String(c.channel_id),
         title: c.name,
-        start: start.toISOString().split("T")[0],
-        end: end.toISOString().split("T")[0],
+        start: formatLocalDate(start),
+        end: formatLocalDate(end),
         backgroundColor: c.background_color || "#3b82f6",
         borderColor: c.background_color || "#3b82f6",
         textColor: "#fff",
       });
     }
+
+
+    if (adjusted.length > 0) {
+      const minStart = adjusted.reduce(
+        (min, e) => (new Date(e.start) < min ? new Date(e.start) : min),
+        new Date(adjusted[0].start)
+      );
+      const maxEnd = adjusted.reduce(
+        (max, e) => (new Date(e.end) > max ? new Date(e.end) : max),
+        new Date(adjusted[0].end)
+      );
+
+      // FullCalendar's end date is exclusive — add 1 more day to show last day fully
+      maxEnd.setDate(maxEnd.getDate() + 1);
+
+      calendarOptions.value.visibleRange = {
+        start: minStart.toISOString().split("T")[0],
+        end: maxEnd.toISOString().split("T")[0],
+      };
+
+      // Optional: make view show day-level slots instead of zoomed-out month
+      calendarOptions.value.slotDuration = { days: 1 };
+    }
+
 
     calendarOptions.value.events = adjusted;
   } catch (err) {
