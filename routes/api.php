@@ -64,4 +64,7 @@ Route::prefix('onsite_campaign')->group(function() {
 
 Route::prefix('website_sale_details')->group(function() {
     Route::get('/', [WebsiteSaleDetailsController::class, 'index']);     
+    Route::post('/', [WebsiteSaleDetailsController::class, 'store']);
+    Route::put('/{id}',[WebsiteSaleDetailsController::class, 'update']);
+    Route::get('/blank/{wc_id}', [WebsiteSaleDetailsController::class, 'blank']);    
 });

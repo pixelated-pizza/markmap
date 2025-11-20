@@ -19,3 +19,8 @@ export async function deleteWSD(id) {
   await api.delete(`/website_sale_details/${id}`);
   return true;
 }
+
+export async function fetchBlankWSD(wc_id) {
+  const { data } = await api.get(`/website_sale_details/blank/${wc_id}`);
+  return data.data; 
+}

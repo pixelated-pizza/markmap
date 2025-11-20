@@ -9,28 +9,23 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('website_campaigns', function (Blueprint $table) {
-            $table->uuid('wc_id')->primary();
-            $table->uuid('channel_id');
-            $table->string('name');
-            $table->date('start_date');
-            $table->date('end_date');
-
-            $table->foreign('channel_id')
-                ->references('channel_id')
-                ->on('category_channels')
-                ->onDelete('cascade');
-
+        Schema::table('website_sale_details', function (Blueprint $table) {
+            $table->text('featured_products')->nullable()->after('sku_in_category_creative');
+            $table->string('sale_title')->nullable()->after('featured_products');
+            $table->string('sku_in_main_banner')->nullable()->after('sale_title');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
-        Schema::dropIfExists('website_campaigns');
+        Schema::table('website_sale_details', function (Blueprint $table) {
+            $table->dropColumn([
+                'featured_products',
+                'sale_title',
+                'sku_in_main_banner'
+            ]);
+        });
     }
 };

@@ -35,11 +35,17 @@
             </div>
           </div>
         </template>
-        <DataTable v-else :value="store.campaigns" dataKey="wc_id" paginator :rows="5"
-          :rowsPerPageOptions="[5, 10, 20, 50]" showGridlines scrollable scrollHeight="500px" stickyHeader
+        <DataTable v-else :value="filteredCampaigns" sortField="start_date" :sortOrder="-1" dataKey="wc_id" paginator
+          :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" showGridlines scrollable scrollHeight="500px" stickyHeader
           tableStyle="min-width: 60rem;" :loading="loading" class="p-datatable-sm" tableLayout="fixed">
           <template #header>
             <div class="table-header flex justify-start gap-2 items-center p-2">
+              <IconField>
+                <InputIcon>
+                  <i class="pi pi-search" />
+                </InputIcon>
+                <InputText placeholder="Search" v-model="searchQuery" />
+              </IconField>
 
               <Button type="button" icon="pi pi-plus" label="Add Campaign" size="small" severity="success"
                 :loading="loading" @click="openAddModal" v-if="!isEditing" />
@@ -51,14 +57,14 @@
             </div>
           </template>
 
-          <Column field="name" header="Banner Name" class="w-1/4">
+          <Column field="name" header="Banner Name" class="w-1/4" :sortable="true">
             <template #body="{ data }">
               <InputText v-if="isEditing" v-model="data.name" class="w-full" @input="markAsModified(data.wc_id)" />
               <span v-else>{{ data.name }}</span>
             </template>
           </Column>
 
-          <Column field="start_date" header="Start Date" class="w-1/6">
+          <Column field="start_date" header="Start Date" class="w-1/6" :sortable="true">
             <template #body="{ data }">
               <Calendar v-if="isEditing" v-model="data.start_date" dateFormat="yy-mm-dd" showIcon class="w-full"
                 @update:modelValue="markAsModified(data.wc_id)" />
@@ -83,7 +89,7 @@
             </template>
           </Column>
 
-          <Column field="section_id" header="Section" class="w-1/6">
+          <Column field="section_id" header="Section" class="w-1/6" :sortable="true">
             <template #body="{ data }">
               <Select v-if="isEditing" v-model="data.section_id" :options="store.sections" optionLabel="name"
                 optionValue="section_id" placeholder="Select Section" class="w-full"
@@ -95,21 +101,17 @@
           <Column header="Status" class="w-1/6" v-if="!isEditing">
             <template #body="{ data }">
               <span :class="{
-                'text-yellow-400': new Date(data.start_date) > new Date(),
-                'text-green-400':
-                  new Date(data.start_date) <= new Date() &&
-                  new Date(data.end_date) >= new Date(),
-                'text-gray-400': new Date(data.end_date) < new Date(),
+                'text-yellow-400': isUpcoming(data),
+                'text-green-400': isRunning(data),
+                'text-gray-400': isCompleted(data),
               }">
-                {{
-                  new Date() < new Date(data.start_date) ? 'Upcoming' : new Date() > new Date(data.end_date)
-                    ? 'Completed'
-                    : 'Active'
-                }}
+                {{ getStatus(data) }}
               </span>
+
+
             </template>
           </Column>
-          <Column header="Action" class="w-1/6" v-if="isEditing">
+          <Column header="Action" class="w-1/6" v-if="isEditing" filter>
             <template #body="{ data }">
               <div class="flex flex-col gap-2">
                 <Button type="button" icon="pi pi-folder" label="Archive" size="small" severity="info"
@@ -191,7 +193,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { getCurrentInstance } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -200,6 +202,8 @@ import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
 import Calendar from "primevue/calendar";
 import { useOnsiteCampaignStore } from "@/stores/onsite_campaign_store.js";
 import { DatePicker, Select } from "primevue";
@@ -213,7 +217,7 @@ const showDeleteDialog = ref(false);
 const campaignToDelete = ref(null);
 
 const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
-
+const searchQuery = ref("");
 
 const calendarRef = ref(null);
 const showDialog = ref(false);
@@ -221,6 +225,30 @@ const editMode = ref(false);
 const loading = ref(false);
 const isEditing = ref(false);
 const modifiedCampaigns = ref(new Set());
+
+const today = new Date();
+const todayStr = today.getFullYear() + "-" +
+  String(today.getMonth() + 1).padStart(2, "0") + "-" +
+  String(today.getDate()).padStart(2, "0");
+
+const isRunning = (data) => {
+  const startStr = data.start_date;
+  const endStr = data.end_date;
+  return todayStr >= startStr && todayStr <= endStr;
+};
+
+const isCompleted = (data) => {
+  const endStr = data.end_date;
+  return todayStr > endStr;
+};
+
+const isUpcoming = (data) => {
+  const startStr = data.start_date;
+  return todayStr < startStr;
+};
+
+const getStatus = (data) =>
+  isRunning(data) ? "Active" : isCompleted(data) ? "Completed" : "Upcoming";
 
 const form = ref({
   name: "",
@@ -304,6 +332,20 @@ const calendarOptions = ref({
       info.revert();
     }
   },
+});
+
+const filteredCampaigns = computed(() => {
+  if (!searchQuery.value) return store.campaigns;
+
+  const q = searchQuery.value.toLowerCase();
+
+  return store.campaigns.filter(c =>
+    c.name?.toLowerCase().includes(q) ||
+    c.store?.store_name?.toLowerCase().includes(q) ||
+    c.section?.name?.toLowerCase().includes(q) ||
+    String(c.start_date).toLowerCase().includes(q) ||
+    String(c.end_date).toLowerCase().includes(q)
+  );
 });
 
 
@@ -415,7 +457,7 @@ const toggleEdit = async () => {
       modifiedCampaigns.value.clear();
 
     } catch (error) {
-      toastr.error("❌ Error saving edited table data:", error);
+      toastr.error("Error saving edited table data:", error);
     } finally {
       loading.value = false;
     }

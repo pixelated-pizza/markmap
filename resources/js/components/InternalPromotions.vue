@@ -16,7 +16,6 @@
     <FullCalendar v-else ref="calendarRef" :options="calendarOptions" class="w-full h-full" />
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
@@ -29,7 +28,6 @@ import Skeleton from "primevue/skeleton";
 
 const calendarRef = ref(null);
 const channels = ref([]);
-
 const loading = ref(true);
 
 const allowedChannels = [
@@ -59,6 +57,13 @@ const calendarOptions = ref({
   height: 500,
 });
 
+const formatLocalDate = (date) => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 async function loadCampaigns() {
   try {
@@ -76,66 +81,54 @@ async function loadCampaigns() {
     }));
 
     const campaigns = await fetchWC();
-    const filteredCampaigns = campaigns.filter((c) =>
-      allowedIds.includes(c.channel_id)
-    );
+    const filtered = campaigns.filter((c) => allowedIds.includes(c.channel_id));
 
-    filteredCampaigns.sort((a, b) => {
-      if (a.channel_id !== b.channel_id) {
-        return a.channel_id - b.channel_id;
-      }
+    filtered.sort((a, b) => {
+      if (a.channel_id !== b.channel_id) return a.channel_id - b.channel_id;
       return new Date(a.start_date) - new Date(b.start_date);
     });
 
-    const adjusted = [];
-
-    for (const c of filteredCampaigns) {
+    const adjusted = filtered.map((c) => {
       const start = new Date(c.start_date);
       const end = new Date(c.end_date);
 
       end.setDate(end.getDate() + 1);
 
-      const formatDate = (date) => {
-        const d = new Date(date);
-        d.setHours(0, 0, 0, 0);
-        return d.toISOString().split("T")[0]; 
-      };
-
-      adjusted.push({
+      return {
         id: String(c.campaign_id),
         resourceId: String(c.channel_id),
         title: c.name,
-        start: formatDate(start),
-        end: formatDate(end), 
+        start: formatLocalDate(start),
+        end: formatLocalDate(end),
         backgroundColor: c.background_color || "#3b82f6",
         borderColor: c.background_color || "#3b82f6",
         textColor: "#fff",
-      });
-    }
-
+      };
+    });
 
     if (adjusted.length > 0) {
-      const minStart = adjusted.reduce(
-        (min, e) => (new Date(e.start) < min ? new Date(e.start) : min),
-        new Date(adjusted[0].start)
+      const minStart = new Date(
+        Math.min(...adjusted.map((e) => new Date(e.start)))
       );
-      const maxEnd = adjusted.reduce(
-        (max, e) => (new Date(e.end) > max ? new Date(e.end) : max),
-        new Date(adjusted[0].end)
+      const maxEnd = new Date(
+        Math.max(...adjusted.map((e) => new Date(e.end)))
       );
-
-      maxEnd.setDate(maxEnd.getDate() + 1);
 
       calendarOptions.value.visibleRange = {
-        start: minStart.toISOString().split("T")[0],
-        end: maxEnd.toISOString().split("T")[0],
+        start: formatLocalDate(minStart),
+        end: formatLocalDate(maxEnd),
       };
 
       calendarOptions.value.slotDuration = { days: 1 };
     }
 
-
     calendarOptions.value.events = adjusted;
+
+    if (calendarRef.value) {
+      const api = calendarRef.value.getApi();
+      api.refetchResources();
+      api.refetchEvents();
+    }
   } catch (err) {
     console.error("Failed to load campaigns:", err);
   } finally {

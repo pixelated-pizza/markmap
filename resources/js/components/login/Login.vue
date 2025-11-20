@@ -23,7 +23,7 @@
     <div class="flex w-full md:w-1/2 items-center justify-center p-6 bg-black text-white">
       <div class="w-full max-w-md">
         <img :src="'/app_icon.png'" alt="Logo" class="w-34 h-34 mx-auto mb-4 rounded-full" />
-        <h2 class="text-xl font-semibold mb-6 text-center">Login with your account</h2>
+        <h2 class="text-xl font-semibold mb-6 text-center">Marketing Campaign Calendar</h2>
 
         <form @submit.prevent="handleLogin" class="space-y-4">
           <div>

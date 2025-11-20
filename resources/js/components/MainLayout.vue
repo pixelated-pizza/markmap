@@ -1,7 +1,9 @@
 <template>
   <div class="flex w-screen h-screen overflow-hidden">
-    <aside v-if="route.path !== '/login'" :class="sidebarOpen ? 'w-64' : 'w-16'"
-      class="bg-black text-gray-200 transition-all duration-300 shadow-lg flex flex-col justify-between h-full">
+    <aside v-if="route.path !== '/login'" :class="[
+      sidebarOpen ? 'basis-64' : 'basis-16',
+      'bg-black text-gray-200 transition-[flex-basis] duration-300 shadow-lg flex flex-col justify-between h-full overflow-hidden'
+    ]">
 
       <div>
         <div class="p-4 flex items-center border-b border-gray-700">
@@ -116,7 +118,6 @@
       <teleport to="body">
         <div v-if="notificationsOpen"
           class="fixed top-14 right-6 w-96 bg-[#1c1e21] text-gray-200 shadow-2xl rounded-xl z-[3000] border border-gray-800 overflow-hidden">
-          <!-- Tabs Header -->
           <div class="flex items-center justify-between px-4 py-2 border-b border-gray-800 bg-[#242526]">
             <div class="flex space-x-2 text-sm font-medium">
               <button v-for="tab in ['All', 'Upcoming', 'Active', 'Completed']" :key="tab" @click="activeTab = tab"

@@ -1,282 +1,337 @@
 <template>
   <div class="card px-5 py-5">
-    <div v-if="wsdStore.loading" class="text-gray-400 mb-3">Loading website sale details...</div>
-    <div v-if="wsdStore.error" class="text-red-400 mb-3">{{ wsdStore.error }}</div>
+    <template v-if="loading">
+      <div class="flex flex-col gap-4 w-full h-full">
+        <p class="text-gray-400 text-lg">Loading Data Table...</p>
+        <Skeleton height="2rem" width="70%" />
+        <Skeleton height="2rem" width="50%" />
+        <Skeleton height="1rem" width="90%" />
+        <Skeleton height="1rem" width="85%" />
+        <Skeleton height="1rem" width="95%" />
+        <div class="flex-1 mt-2">
+          <Skeleton height="100%" borderRadius="8px" />
+        </div>
+      </div>
+    </template>
 
-    <DataTable
-      :value="wsdStore.websiteSaleDetails"
-      v-model:expandedRows="expandedRows"
-      dataKey="campaign_id"
-      showGridlines
-      scrollable
-      scrollDirection="horizontal"
-      tableStyle="min-width: 100rem"
-      size="small"
-      class="text-sm"
-      @rowExpand="onRowExpand"
-      @rowCollapse="onRowCollapse"
-    >
-      <Column expander style="width: 3rem" header="Expand" />
+    <div v-else class="bg-gray-800 p-2">
+      <DataTable :value="filteredCampaigns" v-model:expandedRows="expandedRows" dataKey="campaign_id"
+        showGridlines scrollable scrollDirection="horizontal" tableStyle="min-width: 100rem;" size="small"
+        class="text-md" @rowExpand="onRowExpand" @rowCollapse="onRowCollapse">
+        <div class="mb-2">
+          <h1 class="text-center text-lg text-gray-200 font-semibold">Website Sale Details</h1>
+          <IconField>
+            <InputIcon>
+              <i class="pi pi-search" />
+            </InputIcon>
+            <InputText placeholder="Search website sale" v-model="searchQuery" />
+          </IconField>
+        </div>
 
-      <Column header="Status">
-        <template #body="{ data }">
-          <span
-            :class="{
+        <Column expander style="width: 3rem" header="Expand" />
+
+        <Column header="Status">
+          <template #body="{ data }">
+            <span :class="{
               'text-green-400 font-semibold': isRunning(data),
               'text-red-400 font-semibold': isCompleted(data),
               'text-orange-400 font-semibold': isUpcoming(data),
-            }"
-          >
-            {{ getStatus(data) }}
-          </span>
-        </template>
-      </Column>
+            }">
+              {{ getStatus(data) }}
+            </span>
+          </template>
+        </Column>
 
-      <Column field="store_name" header="Channel" />
-      <Column field="name" header="Event Name" />
-      <Column field="start_date" header="Event Start Date [Execution Start Date]" />
-      <Column field="end_date" header="Event End Date" />
+        <Column field="store_name" header="Channel" />
+        <Column field="name" header="Event Name" />
+        <Column field="start_date" header="Event Start Date">
+          <template #body="{ data }">
+            {{ formatDate(data.start_date) }}
+          </template>
+        </Column>
 
-      <template #expansion="{ data }">
-        <div class="p-4 text-white">
-          <h3 class="font-semibold text-lg mb-3">
-            Website Sale Details for
-            <span class="text-green-500">{{ data.name }}</span> ({{ data.store_name }})
-          </h3>
+        <Column field="end_date" header="Event End Date">
+          <template #body="{ data }">
+            {{ formatDate(data.end_date) }}
+          </template>
+        </Column>
 
-          <!-- Editable table -->
-          <table class="min-w-full border border-gray-700 rounded-lg text-sm">
-            <tbody>
-              <tr class="border-b border-gray-700">
-                <td class="font-semibold py-2 px-3">Products to be included in featured category</td>
-                <td class="py-2 px-3">
-                  <InputText
-                    v-model="data.featured_products"
-                    v-if="data.isEditing"
-                    class="w-full"
-                  />
-                  <span v-else>{{ replacer(data.featured_products) }}</span>
-                </td>
-              </tr>
+        <template #expansion="{ data }">
+          <div class="p-4 text-gray-300">
+            <h3 class="font-semibold text-lg mb-3">
+              Website Sale Details for
+              <span class="text-green-500">{{ data.name }}</span> ({{ data.store_name }})
+            </h3>
+            <DataTable v-if="editingCampaign && editingCampaign.wsd_id === data.wsd_id" :value="editableTextTable"
+              showGridlines size="small" class="text-sm mb-5" tableStyle="min-width: 60rem">
+              <Column field="featured_banner_text" header="Featured Category Banners Text">
+                <template #body="{ data: row }">
+                  <Textarea v-model="row.featured_banner_text" class="w-full" rows="3" autoResize />
+                </template>
+              </Column>
 
-              <tr class="border-b border-gray-700 bg-gray-900/50">
-                <td class="font-semibold py-2 px-3">Sale Title in Home Page</td>
-                <td class="py-2 px-3">
-                  <InputText
-                    v-model="data.sale_title"
-                    v-if="data.isEditing"
-                    class="w-full"
-                  />
-                  <span v-else>{{ replacer(data.sale_title) }}</span>
-                </td>
-              </tr>
+              <Column field="sku_in_category_creative" header="SKU Feature in Category Creative">
+                <template #body="{ data: row }">
+                  <Textarea v-model="row.sku_in_category_creative" class="w-full" rows="3" autoResize />
+                </template>
+              </Column>
 
-              <tr class="border-b border-gray-700 bg-gray-900/50">
-                <td class="font-semibold py-2 px-3">T&amp;C's</td>
-                <td class="py-2 px-3">
-                  <Textarea
-                    v-model="data.terms_conditions"
-                    v-if="data.isEditing"
-                    rows="3"
-                    class="w-full"
-                  />
-                  <span v-else>{{ replacer(data.terms_conditions) }}</span>
-                </td>
-              </tr>
+              <Column field="url_text" header="URL Text in Landing Page Link">
+                <template #body="{ data: row }">
+                  <Textarea v-model="row.url_text" class="w-full" rows="3" autoResize />
+                </template>
+              </Column>
+            </DataTable>
 
-              <tr class="border-b border-gray-700">
-                <td class="font-semibold py-2 px-3">Mock Up &amp; Banner Locations</td>
-                <td class="py-2 px-3">
-                  <Textarea
-                    v-model="data.mockup_locations"
-                    v-if="data.isEditing"
-                    rows="3"
-                    class="w-full"
-                  />
-                  <span v-else>{{ replacer(data.mockup_locations) }}</span>
-                </td>
-              </tr>
+            <DataTable v-else :value="editableTextTable" showGridlines size="small" class="text-sm mb-5"
+              tableStyle="min-width: 60rem">
+              <Column field="featured_banner_text" header="Featured Category Banners Text">
+                <template #body="{ data: row }">
+                  <span v-html="formatMultiline(row.featured_banner_text)"></span>
+                </template>
+              </Column>
 
-              <tr class="border-b border-gray-700 bg-gray-900/50">
-                <td class="font-semibold py-2 px-3">SKU feature in creative (Main banner)</td>
-                <td class="py-2 px-3">
-                  <InputText
-                    v-model="data.sku_in_main_banner"
-                    v-if="data.isEditing"
-                    class="w-full"
-                  />
-                  <span v-else>{{ replacer(data.sku_in_main_banner) }}</span>
-                </td>
-              </tr>
+              <Column field="sku_in_category_creative" header="SKU Feature in Category Creative">
+                <template #body="{ data: row }">
+                  <span v-html="formatMultiline(row.sku_in_category_creative)"></span>
+                </template>
+              </Column>
 
-              <tr class="border-b border-gray-700">
-                <td class="font-semibold py-2 px-3">Event Master Sheet</td>
-                <td class="py-2 px-3">
-                  <InputText
-                    v-model="data.event_master_sheet"
-                    v-if="data.isEditing"
-                    class="w-full"
-                  />
-                  <a v-else :href="data.event_master_sheet" target="_blank">
-                    {{ replacer(data.event_master_sheet) }}
-                  </a>
-                </td>
-              </tr>
+              <Column field="url_text" header="URL Text in Landing Page Link">
+                <template #body="{ data: row }">
+                  <span v-html="formatMultiline(row.url_text)"></span>
+                </template>
+              </Column>
+            </DataTable>
 
-              <tr class="border-b border-gray-700 bg-gray-900/50">
-                <td class="font-semibold py-2 px-3">SKU List to Feature Provided</td>
-                <td class="py-2 px-3">
-                  <InputText
-                    v-model="data.sku_list_provided"
-                    v-if="data.isEditing"
-                    class="w-full"
-                  />
-                  <span v-else>{{ replacer(data.sku_list_provided) }}</span>
-                </td>
-              </tr>
+            <table class="min-w-full border border-gray-400 rounded-lg text-md">
+              <tbody>
+                <tr v-for="(field, i) in fieldsList" :key="field.key"
+                  :class="['border border-gray-400', i % 2 === 1 ? 'bg-gray-900/50' : '']">
+                  <td class="font-semibold text-md py-2 px-3 w-1/3">{{ field.label }}</td>
+                  <td class="py-2 px-3">
+                    <template v-if="data.isEditing">
 
-              <tr class="border-b border-gray-700">
-                <td class="font-semibold py-2 px-3">Website Sale Execution - Run Sheet</td>
-                <td class="py-2 px-3">
-                  <InputText
-                    v-model="data.run_sheet"
-                    v-if="data.isEditing"
-                    class="w-full"
-                  />
-                  <a v-else :href="data.run_sheet" target="_blank">
-                    {{ replacer(data.run_sheet) }}
-                  </a>
-                </td>
-              </tr>
+                      <template v-if="field.key === 'terms_conditions'">
+                        <span class="text-gray-400 cursor-not-allowed">
+                          {{ data[field.key] || "T&C's are auto generated" }}
+                        </span>
+                      </template>
 
-              <tr class="border-b border-gray-700 bg-gray-900/50">
-                <td class="font-semibold py-2 px-3">ESS to Execute</td>
-                <td class="py-2 px-3">
-                  <InputText v-model="data.ess" v-if="data.isEditing" class="w-full" />
-                  <span v-else>{{ replacer(data.ess) }}</span>
-                </td>
-              </tr>
+                      <template v-else-if="field.key === 'is_sku_list_to_feature'">
+                        <Select v-model="data[field.key]" :options="[
+                          { label: 'Yes', value: 1 },
+                          { label: 'No', value: 0 }
+                        ]" optionLabel="label" optionValue="value" class="w-full" />
+                      </template>
 
-              <tr>
-                <td class="font-semibold py-2 px-3">CMS to Audit</td>
-                <td class="py-2 px-3">
-                  <InputText v-model="data.cms_to_audit" v-if="data.isEditing" class="w-full" />
-                  <span v-else>{{ replacer(data.cms_to_audit) }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                      <template v-else>
+                        <Textarea v-model="data[field.key]" class="w-full" rows="2" />
+                      </template>
 
-          <!-- Text Table (read-only for now) -->
-          <DataTable
-            :value="buildTextTable(data)"
-            showGridlines
-            size="small"
-            class="text-sm mb-5"
-            tableStyle="min-width: 60rem"
-          >
-            <Column field="featured_banner_text" header="Featured Category Banners Text" />
-            <Column field="sku_in_category_creative" header="SKU feature in Category creative" />
-            <Column field="url_text" header="URL Text in Landing Page Link" />
-          </DataTable>
+                    </template>
 
-          <!-- Buttons -->
-          <div class="mt-4 text-right space-x-2">
-            <Button
-              v-if="!data.isEditing"
-              label="Edit Details"
-              icon="pi pi-pencil"
-              class="p-button-sm p-button-outlined"
-              @click="data.isEditing = true"
-            />
-            <Button
-              v-else
-              label="Save"
-              icon="pi pi-save"
-              class="p-button-sm p-button-success"
-              @click="saveChanges(data)"
-            />
-            <Button
-              v-if="data.isEditing"
-              label="Cancel"
-              icon="pi pi-times"
-              class="p-button-sm p-button-secondary"
-              @click="cancelEdit(data)"
-            />
+                    <span v-else>
+                      <template
+                        v-if="['event_master_sheet', 'run_sheet', 'featured_products_sheet_url'].includes(field.key) && data[field.key]">
+                        <a :href="data[field.key]" target="_blank" :class="field.key === 'event_master_sheet'
+                          ? 'text-blue-400 hover:text-blue-600'
+                          : 'text-green-400 hover:text-green-600'">
+                          {{ replacer(data[field.key]) }}
+                        </a>
+                      </template>
+
+                      <template v-else-if="field.key === 'is_sku_list_to_feature'">
+                        {{ data[field.key] == 1 || data[field.key] === true ? "Yes" : "No" }}
+                      </template>
+
+                      <template v-else-if="field.key === 'terms_conditions'">
+                        {{ data[field.key] || "T&C's are auto generated" }}
+                      </template>
+
+                      <template v-else>
+                        {{ replacer(data[field.key]) }}
+                      </template>
+                    </span>
+
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="mt-4 text-center space-x-2 mb-4">
+              <Button v-if="!data.isEditing" label="Edit Details" icon="pi pi-pencil" class="p-button-sm"
+                severity="contrast" @click="enableEditing(data)" />
+              <Button v-else label="Save" icon="pi pi-save" class="p-button-sm" severity="contrast"
+                @click="() => saveChanges(data)" />
+              <Button v-if="data.isEditing" label="Cancel" icon="pi pi-times" class="p-button-sm p-button-secondary"
+                @click="() => cancelEdit(data)" />
+            </div>
           </div>
-        </div>
-      </template>
-    </DataTable>
+        </template>
+      </DataTable>
+    </div>
   </div>
 </template>
-
 <script setup>
+import { reactive, ref, onMounted, computed } from "vue";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Button from "primevue/button";
-import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
-import { ref, onMounted } from "vue";
+import Select from "primevue/select";
+import Skeleton from "primevue/skeleton";
+
 import { useWSDStore } from "@/stores/wsd_store";
+import { getCurrentInstance } from "vue";
+
+const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
 
 const expandedRows = ref(null);
 const wsdStore = useWSDStore();
+const editableTextTable = reactive([]);
+const searchQuery = ref("");
+const loading = ref(false);
 
-const replacer = (val) =>
-  val === null || val === undefined || val === "" ? "No Data Yet" : val;
+const editingCampaign = ref(null);
 
-const isRunning = (data) => {
-  const today = new Date();
-  const start = new Date(data.start_date);
-  const end = new Date(data.end_date);
-  return today >= start && today <= end;
-};
-const isCompleted = (data) => new Date() > new Date(data.end_date);
-const isUpcoming = (data) => new Date() < new Date(data.start_date);
+const fieldsList = [
+  { key: "featured_products_sheet_url", label: "Products to be included in featured category" },
+  { key: "run_sheet", label: "Website Sale Execution - Run Sheet" },
+  { key: "event_master_sheet", label: "Event Master Sheet" },
+  { key: "ess", label: "ESS to Execute" },
+  { key: "cms_to_audit", label: "CMS to Audit" },
+  { key: "terms_conditions", label: "T&C's" },
+  { key: "mockup_banner_locations", label: "Mock Up & Banner Locations" },
+  { key: "is_sku_list_to_feature", label: "SKU List to Feature Provided?" },
+];
+const replacer = (val) => (val == null || val === "" ? "No Data Yet" : val);
+
+const todayStr = new Date().toISOString().split("T")[0];
+const isRunning = (data) => todayStr >= data.start_date && todayStr <= data.end_date;
+const isCompleted = (data) => todayStr > data.end_date;
+const isUpcoming = (data) => todayStr < data.start_date;
 const getStatus = (data) => (isRunning(data) ? "RUNNING" : isCompleted(data) ? "ENDED" : "UPCOMING");
 
-const isList = (text) => typeof text === "string" && text.includes("\n");
-const splitList = (text) => text.split("\n").map((line) => line.trim()).filter(Boolean);
+const buildTextTable = (data) => [
+  {
+    featured_banner_text: data.featured_banner_text || "",
+    sku_in_category_creative: data.sku_in_category_creative || "",
+    url_text: data.url_text || "",
+  },
+];
 
-const buildTextTable = (data) => {
-  const banners = isList(data.featured_banner_text) ? splitList(data.featured_banner_text) : [replacer(data.featured_banner_text)];
-  const skus = isList(data.sku_in_category_creative) ? splitList(data.sku_in_category_creative) : [replacer(data.sku_in_category_creative)];
-  const urls = isList(data.url_text) ? splitList(data.url_text) : [replacer(data.url_text)];
-  const maxLen = Math.max(banners.length, skus.length, urls.length);
-  return Array.from({ length: maxLen }, (_, i) => ({
-    featured_banner_text: banners[i] || "No Data Yet",
-    sku_in_category_creative: skus[i] || "No Data Yet",
-    url_text: urls[i] || "No Data Yet",
-  }));
+
+const onRowExpand = (event) => {
+  const currentCampaign = event.data;
+  expandedRows.value = { [currentCampaign.campaign_id]: true };
+
+  fieldsList.forEach((field) => {
+    if (!(field.key in currentCampaign)) currentCampaign[field.key] = "";
+  });
+
+  currentCampaign.featured_banner_text = currentCampaign.featured_banner_text ?? "";
+  currentCampaign.sku_in_category_creative = currentCampaign.sku_in_category_creative ?? "";
+  currentCampaign.url_text = currentCampaign.url_text ?? "";
+
+  const table = buildTextTable(currentCampaign);
+  editableTextTable.splice(0, editableTextTable.length, ...table);
 };
 
-const onRowExpand = (event) => (expandedRows.value = { [event.data.campaign_id]: true });
+
 const onRowCollapse = () => (expandedRows.value = null);
+
+const enableEditing = (campaign) => {
+  campaign.isEditing = true;
+  editingCampaign.value = campaign;
+};
+
+const formatMultiline = (text) => {
+  if (!text) return "No Data Yet";
+  return text.replace(/\n/g, "<br>");
+};
+
+function formatDate(date) {
+  if (!date) return "";
+
+  const d = new Date(date);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+}
+
+const filteredCampaigns = computed(() => {
+  if (!searchQuery.value) return wsdStore.websiteSaleDetails;
+
+  const q = searchQuery.value.toLowerCase();
+
+  return wsdStore.websiteSaleDetails.filter(c =>
+    c.name?.toLowerCase().includes(q) ||
+    c.store?.store_name?.toLowerCase().includes(q) ||
+    c.section?.name?.toLowerCase().includes(q) ||
+    String(c.start_date).toLowerCase().includes(q) ||
+    String(c.end_date).toLowerCase().includes(q)
+  );
+});
 
 const saveChanges = async (data) => {
   try {
+    data.featured_banner_text = editableTextTable[0].featured_banner_text;
+    data.sku_in_category_creative = editableTextTable[0].sku_in_category_creative;
+    data.url_text = editableTextTable[0].url_text;
+
     const payload = {
-      wc_id: data.wc_id,
+      wc_id: data.wc_id ?? data.campaign_id,
       terms_conditions: data.terms_conditions,
-      mockup_banner_locations: data.mockup_locations,
+      featured_products_sheet_url: data.featured_products_sheet_url,
+      mockup_banner_locations: data.mockup_banner_locations,
       event_master_sheet_url: data.event_master_sheet,
       run_sheet_url: data.run_sheet,
+      is_sku_list_to_feature: data.is_sku_list_to_feature,
       ess: data.ess,
       cms_to_audit: data.cms_to_audit,
+      featured_banner_text: data.featured_banner_text,
+      sku_in_category_creative: data.sku_in_category_creative,
+      url_text: data.url_text,
     };
-    await wsdStore.editWSD(data.wsd_id, payload);
+
+    toastr.success("Details saved successfully.");
+
+    await wsdStore.addWSD(payload);
     data.isEditing = false;
+    editingCampaign.value = null;
+    await wsdStore.loadWSD();
+
   } catch (err) {
     console.error("Save failed:", err);
+    toastr.error("An error occurred while saving.");
   }
 };
 
 const cancelEdit = (data) => {
   data.isEditing = false;
+  editingCampaign.value = null;
+  const restored = buildTextTable(data);
+  editableTextTable.splice(0, editableTextTable.length, ...restored);
   wsdStore.loadWSD();
 };
 
 onMounted(async () => {
+  loading.value = true;
   await wsdStore.loadWSD();
+  loading.value = false;
 });
 </script>
+
+<style scoped>
+td.py-2 {
+  min-height: 2.5rem;
+}
+
+td.py-2 textarea,
+td.py-2 input {
+  height: 100%;
+}
+</style>

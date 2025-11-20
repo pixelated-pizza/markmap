@@ -14,7 +14,7 @@ class WebsiteSaleDetailsController extends Controller
 
     public function __construct(WSDService $service)
     {
-        $this->service = $service; 
+        $this->service = $service;
     }
     public function index()
     {
@@ -26,13 +26,12 @@ class WebsiteSaleDetailsController extends Controller
         $data = $request->validated();
 
         $wsd = $this->service->create($data);
-        
+
         if (!$wsd) {
             return response()->json(['message' => 'Failed to create Website Sale Details'], 500);
         }
 
         return response()->json($wsd, 201);
-
     }
 
     public function show(string $id)
@@ -66,5 +65,15 @@ class WebsiteSaleDetailsController extends Controller
         }
 
         return response()->json(['message' => 'Deleted']);
+    }
+
+    public function blank(string $wc_id)
+    {
+        $blank = $this->service->blank_record($wc_id);
+
+        return response()->json([
+            'message' => 'Blank Website Sale Details template generated',
+            'data' => $blank
+        ]);
     }
 }

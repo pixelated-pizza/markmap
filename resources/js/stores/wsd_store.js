@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { fetchWSD, createWSD, updateWSD, deleteWSD } from "@/api/wsd_api.js";
+import { fetchWSD, createWSD, updateWSD, deleteWSD, fetchBlankWSD } from "@/api/wsd_api.js";
 
 export const useWSDStore = defineStore("wsd", {
   state: () => ({
@@ -27,15 +27,22 @@ export const useWSDStore = defineStore("wsd", {
       this.websiteSaleDetails.push(created);
     },
 
-    async editWSD(id, updates) {
-      const updated = await updateWSD(id, updates);
-      const index = this.websiteSaleDetails.findIndex((w) => w.id === id);
+
+    async updateWSD(wsd_id, updates) {
+      const updated = await updateWSD(wsd_id, updates);
+      const index = this.websiteSaleDetails.findIndex((w) => w.wsd_id === wsd_id);
       if (index !== -1) this.websiteSaleDetails[index] = updated;
+      return updated;
     },
+
 
     async removeWSD(id) {
       await deleteWSD(id);
       this.websiteSaleDetails = this.websiteSaleDetails.filter((w) => w.id !== id);
+    },
+
+    async getBlankWSD(wc_id) {
+      return await fetchBlankWSD(wc_id);
     },
   },
 });

@@ -14,12 +14,17 @@ class WebsiteSaleDetails extends Model
         'wc_id',
         'terms_conditions',
         'mockup_banner_locations',
+        'featured_products_sheet_url',
         'event_master_sheet_url',
         'run_sheet_url',
         'is_sku_list_to_feature',
         'ess',
         'cms_to_audit',
+        'featured_banner_text',
+        'sku_in_category_creative',
+        'url_text'
     ];
+
 
     public function websiteCampaign()
     {
