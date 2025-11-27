@@ -18,6 +18,8 @@
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
+import tippy from "tippy.js";
+import "tippy.js/dist/tippy.css";
 import FullCalendar from "@fullcalendar/vue3";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -42,20 +44,57 @@ const calendarOptions = ref({
   schedulerLicenseKey: "GPL-My-Project-Is-Open-Source",
   plugins: [resourceTimelinePlugin, dayGridPlugin, interactionPlugin],
   initialView: "resourceTimelineMonth",
+
   headerToolbar: {
     left: "prev,next today",
     center: "title",
     right: "resourceTimelineMonth",
   },
+
   resourceAreaHeaderContent: "Website",
   resources: [],
-  resourceOrder: null,
   events: [],
+
   editable: false,
   selectable: false,
   aspectRatio: 2,
   height: 500,
+
+  eventDidMount(info) {
+    const { title, start, end } = info.event;
+
+    const startStr = start.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const endAdj = new Date(end);
+    endAdj.setDate(endAdj.getDate() - 1);
+
+    const endStr = endAdj.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const content = `
+      <div class="text-sm">
+        <strong>${title}</strong><br>
+        ${startStr} → ${endStr}
+      </div>
+    `;
+
+    tippy(info.el, {
+      content,
+      allowHTML: true,
+      theme: "light-border",
+      placement: "top",
+      delay: [200, 0],
+    });
+  },
 });
+
 
 const formatLocalDate = (date) => {
   const d = new Date(date);

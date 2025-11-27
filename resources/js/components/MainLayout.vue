@@ -51,13 +51,13 @@
 
                 <ul v-show="weeklyMenuOpen" class="pl-6 mt-2 space-y-1 text-xs text-gray-400">
                   <li class="px-2 py-1 rounded hover:bg-gray-600">
-                    <router-link to="/campaigns" class="flex items-center" v-show="sidebarOpen">
+                    <router-link to="/campaigns" class="flex items-center" v-show="sidebarOpen" active-class="bg-gray-700 text-white border-l-4 border-blue-500 p-2">
                       <i class="pi pi-globe mr-2 w-4 text-center"></i>
                       Website & Marketplaces Campaigns
                     </router-link>
                   </li>
                   <li class="px-2 py-1 rounded hover:bg-gray-600">
-                    <router-link to="/website_campaigns" class="flex items-center" v-show="sidebarOpen">
+                    <router-link to="/website_campaigns" class="flex items-center" v-show="sidebarOpen" active-class="bg-gray-700 text-white border-l-4 border-blue-500 p-2">
                       <i class="pi pi-globe mr-2 w-4 text-center"></i>
                       Website - Mytopia & Edisons
                     </router-link>
@@ -66,13 +66,13 @@
               </li>
 
               <li class="px-2 py-1 rounded hover:bg-gray-600">
-                <router-link to="/website-sale" class="flex items-center" v-show="sidebarOpen">
+                <router-link to="/website-sale" class="flex items-center" v-show="sidebarOpen" active-class="bg-gray-700 text-white border-l-4 border-blue-500 p-2">
                   <i class="pi pi-shopping-cart mr-2 w-4 text-center"></i>
                   Website Sale Details
                 </router-link>
               </li>
               <li class="px-2 py-1 rounded hover:bg-gray-600">
-                <router-link to="/marketing-dates" class="flex items-center" v-show="sidebarOpen">
+                <router-link to="/marketing-dates" class="flex items-center" v-show="sidebarOpen" active-class="bg-gray-700 text-white border-l-4 border-blue-500 p-2">
                   <i class="pi pi-calendar-plus mr-2 w-4 text-center"></i>
                   Key Marketing Dates
                 </router-link>
@@ -176,7 +176,6 @@
               </div>
             </template>
 
-            <!-- ⚫ Earlier Notifications -->
             <template v-if="earlierNotificationsSorted.length">
               <div
                 class="px-4 py-2 text-xs uppercase tracking-wide text-gray-400 bg-[#242526] border-b border-gray-800">
@@ -281,8 +280,8 @@ const route = useRoute();
 const router = useRouter();
 
 const sidebarOpen = ref(true);
-const calendarMenuOpen = ref(false);
-const weeklyMenuOpen = ref(false);
+const calendarMenuOpen = ref(true);
+const weeklyMenuOpen = ref(true);
 
 const isLoggedIn = ref(!!localStorage.getItem("auth_token"));
 
@@ -310,6 +309,11 @@ watch(
   },
   { immediate: true }
 );
+
+watch(() => route.path, () => {
+  calendarMenuOpen.value = true;
+  weeklyMenuOpen.value = true;
+});
 
 const userName = computed(() => userStore.name);
 
@@ -411,13 +415,35 @@ function formatDate(date) {
   return dayjs(date).format('DD MMM YYYY');
 }
 
-onMounted(() => {
-  timer = setInterval(() => {
-    today.value = dayjs();
-  }, 6000);
-});
+let poller = null;
 
-onUnmounted(() => clearInterval(timer));
+onMounted(() => {
+  poller = setInterval(async () => {
+    const latest = await fetchCampaigns();
+
+    const oldIds = campaigns.value.map(c => c.campaign_id);
+    const newOnes = latest.filter(c => !oldIds.includes(c.campaign_id));
+
+    if (newOnes.length > 0) {
+      campaigns.value = latest;
+
+      $toastr.info(`${newOnes.length} new campaign(s) added`);
+
+    }
+  }, 10000);
+});
+onUnmounted(() => {
+  clearInterval(timer);
+  clearInterval(poller);
+});
 
 
 </script>
+<style scoped>
+.active-sidebar-link {
+  background-color: #374151; 
+  color: white;
+  border-left: 4px solid #3b82f6; 
+}
+
+</style>

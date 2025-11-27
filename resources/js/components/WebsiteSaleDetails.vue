@@ -15,17 +15,26 @@
     </template>
 
     <div v-else class="bg-gray-800 p-2">
-      <DataTable :value="filteredCampaigns" v-model:expandedRows="expandedRows" dataKey="campaign_id"
-        showGridlines scrollable scrollDirection="horizontal" tableStyle="min-width: 100rem;" size="small"
-        class="text-md" @rowExpand="onRowExpand" @rowCollapse="onRowCollapse">
-        <div class="mb-2">
-          <h1 class="text-center text-lg text-gray-200 font-semibold">Website Sale Details</h1>
-          <IconField>
-            <InputIcon>
-              <i class="pi pi-search" />
-            </InputIcon>
-            <InputText placeholder="Search website sale" v-model="searchQuery" />
-          </IconField>
+      <DataTable :value="filteredCampaigns" v-model:expandedRows="expandedRows" dataKey="campaign_id" showGridlines
+        scrollable scrollDirection="horizontal" tableStyle="min-width: 100rem;" size="small" class="text-md"
+        @rowExpand="onRowExpand" @rowCollapse="onRowCollapse">
+        <div class="mb-2 flex justify-content-between flex-wrap gap-4 w-full">
+
+          <div class="flex align-items-center justify-content-center">
+            <IconField>
+              <InputIcon>
+                <i class="pi pi-search" />
+              </InputIcon>
+              <InputText placeholder="Search website sale" v-model="searchQuery" />
+            </IconField>
+          </div>
+
+          <div class="flex align-items-center justify-content-center mt-2">
+            <h1 class="text-center text-lg text-gray-200 font-semibold text-center">
+              Website
+              Sale Details</h1>
+          </div>
+
         </div>
 
         <Column expander style="width: 3rem" header="Expand" />
@@ -57,13 +66,13 @@
         </Column>
 
         <template #expansion="{ data }">
-          <div class="p-4 text-gray-300">
-            <h3 class="font-semibold text-lg mb-3">
+          <div class="p-4 text-gray-300 border border-solid border-gray-600">
+            <h3 class="font-semibold text-lg mb-3 text-center">
               Website Sale Details for
               <span class="text-green-500">{{ data.name }}</span> ({{ data.store_name }})
             </h3>
             <DataTable v-if="editingCampaign && editingCampaign.wsd_id === data.wsd_id" :value="editableTextTable"
-              showGridlines size="small" class="text-sm mb-5" tableStyle="min-width: 60rem">
+              showGridlines size="small" class="text-sm mb-5 mt-5" tableStyle="min-width: 60rem">
               <Column field="featured_banner_text" header="Featured Category Banners Text">
                 <template #body="{ data: row }">
                   <Textarea v-model="row.featured_banner_text" class="w-full" rows="3" autoResize />
@@ -83,11 +92,11 @@
               </Column>
             </DataTable>
 
-            <DataTable v-else :value="editableTextTable" showGridlines size="small" class="text-sm mb-5"
+            <DataTable v-else :value="editableTextTable" showGridlines size="small" class="text-sm mb-5 mt-5 "
               tableStyle="min-width: 60rem">
               <Column field="featured_banner_text" header="Featured Category Banners Text">
                 <template #body="{ data: row }">
-                  <span v-html="formatMultiline(row.featured_banner_text)"></span>
+                  <span v-html="autoLink(row.featured_banner_text)"></span>
                 </template>
               </Column>
 
@@ -104,33 +113,28 @@
               </Column>
             </DataTable>
 
-            <table class="min-w-full border border-gray-400 rounded-lg text-md">
+            <table class="min-w-full rounded-lg text-md">
               <tbody>
                 <tr v-for="(field, i) in fieldsList" :key="field.key"
-                  :class="['border border-gray-400', i % 2 === 1 ? 'bg-gray-900/50' : '']">
+                  :class="['border border-gray-800', i % 2 === 1 ? 'bg-gray-900/50' : '']">
                   <td class="font-semibold text-md py-2 px-3 w-1/3">{{ field.label }}</td>
                   <td class="py-2 px-3">
                     <template v-if="data.isEditing">
-
                       <template v-if="field.key === 'terms_conditions'">
                         <span class="text-gray-400 cursor-not-allowed">
                           {{ data[field.key] || "T&C's are auto generated" }}
                         </span>
                       </template>
-
                       <template v-else-if="field.key === 'is_sku_list_to_feature'">
                         <Select v-model="data[field.key]" :options="[
                           { label: 'Yes', value: 1 },
                           { label: 'No', value: 0 }
                         ]" optionLabel="label" optionValue="value" class="w-full" />
                       </template>
-
                       <template v-else>
                         <Textarea v-model="data[field.key]" class="w-full" rows="2" />
                       </template>
-
                     </template>
-
                     <span v-else>
                       <template
                         v-if="['event_master_sheet', 'run_sheet', 'featured_products_sheet_url'].includes(field.key) && data[field.key]">
@@ -140,7 +144,6 @@
                           {{ replacer(data[field.key]) }}
                         </a>
                       </template>
-
                       <template v-else-if="field.key === 'is_sku_list_to_feature'">
                         {{ data[field.key] == 1 || data[field.key] === true ? "Yes" : "No" }}
                       </template>
@@ -153,7 +156,6 @@
                         {{ replacer(data[field.key]) }}
                       </template>
                     </span>
-
                   </td>
                 </tr>
               </tbody>
@@ -167,6 +169,7 @@
               <Button v-if="data.isEditing" label="Cancel" icon="pi pi-times" class="p-button-sm p-button-secondary"
                 @click="() => cancelEdit(data)" />
             </div>
+            
           </div>
         </template>
       </DataTable>
@@ -317,6 +320,19 @@ const cancelEdit = (data) => {
   editableTextTable.splice(0, editableTextTable.length, ...restored);
   wsdStore.loadWSD();
 };
+
+const autoLink = (text) => {
+  if (!text) return "No Data Yet";
+
+  const urlRegex = /(https?:\/\/[^\s)<>"']+)/g;
+
+  return text
+    .replace(/\n/g, "<br>")
+    .replace(urlRegex, (url) => {
+      return `<a href="${url}" target="_blank" class="text-blue-400 underline">${url}</a>`;
+    });
+};
+
 
 onMounted(async () => {
   loading.value = true;

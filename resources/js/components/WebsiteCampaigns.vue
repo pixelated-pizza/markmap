@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-col w-full h-full bg-gray-900 px-6 overflow-x-auto">
-
     <div class="bg-gray-900 rounded-lg p-3 mt-2">
 
+      <!-- Calendar / Gantt -->
       <div class="h-[450px] overflow-hidden rounded-lg bg-black p-5 mb-5 rounded-md">
         <template v-if="loading">
           <div class="flex flex-col gap-4 w-full h-full">
@@ -21,6 +21,7 @@
         <FullCalendar v-else ref="calendarRef" :options="calendarOptions" class="w-full h-full" />
       </div>
 
+      <!-- Data Table -->
       <div class="mb-5 rounded-sm">
         <template v-if="loading">
           <div class="flex flex-col gap-4 w-full h-full bg-black p-5 rounded-md">
@@ -35,6 +36,7 @@
             </div>
           </div>
         </template>
+
         <DataTable v-else :value="filteredCampaigns" sortField="start_date" :sortOrder="-1" dataKey="wc_id" paginator
           :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" showGridlines scrollable scrollHeight="500px" stickyHeader
           tableStyle="min-width: 60rem;" :loading="loading" class="p-datatable-sm" tableLayout="fixed">
@@ -48,86 +50,64 @@
               </IconField>
 
               <Button type="button" icon="pi pi-plus" label="Add Campaign" size="small" severity="success"
-                :loading="loading" @click="openAddModal" v-if="!isEditing" />
+                :loading="loading" @click="openAddModal" />
 
-              <Button type="button" icon="pi pi-pencil" :label="isEditing ? 'Save Changes' : 'Edit Table'" size="small"
-                severity="success" :loading="loading" @click="toggleEdit" />
-              <Button type="button" icon="pi pi-times" label="Close" size="small" severity="danger" :loading="loading"
-                @click="cancelEdit" v-if="isEditing" />
             </div>
           </template>
 
           <Column field="name" header="Banner Name" class="w-1/4" :sortable="true">
             <template #body="{ data }">
-              <InputText v-if="isEditing" v-model="data.name" class="w-full" @input="markAsModified(data.wc_id)" />
-              <span v-else>{{ data.name }}</span>
+              <span>{{ data.name }}</span>
             </template>
           </Column>
 
           <Column field="start_date" header="Start Date" class="w-1/6" :sortable="true">
             <template #body="{ data }">
-              <Calendar v-if="isEditing" v-model="data.start_date" dateFormat="yy-mm-dd" showIcon class="w-full"
-                @update:modelValue="markAsModified(data.wc_id)" />
-              <span v-else>{{ new Date(data.start_date).toLocaleDateString('en-GB') }}</span>
+              <span>{{ formatDate(data.start_date) }}</span>
             </template>
           </Column>
 
           <Column field="end_date" header="End Date" class="w-1/6">
             <template #body="{ data }">
-              <Calendar v-if="isEditing" v-model="data.end_date" dateFormat="yy-mm-dd" showIcon class="w-full"
-                @update:modelValue="markAsModified(data.wc_id)" />
-              <span v-else>{{ new Date(data.end_date).toLocaleDateString('en-GB') }}</span>
+              <span>{{ formatDate(data.end_date) }}</span>
             </template>
           </Column>
 
           <Column field="store_id" header="Website" class="w-1/6">
             <template #body="{ data }">
-              <Select v-if="isEditing" v-model="data.store_id" :options="store.stores" optionLabel="store_name"
-                optionValue="store_id" placeholder="Select Website" class="w-full"
-                @update:modelValue="markAsModified(data.wc_id)" />
-              <span v-else>{{ data.store?.store_name }}</span>
+              <span>{{ data.store?.store_name }}</span>
             </template>
           </Column>
 
           <Column field="section_id" header="Section" class="w-1/6" :sortable="true">
             <template #body="{ data }">
-              <Select v-if="isEditing" v-model="data.section_id" :options="store.sections" optionLabel="name"
-                optionValue="section_id" placeholder="Select Section" class="w-full"
-                @update:modelValue="markAsModified(data.wc_id)" />
-              <span v-else>{{ data.section?.name }}</span>
+              <span>{{ data.section?.name }}</span>
             </template>
           </Column>
 
-          <Column header="Status" class="w-1/6" v-if="!isEditing">
+          <Column header="Status" class="w-1/6">
             <template #body="{ data }">
-              <span :class="{
-                'text-yellow-400': isUpcoming(data),
-                'text-green-400': isRunning(data),
-                'text-gray-400': isCompleted(data),
-              }">
-                {{ getStatus(data) }}
-              </span>
-
-
+              <span :class="statusClass(data)">{{ getStatus(data) }}</span>
             </template>
           </Column>
-          <Column header="Action" class="w-1/6" v-if="isEditing" filter>
+
+          <Column header="Action" class="w-1/6">
             <template #body="{ data }">
               <div class="flex flex-col gap-2">
-                <Button type="button" icon="pi pi-folder" label="Archive" size="small" severity="info"
-                  :loading="loading" @click="confirmArchive(data)" />
-                <Button type="button" icon="pi pi-trash" label="Delete" size="small" severity="danger"
-                  :loading="loading" @click="confirmDelete(data)" />
+                <Button type="button" icon="pi pi-pencil" label="Edit" size="small" severity="info"
+                  :loading="loading && editTargetId === data.wc_id" @click="openEditModal(data)" />
               </div>
             </template>
           </Column>
+
           <template #empty>
             <div class="p-4 text-center text-gray-400">No Data available.</div>
           </template>
         </DataTable>
       </div>
 
-      <Dialog v-model:visible="showDialog" modal header="Campaign Details" :style="{ width: '30vw' }">
+      <!-- Add/Edit Dialog -->
+      <Dialog v-model:visible="showDialog" modal :header="dialogHeader" :style="{ width: '30vw' }">
         <div class="flex flex-col gap-3">
           <div>
             <label class="block text-gray-300 mb-1">Name</label>
@@ -148,31 +128,49 @@
 
           <div>
             <label class="block text-gray-300 mb-1">What Website?</label>
-            <Select v-model="form.store_id" :options="store.stores" optionLabel="store_name" optionValue="store_id"
-              class="w-full" placeholder="Name of the website" />
+            <div class="flex items-center gap-2 mb-2 mt-2">
+              <Checkbox v-model="form.is_all_store" inputId="all_store" binary />
+              <label for="all_store" class="text-gray-300 cursor-pointer">Apply to Both Stores</label>
+            </div>
+
+            <Select v-model="form.store_id" :disabled="form.is_all_store" :options="store.stores"
+              optionLabel="store_name" optionValue="store_id" class="w-full" placeholder="Name of the website" />
           </div>
 
           <div>
             <label class="block text-gray-300 mb-1">Start Date</label>
-            <DatePicker v-model="form.start_date" showIcon dateFormat="yy-mm-dd" class="w-full" />
+            <Calendar v-model="form.start_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
           </div>
 
           <div>
             <label class="block text-gray-300 mb-1">End Date</label>
-            <DatePicker v-model="form.end_date" showIcon dateFormat="yy-mm-dd" class="w-full" />
+            <Calendar v-model="form.end_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
           </div>
         </div>
 
         <template #footer>
-          <Button label="Cancel" severity="secondary" @click="showDialog = false" />
-          <Button :label="Save" icon="pi pi-check" severity="success" @click="saveCampaign" />
+          <div class="flex justify-between w-full">
+            <div class="flex gap-2">
+              <Button v-if="editTargetId" label="Archive" icon="pi pi-folder" severity="warn"
+                @click="confirmArchive({ ...form, wc_id: editTargetId })" />
+
+              <Button v-if="editTargetId" label="Delete" icon="pi pi-trash" severity="danger"
+                @click="confirmDelete({ ...form, wc_id: editTargetId })" />
+            </div>
+
+            <div class="flex gap-2">
+              <Button label="Cancel" severity="secondary" @click="closeDialog" />
+              <Button :label="saving ? 'Saving...' : saveLabel" icon="pi pi-check" severity="success"
+                @click="saveCampaign" :loading="saving" />
+            </div>
+          </div>
         </template>
+
       </Dialog>
 
       <Dialog v-model:visible="showArchiveDialog" header="Confirm Archive" :modal="true" :closable="false"
         :style="{ width: '400px' }">
         <p>Are you sure you want to archive the campaign "{{ campaignToArchive?.name }}"?</p>
-
         <template #footer>
           <Button label="No" severity="danger" text @click="showArchiveDialog = false" />
           <Button label="Yes" severity="success" @click="archiveConfirmed" />
@@ -182,103 +180,82 @@
       <Dialog v-model:visible="showDeleteDialog" header="Delete Campaign" :modal="true" :closable="false"
         :style="{ width: '400px' }">
         <p>Are you sure you want to delete the campaign "{{ campaignToDelete?.name }}"?</p>
-
         <template #footer>
           <Button label="No" severity="danger" text @click="showDeleteDialog = false" />
           <Button label="Yes" severity="success" @click="deleteConfirmed" />
         </template>
       </Dialog>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { getCurrentInstance } from "vue";
-import FullCalendar from "@fullcalendar/vue3";
-import interactionPlugin from "@fullcalendar/interaction";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
-import Button from "primevue/button";
-import Dialog from "primevue/dialog";
-import InputText from "primevue/inputtext";
+import { ref, computed, onMounted, getCurrentInstance } from 'vue';
+import FullCalendar from '@fullcalendar/vue3';
+import interactionPlugin from '@fullcalendar/interaction';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
+
+import Button from 'primevue/button';
+import Dialog from 'primevue/dialog';
+import Checkbox from 'primevue/checkbox';
+import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
-import Calendar from "primevue/calendar";
-import { useOnsiteCampaignStore } from "@/stores/onsite_campaign_store.js";
-import { DatePicker, Select } from "primevue";
+import Calendar from 'primevue/calendar';
+import { useOnsiteCampaignStore } from '@/stores/onsite_campaign_store.js';
+import { Select } from 'primevue';
 import Skeleton from 'primevue/skeleton';
 
+const $instance = getCurrentInstance();
+const toastr = $instance.appContext.config.globalProperties.$toastr;
+
 const store = useOnsiteCampaignStore();
-const showArchiveDialog = ref(false);
-const campaignToArchive = ref(null);
-
-const showDeleteDialog = ref(false);
-const campaignToDelete = ref(null);
-
-const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
-const searchQuery = ref("");
 
 const calendarRef = ref(null);
-const showDialog = ref(false);
-const editMode = ref(false);
 const loading = ref(false);
-const isEditing = ref(false);
-const modifiedCampaigns = ref(new Set());
+const saving = ref(false);
+const showDialog = ref(false);
+const showArchiveDialog = ref(false);
+const showDeleteDialog = ref(false);
+
+const campaignToArchive = ref(null);
+const campaignToDelete = ref(null);
+
+const editTargetId = ref(null); // null => adding, else => editing wc_id
+
+const searchQuery = ref('');
 
 const today = new Date();
-const todayStr = today.getFullYear() + "-" +
-  String(today.getMonth() + 1).padStart(2, "0") + "-" +
-  String(today.getDate()).padStart(2, "0");
-
-const isRunning = (data) => {
-  const startStr = data.start_date;
-  const endStr = data.end_date;
-  return todayStr >= startStr && todayStr <= endStr;
-};
-
-const isCompleted = (data) => {
-  const endStr = data.end_date;
-  return todayStr > endStr;
-};
-
-const isUpcoming = (data) => {
-  const startStr = data.start_date;
-  return todayStr < startStr;
-};
-
-const getStatus = (data) =>
-  isRunning(data) ? "Active" : isCompleted(data) ? "Completed" : "Upcoming";
+const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
 const form = ref({
-  name: "",
-  campaign_type_id: "",
-  section_id: "",
-  store_id: "",
-  start_date: "",
-  end_date: "",
+  name: '',
+  campaign_type_id: '',
+  section_id: '',
+  store_id: '',
+  start_date: '',
+  end_date: '',
+  is_all_store: false,
 });
 
-
 const calendarOptions = ref({
-  schedulerLicenseKey: "GPL-My-Project-Is-Open-Source",
+  schedulerLicenseKey: 'GPL-My-Project-Is-Open-Source',
   plugins: [resourceTimelinePlugin, dayGridPlugin, interactionPlugin],
-  initialView: "resourceTimelineMonth",
+  initialView: 'resourceTimelineMonth',
   headerToolbar: {
-    left: "prev,next today",
-    center: "title",
-    right: "resourceTimelineMonth",
+    left: 'prev,next today',
+    center: 'title',
+    right: 'resourceTimelineMonth',
   },
-  resourceAreaHeaderContent: "On-site Campaigns",
+  resourceAreaHeaderContent: 'On-site Campaigns',
   resources: [],
   events: [],
   editable: true,
   selectable: true,
   height: 400,
-  slotLabelDidMount: (info) => {
-    info.el.style.padding = "6px 0";
-  },
-
+  slotLabelDidMount: (info) => { info.el.style.padding = '6px 0'; },
   eventDrop: async (info) => {
     const { id, start, end } = info.event;
     const campaign = store.campaigns.find((c) => String(c.wc_id) === id);
@@ -287,25 +264,19 @@ const calendarOptions = ref({
     try {
       await store.editCampaign(id, {
         ...campaign,
-        start_date: start ? start.toLocaleDateString("en-CA") : null,
-        end_date: end ? end.toLocaleDateString("en-CA") : null,
+        start_date: start ? start.toLocaleDateString('en-CA') : null,
+        end_date: end ? end.toLocaleDateString('en-CA') : null,
       });
 
-      toastr.success({
-        severity: "success",
-        summary: "Campaign Updated",
-        detail: `${campaign.name} date updated.`,
-        life: 2000,
-      });
+      toastr.success({ severity: 'success', summary: 'Campaign Updated', detail: `${campaign.name} date updated.`, life: 2000 });
 
       await store.loadCampaigns();
       updateCalendarResourcesAndEvents();
     } catch (error) {
-      toastr.error("Failed to update campaign date.");
+      toastr.error('Failed to update campaign date.');
       info.revert();
     }
   },
-
   eventResize: async (info) => {
     const { id, start, end } = info.event;
     const campaign = store.campaigns.find((c) => String(c.wc_id) === id);
@@ -314,21 +285,16 @@ const calendarOptions = ref({
     try {
       await store.editCampaign(id, {
         ...campaign,
-        start_date: start ? start.toLocaleDateString("en-CA") : null,
-        end_date: end ? end.toLocaleDateString("en-CA") : null,
+        start_date: start ? start.toLocaleDateString('en-CA') : null,
+        end_date: end ? end.toLocaleDateString('en-CA') : null,
       });
 
-      toastr.success({
-        severity: "success",
-        summary: "Campaign Resized",
-        detail: `${campaign.name} duration updated.`,
-        life: 2000,
-      });
+      toastr.success({ severity: 'success', summary: 'Campaign Resized', detail: `${campaign.name} duration updated.`, life: 2000 });
 
       await store.loadCampaigns();
       updateCalendarResourcesAndEvents();
     } catch (error) {
-      toastr.error("Failed to update campaign duration.");
+      toastr.error('Failed to update campaign duration.');
       info.revert();
     }
   },
@@ -336,10 +302,8 @@ const calendarOptions = ref({
 
 const filteredCampaigns = computed(() => {
   if (!searchQuery.value) return store.campaigns;
-
   const q = searchQuery.value.toLowerCase();
-
-  return store.campaigns.filter(c =>
+  return store.campaigns.filter((c) =>
     c.name?.toLowerCase().includes(q) ||
     c.store?.store_name?.toLowerCase().includes(q) ||
     c.section?.name?.toLowerCase().includes(q) ||
@@ -348,6 +312,26 @@ const filteredCampaigns = computed(() => {
   );
 });
 
+function formatDate(val) {
+  if (!val) return '';
+  try { return new Date(val).toLocaleDateString('en-GB'); } catch { return val; }
+}
+
+function isRunning(data) {
+  const s = data.start_date;
+  const e = data.end_date;
+  return todayStr >= s && todayStr <= e;
+}
+function isCompleted(data) { return todayStr > data.end_date; }
+function isUpcoming(data) { return todayStr < data.start_date; }
+function getStatus(data) { return isRunning(data) ? 'Active' : isCompleted(data) ? 'Completed' : 'Upcoming'; }
+function statusClass(data) {
+  return {
+    'text-yellow-400': isUpcoming(data),
+    'text-green-400': isRunning(data),
+    'text-gray-400': isCompleted(data),
+  };
+}
 
 async function loadCampaigns() {
   loading.value = true;
@@ -355,119 +339,111 @@ async function loadCampaigns() {
   await store.loadStores();
   await store.loadSections();
   await store.loadCampaignTypes();
-
-  console.log("campaign types:", store.campaign_types);
   updateCalendarResourcesAndEvents();
   loading.value = false;
 }
 
 function updateCalendarResourcesAndEvents() {
-  const resources = store.stores.map(st => {
+  const resources = store.stores.map((st) => {
     const sections = store.sections
-      .filter(sec => store.campaigns.some(
-        c => String(c.store_id) === String(st.store_id) && String(c.section_id) === String(sec.section_id)
-      ))
-      .map(sec => ({
-        id: `${String(st.store_id)}-${String(sec.section_id)}`,
-        title: sec.name,
-      }));
+      .filter((sec) => store.campaigns.some((c) => String(c.store_id) === String(st.store_id) && String(c.section_id) === String(sec.section_id)))
+      .map((sec) => ({ id: `${String(st.store_id)}-${String(sec.section_id)}`, title: sec.name }));
 
-    return {
-      id: `store-${String(st.store_id)}`,
-      title: st.store_name,
-      children: sections,
-    };
+    return { id: `store-${String(st.store_id)}`, title: st.store_name, children: sections };
   });
 
-  const events = store.campaigns.map(c => ({
+  const events = store.campaigns.map((c) => ({
     id: String(c.wc_id),
     resourceId: `${String(c.store_id)}-${String(c.section_id)}`,
     title: c.name,
-    start: c.start_date ? new Date(c.start_date).toLocaleDateString("en-CA") : null,
-    end: c.end_date
-      ? new Date(new Date(c.end_date).setDate(new Date(c.end_date).getDate() + 1)).toLocaleDateString("en-CA")
-      : null,
+    start: c.start_date ? new Date(c.start_date).toLocaleDateString('en-CA') : null,
+    end: c.end_date ? new Date(new Date(c.end_date).setDate(new Date(c.end_date).getDate() + 1)).toLocaleDateString('en-CA') : null,
   }));
 
-
-  calendarOptions.value = {
-    ...calendarOptions.value,
-    resources,
-    events,
-  };
+  calendarOptions.value = { ...calendarOptions.value, resources, events };
 
   const calendarApi = calendarRef.value?.getApi();
   if (calendarApi) {
-    calendarApi.addResource(resources);
+    calendarApi.removeAllResources();
+    resources.forEach((r) => calendarApi.addResource(r));
     calendarApi.removeAllEvents();
-    events.forEach(e => calendarApi.addEvent(e));
+    events.forEach((e) => calendarApi.addEvent(e));
   }
-}
-
-function markAsModified(id) {
-  modifiedCampaigns.value.add(id);
 }
 
 function openAddModal() {
-  form.value = { id: null, name: "", campaign_type_id: "", section_id: "", store_id: "", start_date: "", end_date: "" };
-  editMode.value = false;
+  editTargetId.value = null;
+  form.value = { name: '', campaign_type_id: '', section_id: '', store_id: '', start_date: '', end_date: '', is_all_store: false };
   showDialog.value = true;
 }
 
+function openEditModal(c) {
+  editTargetId.value = c.wc_id;
+  form.value = {
+    name: c.name,
+    campaign_type_id: c.campaign_type_id,
+    section_id: c.section_id,
+    store_id: c.store_id,
+    start_date: c.start_date,
+    end_date: c.end_date,
+    is_all_store: false,
+  };
+  showDialog.value = true;
+}
 
-const cancelEdit = async () => {
-  isEditing.value = false;
-  loading.value = true;
-  await store.loadCampaigns();
-  loading.value = false;
-};
+function closeDialog() {
+  showDialog.value = false;
+  editTargetId.value = null;
+}
 
-const toggleEdit = async () => {
-  isEditing.value = !isEditing.value;
+const dialogHeader = computed(() => (editTargetId.value ? 'Edit Campaign' : 'Add Campaign'));
+const saveLabel = computed(() => (editTargetId.value ? 'Update' : 'Create'));
 
-  if (!isEditing.value) {
-    loading.value = true;
-    try {
-      for (const campaign of store.campaigns) {
-        if (modifiedCampaigns.value.has(campaign.wc_id)) {
-          await store.editCampaign(campaign.wc_id, {
-            name: campaign.name,
-            campaign_type_id: campaign.campaign_type_id,
-            section_id: campaign.section_id,
-            store_id: campaign.store_id,
-            start_date: campaign.start_date
-              ? new Date(campaign.start_date).toLocaleDateString("en-CA")
-              : null,
-            end_date: campaign.end_date
-              ? new Date(campaign.end_date).toLocaleDateString("en-CA")
-              : null,
-          });
+async function saveCampaign() {
+  saving.value = true;
+  try {
+    if (editTargetId.value) {
+      await store.editCampaign(editTargetId.value, {
+        name: form.value.name,
+        campaign_type_id: form.value.campaign_type_id,
+        section_id: form.value.section_id,
+        store_id: form.value.store_id,
+        start_date: form.value.start_date ? new Date(form.value.start_date).toLocaleDateString('en-CA') : null,
+        end_date: form.value.end_date ? new Date(form.value.end_date).toLocaleDateString('en-CA') : null,
+      });
+
+      toastr.success('Campaign updated.');
+    } else {
+      if (form.value.is_all_store) {
+        for (const s of store.stores) {
+          await store.addCampaign({ ...form.value, store_id: s.store_id });
         }
+        toastr.success('Campaign added to all stores.');
+      } else {
+        await store.addCampaign(form.value);
+        toastr.success('Campaign added.');
       }
-
-      updateCalendarResourcesAndEvents();
-      await store.loadCampaigns();
-
-      toastr.success(
-        "Saved",
-        `${modifiedCampaigns.value.size} campaign(s) updated successfully.`
-      );
-
-
-      modifiedCampaigns.value.clear();
-
-    } catch (error) {
-      toastr.error("Error saving edited table data:", error);
-    } finally {
-      loading.value = false;
     }
-  }
-};
 
-function confirmArchive(data) {
-  campaignToArchive.value = data;
+    showDialog.value = false;
+    await store.loadCampaigns();
+    updateCalendarResourcesAndEvents();
+  } catch (error) {
+    toastr.error('Failed to save campaign.');
+  } finally {
+    saving.value = false;
+  }
+}
+
+function confirmArchive(campaign) {
+  campaignToArchive.value = campaign;
   showArchiveDialog.value = true;
 }
+function confirmDelete(campaign) {
+  campaignToDelete.value = campaign;
+  showDeleteDialog.value = true;
+}
+
 
 async function archiveConfirmed() {
   showArchiveDialog.value = false;
@@ -478,24 +454,16 @@ async function archiveConfirmed() {
     await store.archiveCampaign(campaignToArchive.value.wc_id, true);
     await store.loadCampaigns();
     updateCalendarResourcesAndEvents();
-
-    toastr.success("Campaign Archived", `Campaign "${campaignToArchive.value.name}" is now archived.`);
-
+    toastr.success('Campaign Archived');
   } catch (error) {
-    $toastr.error(
-      "Failed to archive campaign.",
-      "Error"
-    );
-
+    toastr.error('Failed to archive campaign.');
   } finally {
     loading.value = false;
     campaignToArchive.value = null;
   }
-}
 
-function confirmDelete(data) {
-  campaignToDelete.value = data;
-  showDeleteDialog.value = true;
+  showDialog.value = false;
+  editTargetId.value = null;
 }
 
 async function deleteConfirmed() {
@@ -507,42 +475,22 @@ async function deleteConfirmed() {
     await store.removeCampaign(campaignToDelete.value.wc_id);
     await store.loadCampaigns();
     updateCalendarResourcesAndEvents();
-
-    $toastr.success(
-      `Campaign "${campaignToDelete.value.name}" has been successfully deleted.`,
-      "Campaign Deleted"
-    );
-
+    toastr.success(`Campaign "${campaignToDelete.value.name}" has been successfully deleted.`);
   } catch (error) {
-    $toastr.error(
-      "Failed to delete campaign.",
-      "Error"
-    );
-
+    toastr.error('Failed to delete campaign.');
   } finally {
     loading.value = false;
     campaignToDelete.value = null;
   }
-}
 
-
-async function saveCampaign() {
-
-  await store.addCampaign(form.value);
   showDialog.value = false;
-  await store.loadCampaigns();
-  updateCalendarResourcesAndEvents();
+  editTargetId.value = null;
 }
 
 onMounted(async () => {
   await loadCampaigns();
-  await store.loadStores();
-  await store.loadSections();
-  await store.loadCampaigns();
-  await store.loadCampaignTypes();
   updateCalendarResourcesAndEvents();
 });
-
 </script>
 
 <style scoped>
