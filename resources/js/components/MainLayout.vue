@@ -71,12 +71,12 @@
                   Website Sale Details
                 </router-link>
               </li>
-              <li class="px-2 py-1 rounded hover:bg-gray-600">
+              <!-- <li class="px-2 py-1 rounded hover:bg-gray-600">
                 <router-link to="/marketing-dates" class="flex items-center" v-show="sidebarOpen" active-class="bg-gray-700 text-white border-l-4 border-blue-500 p-2">
                   <i class="pi pi-calendar-plus mr-2 w-4 text-center"></i>
                   Key Marketing Dates
                 </router-link>
-              </li>
+              </li> -->
             </ul>
           </li>
         </nav>
@@ -104,7 +104,6 @@
         </h1>
 
         <div class="relative flex gap-2 items-center">
-          <span class="font-semibold">Updates</span>
           <Button icon="pi pi-bell" rounded outlined severity="contrast" class="hover:text-yellow-400 transition"
             @click="notificationsOpen = !notificationsOpen" />
           <span v-if="newNotifications.length"

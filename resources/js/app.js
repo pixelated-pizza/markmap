@@ -13,7 +13,7 @@ import { ref } from "vue";
 import ganttastic from '@infectoone/vue-ganttastic';
 import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
-
+import '../css/primevue-dark.css';
 
 
 export const isPageLoading = ref(false);

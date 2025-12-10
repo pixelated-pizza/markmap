@@ -58,7 +58,7 @@ class WebsiteService
             }
 
             $campaign = Campaign::where('name', $website_campaign->name)->first();
-            
+
 
             $website_campaign->update($data);
 
@@ -81,12 +81,15 @@ class WebsiteService
 
     public function delete(string $id): bool
     {
-        $campaign = WebsiteCampaign::find($id);
-        if (!$campaign) {
+        $website_campaign = WebsiteCampaign::find($id);
+        if (!$website_campaign) {
             return false;
         }
 
-        return (bool) $campaign->delete();
+        return DB::transaction(function () use ($website_campaign) {
+            Campaign::where('campaign_id', $website_campaign->website_campaign_key)->delete();
+            return (bool) $website_campaign->delete();
+        });
     }
 
     public function archive(string $id): ?WebsiteCampaign

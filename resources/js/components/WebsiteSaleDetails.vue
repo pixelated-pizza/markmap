@@ -16,7 +16,7 @@
 
     <div v-else class="bg-gray-800 p-2">
       <DataTable :value="filteredCampaigns" v-model:expandedRows="expandedRows" dataKey="campaign_id" showGridlines
-        scrollable scrollDirection="horizontal" tableStyle="min-width: 100rem;" size="small" class="text-md"
+        scrollable scrollDirection="horizontal" tableStyle="min-width: 100rem;" size="small" class="text-md bg-gray-900"
         @rowExpand="onRowExpand" @rowCollapse="onRowCollapse">
         <div class="mb-2 flex justify-content-between flex-wrap gap-4 w-full">
 
@@ -169,7 +169,7 @@
               <Button v-if="data.isEditing" label="Cancel" icon="pi pi-times" class="p-button-sm p-button-secondary"
                 @click="() => cancelEdit(data)" />
             </div>
-            
+
           </div>
         </template>
       </DataTable>

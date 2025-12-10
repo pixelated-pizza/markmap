@@ -25,7 +25,7 @@ class CreateCampaignRequest extends FormRequest
             'name' => 'required|string|max:255',
             'background_color' => 'nullable|string',
             'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
             'channel_id' => 'required|uuid|exists:category_channels,channel_id',
         ];
     }

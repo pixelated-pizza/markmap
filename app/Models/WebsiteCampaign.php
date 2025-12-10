@@ -17,6 +17,7 @@ class WebsiteCampaign extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'website_campaign_key',
         'name',
         'campaign_type_id',
         'section_id',

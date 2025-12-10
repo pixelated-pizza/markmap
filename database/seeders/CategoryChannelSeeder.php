@@ -17,7 +17,6 @@ class CategoryChannelSeeder extends Seeder
         $channels = [
             "Mytopia",
             "Edisons",
-            "Hot Deals",
             "Additional Campaigns",
             "Adhoc Promos/Coupons",
             "External Events",

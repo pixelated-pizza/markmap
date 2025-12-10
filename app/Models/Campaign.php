@@ -39,4 +39,9 @@ class Campaign extends Model
     {
         return $this->channel->name ?? null;
     }
+
+    public function store()
+    {
+        return $this->belongsTo(Store::class, 'store_id', 'store_id');
+    }
 }

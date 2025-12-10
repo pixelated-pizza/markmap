@@ -122,12 +122,7 @@ async function initGantt() {
       width: 400,
       template: function (task) {
         if (task.type !== "project") {
-          const isHidden = hiddenCampaigns.value.has(task.id);
           return `
-          <input type="checkbox" 
-                 class="hide-checkbox" 
-                 data-task-id="${task.id}" 
-                 ${isHidden ? "checked" : ""}/>
           <span style="margin-left: 8px;">${task.text}</span>
         `;
         }

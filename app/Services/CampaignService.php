@@ -28,30 +28,34 @@ class CampaignService
 
             $campaign->load('channel');
 
-            if (in_array($campaign->channel->name, ['Edisons', 'Mytopia'])) {
+            $campaign_type_id = DB::table('website_campaign_types')
+                ->where('campaign_type_name', 'Website Sale')
+                ->value('campaign_type_id');
 
-                $campaign_type_id = DB::table('website_campaign_types')
-                    ->where('campaign_type_name', 'Website Sale')
-                    ->value('campaign_type_id');
+            $section_id = DB::table('sections')
+                ->where('name', 'Landing Page Banner') //default section
+                ->value('section_id');
 
-                $section_id = DB::table('sections')
-                    ->where('name', 'Landing Page Banner')
-                    ->value('section_id');
 
+            if ($campaign->channel->name === "Mytopia") {
                 $store_id = DB::table('stores')
                     ->where('store_name', 'Website - Mytopia')
                     ->value('store_id');
-
-                WebsiteCampaign::create([
-                    'name' => $data['name'],
-                    'campaign_type_id' => $campaign_type_id,
-                    'section_id' => $section_id,
-                    'store_id' => $store_id,
-                    'start_date' => $data['start_date'],
-                    'end_date' => $data['end_date'],
-                ]);
+            } else if ($campaign->channel->name === "Edisons") {
+                $store_id = DB::table('stores')
+                    ->where('store_name', 'Website - Edisons')
+                    ->value('store_id');
             }
 
+            WebsiteCampaign::create([
+                'website_campaign_key' => $campaign->campaign_id,
+                'name' => $data['name'],
+                'campaign_type_id' => $campaign_type_id,
+                'section_id' => $section_id,
+                'store_id' => $store_id,
+                'start_date' => $data['start_date'],
+                'end_date' => $data['end_date'],
+            ]);
 
             return $campaign;
         });
@@ -93,12 +97,9 @@ class CampaignService
             return false;
         }
 
-        // $websiteCampaign = WebsiteCampaign::where('name', $campaign->name)->first();
-
-        // if($campaign){
-        //     WebsiteCampaign::get()->where('name', $campaign) == to be continued
-        // }
-
-        return (bool) $campaign->delete();
+        return DB::transaction(function () use ($campaign) {
+            WebsiteCampaign::where('website_campaign_key', $campaign->campaign_id)->delete();
+            return (bool) $campaign->delete();
+        });
     }
 }
