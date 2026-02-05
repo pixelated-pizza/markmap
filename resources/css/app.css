@@ -25,3 +25,194 @@ html, body {
 [v-cloak] {
   display: none;
 }
+
+.app-dark .p-datatable .p-sortable-column.p-highlight {
+  background: #22c55e !important; 
+}
+
+.app-dark .p-datatable .p-sortable-column.p-highlight .p-column-title {
+  color: black !important;
+}
+
+.fc-theme {
+  --fc-border-color: #e5e7eb;          /* gray-200 */
+  --fc-page-bg-color: #ffffff;
+  --fc-neutral-bg-color: #f3f4f6;      /* gray-100 */
+  --fc-neutral-text-color: #111827;    /* gray-900 */
+
+  --fc-button-bg-color: #e5e7eb;       /* gray-200 */
+  --fc-button-border-color: #d1d5db;   /* gray-300 */
+  --fc-button-text-color: #111827;
+  --fc-button-hover-bg-color: #d1d5db;
+
+  --fc-today-bg-color: rgba(29, 78, 216, 0.08);
+
+  font-family: "Inter", sans-serif;
+  border-radius: 0.75rem;
+}
+
+/* =========================
+   DARK MODE OVERRIDES
+   (applies when .app-dark or .dark exists)
+   ========================= */
+:deep(.app-dark) .fc-theme,
+:deep(.dark) .fc-theme {
+  --fc-border-color: #2f3542;
+  --fc-page-bg-color: #111827;      /* gray-900 */
+  --fc-neutral-bg-color: #0f172a;   /* slate-900 */
+  --fc-neutral-text-color: #e5e7eb; /* gray-200 */
+
+  --fc-button-bg-color: #1f2937;    /* gray-800 */
+  --fc-button-border-color: #374151;
+  --fc-button-text-color: #f9fafb;
+  --fc-button-hover-bg-color: #374151;
+
+  --fc-today-bg-color: rgba(29, 78, 216, 0.15);
+}
+
+/* ===== TOOLBAR TITLE ===== */
+:deep(.fc-toolbar-title) {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Light title */
+:deep(.fc-theme .fc-toolbar-title) {
+  color: #111827 !important;
+}
+
+/* Dark title */
+:deep(.app-dark .fc-theme .fc-toolbar-title),
+:deep(.dark .fc-theme .fc-toolbar-title) {
+  color: #f9fafb !important;
+}
+
+/* ===== RESOURCE / GANTT AREA ===== */
+:deep(.fc-datagrid-cell-main) {
+  font-weight: 500;
+}
+
+/* Light mode resource cells */
+:deep(.fc-theme .fc-datagrid-cell) {
+  background: #f9fafb !important;
+}
+
+/* Dark mode resource cells */
+:deep(.app-dark .fc-theme .fc-datagrid-cell),
+:deep(.dark .fc-theme .fc-datagrid-cell) {
+  background: #0f172a !important;
+}
+
+/* ===== SLOTS / TIMELINE BACKGROUND ===== */
+:deep(.fc-timeline-slot-frame) {
+  border-color: #e5e7eb !important;
+}
+
+:deep(.app-dark .fc-timeline-slot-frame),
+:deep(.dark .fc-timeline-slot-frame) {
+  border-color: #1f2937 !important;
+}
+
+/* ===== TODAY COLUMN ===== */
+:deep(.fc-today) {
+  background: var(--fc-today-bg-color) !important;
+}
+
+/* ===== EVENTS ===== */
+:deep(.fc-event) {
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  padding: 2px 4px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode event border */
+:deep(.app-dark .fc-event),
+:deep(.dark .fc-event) {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Event text */
+:deep(.fc-event-title) {
+  font-size: 11px !important;
+  color: white !important;
+}
+
+/* ===== BUTTONS ===== */
+:deep(.fc-button) {
+  border-radius: 6px !important;
+}
+
+/* Light mode buttons */
+:deep(.fc-theme .fc-button) {
+  background: #e5e7eb !important;
+  color: #111827 !important;
+}
+
+/* Dark mode buttons */
+:deep(.app-dark .fc-theme .fc-button),
+:deep(.dark .fc-theme .fc-button) {
+  background: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
+:deep(.fc-theme .fc-button-primary) {
+  background-color: #e5e7eb !important; /* gray-200 */
+  border-color: #d1d5db !important;     /* gray-300 */
+  color: #111827 !important;            /* gray-900 */
+}
+
+/* ===== REMOVE WHITE FLASH IN DARK ===== */
+:deep(.app-dark .fc),
+:deep(.dark .fc) {
+  background: #111827 !important;
+}
+
+/* ===== FIX: Active view button in LIGHT mode (your issue) ===== */
+:deep(.fc-theme .fc-button-primary:not(:disabled).fc-button-active),
+:deep(.fc-theme .fc-button-primary:not(:disabled):active) {
+  background-color: #e5e7eb !important; /* gray-200 */
+  border-color: #d1d5db !important;     /* gray-300 */
+  color: #111827 !important;            /* gray-900 */
+}
+
+:deep(.app-dark .fc-theme .fc-button-primary:not(:disabled).fc-button-active),
+:deep(.app-dark .fc-theme .fc-button-primary:not(:disabled):active),
+:deep(.dark .fc-theme .fc-button-primary:not(:disabled).fc-button-active),
+:deep(.dark .fc-theme .fc-button-primary:not(:disabled):active) {
+  background-color: #1f2937 !important; 
+  border-color: #374151 !important;     
+  color: #f9fafb !important;           
+}
+
+:deep(.fc-theme .fc-button-primary:hover) {
+  background-color: #d1d5db !important; 
+  color: #111827 !important;
+}
+
+:deep(.app-dark .fc-theme .fc-button-primary:hover),
+:deep(.dark .fc-theme .fc-button-primary:hover) {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+:deep(.fc-theme .fc-toolbar-chunk .fc-button) {
+  color: #111827 !important; 
+}
+
+:deep(.app-dark .fc-theme .fc-toolbar-chunk .fc-button),
+:deep(.dark .fc-theme .fc-toolbar-chunk .fc-button) {
+  color: #f9fafb !important; 
+}
+
+:deep(.fc-theme .fc-toolbar-chunk .fc-button) {
+  background-color: #e5e7eb !important; 
+  border-color: #d1d5db !important;
+}
+
+:deep(.app-dark .fc-theme .fc-toolbar-chunk .fc-button),
+:deep(.dark .fc-theme .fc-toolbar-chunk .fc-button) {
+  background-color: #1f2937 !important; 
+  border-color: #374151 !important;
+}
+

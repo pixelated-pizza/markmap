@@ -1,49 +1,30 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import AppLayout from '@/js/components/AppLayout.vue';
 
-// Example: check auth status (replace with real logic, e.g. JWT in localStorage)
 function isAuthenticated() {
   return !!localStorage.getItem('auth_token'); 
 }
 
 const routes = [
   { path: '/', redirect: '/login' },
+  
+  { path: '/login', name: 'Login', component: () => import('@/js/components/login/Login.vue') },
 
-  { 
-    path: '/login', 
-    name: 'Login', 
-    component: () => import('@/components/login/Login.vue') 
-  },
-
-  { 
-    path: '/dashboard', 
-    name: 'Dashboard', 
-    component: () => import('@/components/Dashboard.vue'),
-    meta: { requiresAuth: true } 
-  },
-  { 
-    path: '/campaigns', 
-    name: 'Campaigns',
-    component: () => import('@/components/Campaigns.vue'),
-    meta: { requiresAuth: true }
-  },
-  { 
-    path: '/website_campaigns', 
-    name: 'WebsiteCampaigns',
-    component: () => import('@/components/WebsiteCampaigns.vue'),
-    meta: { requiresAuth: true }
-  },
-  { 
-    path: '/website-sale', 
-    name: 'WebsiteSale',
-    component: () => import('@/components/WebsiteSaleDetails.vue'),
-    meta: { requiresAuth: true }
-  },
-  { 
-    path: '/marketing-dates', 
-    name: 'KeyMarketingDates',
-    component: () => import('@/components/KeyMarketingDates.vue'),
-    meta: { requiresAuth: true }
-  },
+  {
+    path: '/',
+    component: AppLayout,   // <-- layout wrapper
+    meta: { requiresAuth: true },
+    children: [
+      { path: 'dashboard', name: 'Dashboard', component: () => import('@/js/components/Dashboard.vue') },
+      { path: 'campaigns', name: 'Campaigns', component: () => import('@/js/components/Campaigns.vue') },
+      { path: 'website_campaigns', name: 'WebsiteCampaigns', component: () => import('@/js/components/WebsiteCampaigns.vue') },
+      { path: 'website-sale', name: 'WebsiteSale', component: () => import('@/js/components/WebsiteSaleDetails.vue') },
+      { path: 'marketing-dates', name: 'KeyMarketingDates', component: () => import('@/js/components/KeyMarketingDates.vue') },
+      { path: 'website-promotions-archive', name: 'WebsitePromoArchive', component: () => import('@/js/components/WebsitePromoArchive.vue') },
+      { path: 'website-sale-archive', name: 'WebsiteSaleArchive', component: () => import('@/js/components/WebsiteSaleArchive.vue') },
+      { path: 'website-promo', name: 'WebsitePromo', component: () => import('@/js/components/WebsitePromos.vue') },
+    ]
+  }
 ];
 
 const router = createRouter({

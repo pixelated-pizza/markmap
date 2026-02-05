@@ -5,7 +5,7 @@
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1),transparent_70%)] animate-pulse"></div>
 
       <div class="relative z-10 text-center">
-        <h1 class="text-3xl font-bold tracking-wide mb-2">MillsBrands&copy;</h1>
+        <h1 class="text-3xl font-bold tracking-wide mb-2 dark:text-white">MillsBrands&copy;</h1>
         <p class="text-gray-300 text-sm">The world of seamless eCommerce</p>
       </div>
 
@@ -23,7 +23,7 @@
     <div class="flex w-full md:w-1/2 items-center justify-center p-6 bg-black text-white">
       <div class="w-full max-w-md">
         <img :src="'/app_icon.png'" alt="Logo" class="w-34 h-34 mx-auto mb-4 rounded-full" />
-        <h2 class="text-xl font-semibold mb-6 text-center">Marketing Campaign Calendar</h2>
+        <h2 class="text-xl font-semibold mb-6 text-center text-white">Marketing Campaign Calendar</h2>
 
         <form @submit.prevent="handleLogin" class="space-y-4">
           <div>
@@ -58,7 +58,7 @@ import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
-import { login } from "@/api/login_api.js";
+import { login } from "@/js/api/login_api.js";
 
 const loading = ref(false);
 const email = ref("");

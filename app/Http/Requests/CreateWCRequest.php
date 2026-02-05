@@ -26,6 +26,7 @@ class CreateWCRequest extends FormRequest
             'campaign_type_id' => 'required|uuid|exists:website_campaign_types,campaign_type_id',
             'section_id' => 'required|uuid|exists:sections,section_id',
             'store_id' => 'required|uuid|exists:stores,store_id',
+            'is_applied_to_both_stores' => 'sometimes|boolean',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
         ];

@@ -1,0 +1,81 @@
+/* darkmode.css */
+
+/* Global background and text */
+body, html {
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+/* PrimeVue components overrides */
+
+/* Buttons */
+.p-button {
+  background-color: #1f1f1f !important;
+  color: #e0e0e0 !important;
+  border-color: #333 !important;
+}
+
+.p-button:hover {
+  background-color: #333 !important;
+}
+
+/* Dialogs */
+.p-dialog {
+  background-color: #1b1b1b !important;
+  color: #e0e0e0 !important;
+}
+
+/* Tables / DataTable */
+.p-datatable {
+  background-color: #1a1a1a !important;
+  color: #e0e0e0 !important;
+}
+.p-datatable th,
+.p-datatable td {
+  border-color: #333 !important;
+}
+
+/* Inputs */
+.p-inputtext,
+.p-inputtextarea {
+  background-color: #1f1f1f !important;
+  color: #e0e0e0 !important;
+  border-color: #444 !important;
+}
+
+/* Dropdowns */
+.p-dropdown {
+  background-color: #1f1f1f !important;
+  color: #e0e0e0 !important;
+}
+.p-dropdown-panel {
+  background-color: #1a1a1a !important;
+  color: #e0e0e0 !important;
+}
+
+/* Toast */
+.p-toast {
+  background-color: #242424 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+
+/* Native HTML overrides */
+a {
+  color: #81d4fa;
+}
+
+button {
+  background-color: #1f1f1f;
+  color: #e0e0e0;
+}
+
+input, textarea, select {
+  background-color: #1f1f1f;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+header, aside, main, footer {
+  background-color: #121212;
+}

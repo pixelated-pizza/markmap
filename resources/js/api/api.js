@@ -8,13 +8,23 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// --- REQUEST INTERCEPTOR ---
 api.interceptors.request.use(async (config) => {
+  // CSRF for mutating requests
   const needsCSRF = ["post", "put", "delete", "patch"].includes(config.method);
   if (needsCSRF) {
     await axios.get(`${baseURL.replace("/api", "")}/sanctum/csrf-cookie`, {
       withCredentials: true,
     });
   }
+
+  // Convert empty strings to null (skip FormData)
+  if (config.data && !(config.data instanceof FormData) && typeof config.data === "object") {
+    config.data = JSON.parse(
+      JSON.stringify(config.data, (_, v) => (v === "" ? null : v))
+    );
+  }
+
   return config;
 });
 

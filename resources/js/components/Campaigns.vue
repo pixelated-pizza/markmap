@@ -1,39 +1,48 @@
 <template>
-  <div class="flex flex-col w-full h-full bg-gray-900 p-10">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 mb-4 
-             bg-gray-800/80 backdrop-blur-md shadow-xl border border-gray-700 rounded-xl">
-      <h2 class="text-md font-bold text-white tracking-wide drop-shadow-lg">
+  <div class="flex flex-col bg-gray-100 dark:bg-gray-900 h-auto max-h-[88vh] overflow-auto">
+    <div class="bg-white dark:bg-gray-800 mb-5 border-b border-gray-200 dark:border-gray-700">
+      <h4 class="text-md font-bold text-gray-900 dark:text-white text-center tracking-wide drop-shadow-sm py-3">
         Website Sales, Promotions, Marketplaces Campaigns
-      </h2>
+      </h4>
 
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2 ml-5 pb-3">
         <Select v-model="selectedChannel" :options="channels" optionLabel="name" optionValue="channel_id"
           placeholder="All Channels" class="w-48" showClear />
 
         <InputText v-model="searchTerm" placeholder="Search Campaigns..." class="w-60" />
 
-        <Calendar v-model="dateRange" selectionMode="range" dateFormat="yy-mm-dd" placeholder="Filter by Date Range"
+        <DatePicker v-model="dateRange" selectionMode="range" dateFormat="yy-mm-dd" placeholder="Filter by Date Range"
           class="w-64" showIcon />
 
         <Button label="Reset" icon="pi pi-refresh" class="p-button-secondary" @click="resetFilters" />
       </div>
     </div>
 
-    <template v-if="loading">
-      <div class="flex flex-col gap-4 w-full h-full">
-        <p class="text-gray-400 text-lg">Loading calendar...</p>
+    <div
+      class="gantt-wrapper relative w-full max-h-[70vh] sm:max-h-[75vh] md:max-h-[80vh] lg:max-h-[85vh] overflow-auto touch-pan-y">
+
+      <div ref="ganttContainer" class="gantt-container w-full min-h-[400px] sm:min-h-[500px]
+         bg-white dark:bg-gray-900
+">
+      </div>
+
+
+      <div v-if="loading"
+        class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col gap-4 justify-center items-center z-10">
+
+        <p class="text-gray-600 dark:text-gray-300 text-lg">
+          Loading calendar...
+        </p>
+
         <Skeleton height="2rem" width="70%" />
         <Skeleton height="2rem" width="50%" />
         <Skeleton height="1rem" width="90%" />
         <Skeleton height="1rem" width="85%" />
         <Skeleton height="1rem" width="95%" />
-        <div class="flex-1 mt-2">
-          <Skeleton height="100%" borderRadius="8px" />
-        </div>
       </div>
-    </template>
 
-    <div v-else ref="ganttContainer" class="gantt-container flex-1 overflow-hidden"></div>
+    </div>
+
   </div>
 </template>
 
@@ -43,12 +52,12 @@ import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { getCurrentInstance } from "vue";
 import gantt from "dhtmlx-gantt";
 import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
-import { ganttColors } from "@/colors/dhtmlxgantt_colorselector";
+import { ganttColors } from "@/js/colors/dhtmlxgantt_colorselector";
 
 import Select from "primevue/select";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
-import Calendar from "primevue/calendar";
+import DatePicker from "primevue/datepicker";
 import Skeleton from 'primevue/skeleton';
 
 const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
@@ -61,7 +70,7 @@ import {
   updateCampaign,
   deleteCampaign,
   fetchChannels,
-} from "@/api/campaign_service";
+} from "@/js/api/campaign_service";
 
 const ganttContainer = ref(null);
 const hiddenCampaigns = ref(new Set());
@@ -109,38 +118,26 @@ function formatLocalDateTime(date) {
 
 
 async function initGantt() {
-  gantt.setSkin("dark");
-
   gantt.config.grid_resize = true;
   gantt.config.grid_buttons = true;
 
   gantt.config.columns = [
     {
       name: "text",
-      label: "Sales Channels / Campaigns",
+      label: "Campaigns",
       tree: true,
-      width: 400,
-      template: function (task) {
-        if (task.type !== "project") {
-          return `
-          <span style="margin-left: 8px;">${task.text}</span>
-        `;
-        }
-        return `<b>${task.text}</b>`;
-      },
+      width: window.innerWidth < 640 ? 180 : 400, // small screens
+      template: task => task.type !== "project" ? `<span style="margin-left:8px">${task.text}</span>` : `<b>${task.text}</b>`
     },
     {
       name: "add",
       label: "",
       width: 44,
       resize: false,
-      template: function (task) {
-        return task.type === "project"
-          ? "<div class='add_child'>+</div>"
-          : "";
-      },
-    },
+      template: task => task.type === "project" ? "<div class='add_child'>+</div>" : ""
+    }
   ];
+
 
 
   gantt.config.xml_date = "%Y-%m-%d %H:%i";
@@ -176,21 +173,24 @@ async function initGantt() {
   });
 
   gantt.init(ganttContainer.value);
+  applyGanttTheme();
+   
   ganttContainer.value.addEventListener("change", (e) => {
-  if (e.target.classList.contains("hide-checkbox")) {
-    const taskId = e.target.dataset.taskId;
-    const checked = e.target.checked;
+    if (e.target.classList.contains("hide-checkbox")) {
+      const taskId = e.target.dataset.taskId;
+      const checked = e.target.checked;
 
-    if (checked) {
-      hiddenCampaigns.value.add(taskId);
-    } else {
-      hiddenCampaigns.value.delete(taskId);
+      if (checked) {
+        hiddenCampaigns.value.add(taskId);
+      } else {
+        hiddenCampaigns.value.delete(taskId);
+      }
+
+      applyHiddenCampaigns();
     }
 
-    applyHiddenCampaigns();
-  }
-});
-  loadCampaigns();
+    
+  });
 
   gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
     if (typeof id === "number") return;
@@ -310,6 +310,7 @@ function autoAdjustTimeline(filteredTasks = []) {
     gantt.render();
     gantt.renderCalendar();
     gantt.refreshData();
+    applyGanttTheme(); 
   }
 }
 
@@ -384,16 +385,17 @@ function renderFilteredCampaigns() {
     });
   });
 
+  // ✅ Only clear once, then parse
   gantt.clearAll();
   gantt.parse({ data });
-  gantt.clearAll();
-  gantt.parse({ data });
+  gantt.render();
+  applyGanttTheme(); 
 
   applyHiddenCampaigns();
 
-
   setTimeout(() => autoAdjustTimeline(filtered), 50);
 }
+
 
 function applyHiddenCampaigns() {
   gantt.eachTask(task => {
@@ -423,28 +425,70 @@ function resetFilters() {
   renderFilteredCampaigns();
 }
 
+function applyGanttTheme() {
+  const isDark =
+    document.documentElement.classList.contains("app-dark");
+
+  if (isDark) {
+    gantt.setSkin("dark");
+  } else {
+    gantt.setSkin("meadow");
+  }
+
+  requestAnimationFrame(() => {
+    gantt.render();
+    gantt.setSizes();
+  });
+}
+
+
+function watchDarkMode() {
+  const observer = new MutationObserver(() => {
+    applyGanttTheme();
+  });
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+
+  return observer;
+}
+
+let darkObserver;
 
 onMounted(async () => {
-  channels.value = await fetchChannels();
-  await loadCampaigns();
-  loading.value = false;
-});
+  try {
+    channels.value = await fetchChannels();
 
-watch(loading, async (val) => {
-  if (!val) {
+    darkObserver = watchDarkMode();
+
+    // wait DOM to be painted
     await nextTick();
+
+    if (!ganttContainer.value) {
+      console.error("Gantt container not found");
+      loading.value = false;
+      return;
+    }
+
     await initGantt();
-    resizeObserver = new ResizeObserver(() => {
-      gantt.setSizes();
-    });
+    await loadCampaigns();
+
+    loading.value = false;
+
+    resizeObserver = new ResizeObserver(() => gantt.setSizes());
     resizeObserver.observe(ganttContainer.value);
+  } catch (err) {
+    console.error("Error initializing gantt:", err);
+    loading.value = false;
   }
 });
-
 
 onBeforeUnmount(() => {
   try {
     if (resizeObserver) resizeObserver.disconnect();
+    if (darkObserver) darkObserver.disconnect();
     gantt.clearAll();
     gantt.detachAllEvents();
   } catch (e) {
@@ -453,4 +497,62 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style scoped></style>
+<style>
+/* ---------- BASE CONTAINER ---------- */
+.gantt-container {
+  width: 100%;
+  min-height: 500px;
+}
+
+/* ========== FORCE DARK MODE (STRONGER) ========== */
+.dark .gantt_container,
+.dark .gantt_layout_root,
+.dark .gantt_grid,
+.dark .gantt_grid_scale,
+.dark .gantt_grid_data,
+.dark .gantt_data_area,
+.dark .gantt_task_scale,
+.dark .gantt_task_bg,
+.dark .gantt_task,
+.dark .gantt_scale_line,
+.dark .gantt_task_cell,
+.dark .gantt_task_row,
+.dark .gantt_task_bg,
+.dark .gantt_task_content {
+  background: #111827 !important; /* gray-900 */
+  border-color: #374151 !important; /* gray-700 */
+}
+
+/* Grid headers */
+.dark .gantt_grid_head_cell,
+.dark .gantt_grid_scale {
+  background: #1f2937 !important; /* gray-800 */
+  color: #e5e7eb !important;
+}
+
+/* Text */
+.dark .gantt_tree_content,
+.dark .gantt_grid_head_text,
+.dark .gantt_task_content,
+.dark .gantt_scale_cell {
+  color: #e5e7eb !important;
+}
+
+/* Timeline background stripes */
+.dark .gantt_task_bg {
+  background: #111827 !important;
+}
+
+/* Today line */
+.dark .gantt_today_line {
+  background: #60a5fa !important; /* blue-400 */
+}
+
+/* Lightbox (popup) */
+.dark .gantt_lightbox {
+  background: #111827 !important;
+  color: #e5e7eb !important;
+}
+
+
+</style>

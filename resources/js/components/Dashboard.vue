@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-gray-900 p-10">
+  <div class="flex flex-col h-auto max-h-[88vh] overflow-auto p-5">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start transition"
+      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-300 rounded-xl p-5 flex flex-col items-start transition"
         @click="openModal('total')">
         <div v-if="loading" class="flex items-center gap-3 w-full">
           <Skeleton shape="circle" size="2.5rem" />
@@ -12,17 +12,17 @@
         </div>
 
         <div v-else class="flex items-center gap-3">
-          <div class="p-2 bg-gray-700/60 rounded-lg">
+          <div class="p-2 dark:bg-gray-500/50 bg-black rounded-lg">
             <ListChecks class="w-6 h-6 text-gray-300" />
           </div>
           <div>
-            <div class="text-gray-400 text-sm">Total Campaigns</div>
-            <div class="text-2xl font-bold text-white mt-1">{{ stats.total }}</div>
+            <div class="dark:text-white text-black text-sm">Total Campaigns</div>
+            <div class="text-2xl font-bold dark:text-white text-black mt-1">{{ stats.total }}</div>
           </div>
         </div>
       </div>
 
-      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start transition"
+      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-300 rounded-xl p-5 flex flex-col items-start transition"
         @click="openModal('active')">
         <div v-if="loading" class="flex items-center gap-3 w-full">
           <Skeleton shape="circle" size="2.5rem" />
@@ -33,17 +33,17 @@
         </div>
 
         <div v-else class="flex items-center gap-3">
-          <div class="p-2 bg-green-600/20 rounded-lg">
+          <div class="p-2 dark:bg-green-600/60 bg-green rounded-lg">
             <PlayCircle class="w-6 h-6 text-green-400" />
           </div>
           <div>
-            <div class="text-gray-400 text-sm">Active Campaigns</div>
-            <div class="text-2xl font-bold text-white mt-1">{{ stats.active }}</div>
+            <div class="dark:text-white text-black text-sm">Current Active Campaigns</div>
+            <div class="text-2xl font-bold dark:text-white text-black mt-1">{{ stats.active }}</div>
           </div>
         </div>
       </div>
 
-      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start transition"
+      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-300 rounded-xl p-5 flex flex-col items-start transition"
         @click="openModal('upcoming')">
         <div v-if="loading" class="flex items-center gap-3 w-full">
           <Skeleton shape="circle" size="2.5rem" />
@@ -58,13 +58,13 @@
             <CalendarClock class="w-6 h-6 text-blue-400" />
           </div>
           <div>
-            <div class="text-gray-400 text-sm">Upcoming</div>
-            <div class="text-2xl font-bold text-white mt-1">{{ stats.upcoming }}</div>
+            <div class="dark:text-white text-black text-sm">Upcoming</div>
+            <div class="text-2xl font-bold dark:text-white text-black mt-1">{{ stats.upcoming }}</div>
           </div>
         </div>
       </div>
 
-      <div class="bg-gray-800/80 backdrop-blur-md rounded-xl shadow-lg p-5 flex flex-col items-start transition"
+      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-300 rounded-xl p-5 flex flex-col items-start transition"
         @click="openModal('completed')">
         <div v-if="loading" class="flex items-center gap-3 w-full">
           <Skeleton shape="circle" size="2.5rem" />
@@ -79,13 +79,16 @@
             <CheckCircle2 class="w-6 h-6 text-purple-400" />
           </div>
           <div>
-            <div class="text-gray-400 text-sm">Completed</div>
-            <div class="text-2xl font-bold text-white mt-1">{{ stats.completed }}</div>
+            <div class="dark:text-white text-black text-sm">Completed</div>
+            <div class="text-2xl font-bold dark:text-white text-black mt-1">{{ stats.completed }}</div>
           </div>
         </div>
       </div>
     </div>
-    
+
+    <CampaignTimelineChart v-if="!loading" :campaigns="campaigns" />
+
+
     <Dialog v-model:visible="showModal" modal :draggable="false" :closable="false" class="campaign-dialog min-h-[200px]"
       :style="{ width: '480px', maxHeight: '85vh' }">
       <template #header>
@@ -135,7 +138,7 @@
 
     <div class="mt-5">
       <template v-if="loading">
-        <div class="flex flex-col gap-4 w-full h-full">
+        <div class="flex flex-col gap-4 w-full h-full bg-gray-800">
           <Skeleton height="2rem" width="70%" />
           <Skeleton height="2rem" width="50%" />
           <Skeleton height="1rem" width="90%" />
@@ -166,12 +169,12 @@
 </template>
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import InternalPromotions from '@/components/InternalPromotions.vue';
-import ExternalPromotions from '@/components/ExternalPromotions.vue';
-import { fetchCampaigns } from '@/api/campaign_service.js';
+import InternalPromotions from '@/js/components/InternalPromotions.vue';
+import ExternalPromotions from '@/js/components/ExternalPromotions.vue';
+import { fetchCampaigns } from '@/js/api/campaign_service.js';
 import { ListChecks, PlayCircle, CalendarClock, CheckCircle2 } from 'lucide-vue-next';
 import Skeleton from 'primevue/skeleton';
-
+import CampaignTimelineChart from "@/js/components/CampaignTimelineChart.vue";
 
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';

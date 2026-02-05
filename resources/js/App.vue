@@ -1,10 +1,7 @@
-<template>
-<div class="app-dark">
-   <main-layout />
-</div>
-   
-</template>
-<script setup>
-import MainLayout from './components/MainLayout.vue';
+<script setup></script>
 
-</script>
+<template>
+    <router-view />
+</template>
+
+<style scoped></style>

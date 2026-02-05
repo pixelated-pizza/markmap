@@ -6,6 +6,9 @@ use App\Models\WebsiteCampaign;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Models\Campaign;
+use App\Models\ArchivedPromotion;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class WebsiteService
 {
@@ -99,8 +102,38 @@ class WebsiteService
             return null;
         }
 
+        // Mark as archived
         $campaign->is_archived = true;
         $campaign->save();
+
+        $promotionTypeId = DB::table('website_campaign_types')
+            ->where('campaign_type_name', 'Adhoc Promos/Coupons')
+            ->value('campaign_type_id');
+
+        $websiteSaleId = DB::table('website_campaign_types')
+            ->where('campaign_type_name', 'Website Sale')
+            ->value('campaign_type_id');
+
+        if ($campaign->campaign_type_id === $promotionTypeId) {
+            try {
+                ArchivedPromotion::create([
+                    'archived_promo_id' => Str::uuid()->toString(),
+                    'wc_id' => $campaign->wc_id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to archive promotion: " . $e->getMessage());
+            }
+        } else if ($campaign->campaign_type_id === $websiteSaleId) {
+            try {
+                DB::table('archived_website_sales')->insert([
+                    'ws_archive_id' => Str::uuid()->toString(),
+                    'wc_id' => $campaign->wc_id,
+                    'archived_at' => now(),
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Failed to archive website sale: " . $e->getMessage());
+            }
+        }
 
         return $campaign;
     }

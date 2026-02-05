@@ -2,7 +2,7 @@
   <div class="flex w-screen h-screen overflow-hidden">
     <aside v-if="route.path !== '/login'" :class="[
       sidebarOpen ? 'basis-64' : 'basis-16',
-      'bg-black text-gray-200 transition-[flex-basis] duration-300 shadow-lg flex flex-col justify-between h-full overflow-hidden'
+      'text-gray-200 transition-[flex-basis] duration-300 shadow-lg flex flex-col justify-between h-full overflow-hidden'
     ]">
 
       <div>
@@ -10,6 +10,7 @@
           <div class="flex-1 flex justify-center">
             <img v-show="sidebarOpen" :src="'/app_icon.png'" alt="MarketMap" class="w-24 h-24 rounded-full" />
           </div>
+
           <button @click="sidebarOpen = !sidebarOpen"
             class="focus:outline-none text-gray-400 hover:text-white transition ml-2">
             <i class="pi pi-bars text-xl"></i>
@@ -19,19 +20,19 @@
         <nav class="mt-4 space-y-2">
           <li>
             <router-link to="/dashboard"
-              class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition"
-              active-class="bg-gray-700 text-white border-l-4 border-blue-500" v-show="sidebarOpen">
-              <i class="pi pi-home mr-2 w-4 text-center"></i>
+              class="flex items-center px-4 py-2 hover:bg-gray-700 hover:text-white transition"
+              active-class="bg-gray-700 dark:text-white border-l-4 border-blue-500" v-show="sidebarOpen">
+              <i class="pi pi-chart-bar mr-2 w-4 text-center"></i>
               Dashboard
             </router-link>
           </li>
 
           <li class="px-2">
             <button @click="calendarMenuOpen = !calendarMenuOpen"
-              class="w-full flex justify-between items-center px-2 py-2 text-sm font-medium rounded-lg hover:bg-gray-700 hover:text-white transition"
+              class="w-full flex justify-between items-center px-2 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white transition"
               v-show="sidebarOpen">
               <span class="flex items-center">
-                <i class="pi pi-calendar mr-2 w-4 text-center"></i>
+                <i class="pi pi-calendar-clock mr-2 w-4 text-center"></i>
                 Marketing Calendar
               </span>
               <i :class="['pi pi-chevron-right transition-transform', { 'rotate-90': calendarMenuOpen }]"></i>
@@ -40,7 +41,7 @@
             <ul v-show="calendarMenuOpen" class="pl-6 mt-2 space-y-1 text-sm text-gray-300">
               <li>
                 <button @click="weeklyMenuOpen = !weeklyMenuOpen"
-                  class="w-full flex justify-between items-center px-2 py-1 rounded hover:bg-gray-600 transition"
+                  class="w-full flex justify-between items-center px-2 py-1 hover:bg-gray-600 transition"
                   v-show="sidebarOpen">
                   <span class="flex items-center">
                     <i class="pi pi-calendar mr-2 w-4 text-center"></i>
@@ -50,35 +51,76 @@
                 </button>
 
                 <ul v-show="weeklyMenuOpen" class="pl-6 mt-2 space-y-1 text-xs text-gray-400">
-                  <li class="px-2 py-1 rounded hover:bg-gray-600">
-                    <router-link to="/campaigns" class="flex items-center" v-show="sidebarOpen" active-class="bg-gray-700 text-white border-l-4 border-blue-500 p-2">
+                  <li class="px-2 py-1  hover:bg-gray-600">
+                    <router-link to="/campaigns" class="flex items-center" v-show="sidebarOpen"
+                      active-class="bg-gray-700 text-white p-2">
                       <i class="pi pi-globe mr-2 w-4 text-center"></i>
                       Website & Marketplaces Campaigns
                     </router-link>
                   </li>
-                  <li class="px-2 py-1 rounded hover:bg-gray-600">
-                    <router-link to="/website_campaigns" class="flex items-center" v-show="sidebarOpen" active-class="bg-gray-700 text-white border-l-4 border-blue-500 p-2">
+                  <li class="px-2 py-1  hover:bg-gray-600">
+                    <router-link to="/website_campaigns" class="flex items-center" v-show="sidebarOpen"
+                      active-class="bg-gray-700 text-white p-2">
                       <i class="pi pi-globe mr-2 w-4 text-center"></i>
-                      Website - Mytopia & Edisons
+                      Website Sales / Promotions - Mytopia & Edisons
                     </router-link>
                   </li>
                 </ul>
               </li>
 
-              <li class="px-2 py-1 rounded hover:bg-gray-600">
-                <router-link to="/website-sale" class="flex items-center" v-show="sidebarOpen" active-class="bg-gray-700 text-white border-l-4 border-blue-500 p-2">
-                  <i class="pi pi-shopping-cart mr-2 w-4 text-center"></i>
+              <li class="px-2 py-1  hover:bg-gray-600">
+                <router-link to="/website-sale" class="flex items-center" v-show="sidebarOpen"
+                  active-class="bg-gray-700 text-white p-2">
+                  <i class="pi pi-pen-to-square mr-2 w-4 text-center"></i>
                   Website Sale Details
                 </router-link>
               </li>
-              <!-- <li class="px-2 py-1 rounded hover:bg-gray-600">
-                <router-link to="/marketing-dates" class="flex items-center" v-show="sidebarOpen" active-class="bg-gray-700 text-white border-l-4 border-blue-500 p-2">
-                  <i class="pi pi-calendar-plus mr-2 w-4 text-center"></i>
-                  Key Marketing Dates
+              <li class="px-2 py-1  hover:bg-gray-600">
+                <router-link to="/website-promo" class="flex items-center" v-show="sidebarOpen"
+                  active-class="bg-gray-700 text-white p-2">
+                  <i class="pi pi-pen-to-square mr-2 w-4 text-center"></i>
+                  Website Promotion Details
                 </router-link>
-              </li> -->
+              </li>
             </ul>
           </li>
+          <li class="px-2">
+            <button @click="archiveMenuOpen = !archiveMenuOpen"
+              class="w-full flex justify-between items-center px-2 py-2 text-sm font-medium hover:bg-gray-700 hover:text-white transition"
+              v-show="sidebarOpen">
+              <span class="flex items-center">
+                <i class="pi pi-book mr-2 w-4 text-center"></i>
+                Archive
+              </span>
+              <i :class="['pi pi-chevron-right transition-transform', { 'rotate-90': archiveMenuOpen }]"></i>
+            </button>
+            <ul v-show="archiveMenuOpen" class="pl-6 mt-2 space-y-1 text-sm">
+              <li class="px-2 py-1  hover:bg-gray-600">
+                <router-link to="/website-promotions-archive" class="flex items-center" v-show="sidebarOpen"
+                  active-class="bg-gray-700 text-white p-2">
+                  <i class="pi pi-chart-line mr-2 w-4 text-center"></i>
+                  Website Promotions
+                </router-link>
+              </li>
+              <li class="px-2 py-1  hover:bg-gray-600">
+                <router-link to="/website-sale-archive" class="flex items-center" v-show="sidebarOpen"
+                  active-class="bg-gray-700 text-white p-2">
+                  <i class="pi pi-globe mr-2 w-4 text-center"></i>
+                  Website Sales
+                </router-link>
+              </li>
+              <li class="px-2 py-1  hover:bg-gray-600">
+                <router-link to="/#" class="flex items-center" v-show="sidebarOpen"
+                  active-class="bg-gray-700 text-white p-2">
+                  <i class="pi pi-shopping-bag mr-2 w-4 text-center"></i>
+                  Marketplace Promotions
+                </router-link>
+              </li>
+
+            </ul>
+          </li>
+
+
         </nav>
       </div>
 
@@ -99,17 +141,22 @@
 
       <header v-if="route.path !== '/login'"
         class="relative col-start-2 flex items-center justify-between bg-black backdrop-blur-md text-white px-6 shadow-lg border-b border-gray-700 h-16 min-h-[4rem] shrink-0">
-        <h1 class="text-xl font-semibold tracking-wide drop-shadow-sm">
+        <h1 class="text-sm font-semibold tracking-wide drop-shadow-sm">
           MarketMap
         </h1>
 
+
         <div class="relative flex gap-2 items-center">
+          <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
+            <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
+          </button>
           <Button icon="pi pi-bell" rounded outlined severity="contrast" class="hover:text-yellow-400 transition"
             @click="notificationsOpen = !notificationsOpen" />
           <span v-if="newNotifications.length"
             class="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
             {{ newNotifications.length }}
           </span>
+
         </div>
 
       </header>
@@ -251,13 +298,17 @@ import { Suspense } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
-import { logout } from "@/api/login_api.js";
-import { useUserStore } from '@/utils/user.js';
-import { fetchCampaigns } from '@/api/campaign_service.js';
+import { logout } from "@/js/api/login_api.js";
+import { useUserStore } from '@/js/utils/user.js';
+import { fetchCampaigns } from '@/js/api/campaign_service.js';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+
+import { useLayout } from '@/js/layouts/composables/layout';
+
+const { toggleDarkMode, isDarkTheme } = useLayout();
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -281,6 +332,8 @@ const router = useRouter();
 const sidebarOpen = ref(true);
 const calendarMenuOpen = ref(true);
 const weeklyMenuOpen = ref(true);
+const archiveMenuOpen = ref(true);
+
 
 const isLoggedIn = ref(!!localStorage.getItem("auth_token"));
 
@@ -419,7 +472,6 @@ let poller = null;
 onMounted(() => {
   poller = setInterval(async () => {
     const latest = await fetchCampaigns();
-
     const oldIds = campaigns.value.map(c => c.campaign_id);
     const newOnes = latest.filter(c => !oldIds.includes(c.campaign_id));
 
@@ -440,9 +492,8 @@ onUnmounted(() => {
 </script>
 <style scoped>
 .active-sidebar-link {
-  background-color: #374151; 
+  background-color: #374151;
   color: white;
-  border-left: 4px solid #3b82f6; 
+  border-left: 4px solid #3b82f6;
 }
-
 </style>

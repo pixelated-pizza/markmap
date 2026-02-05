@@ -24,13 +24,24 @@ import FullCalendar from "@fullcalendar/vue3";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { fetchWC } from "@/api/website_campaign_api.js";
-import { fetchChannels } from "@/api/campaign_service";
+import { fetchWC } from "@/js/api/website_campaign_api.js";
+import { fetchChannels } from "@/js/api/campaign_service";
 import Skeleton from "primevue/skeleton";
 
 const calendarRef = ref(null);
 const channels = ref([]);
 const loading = ref(true);
+
+const ganttColors = [
+  "#3B82F6", 
+  "#10B981", 
+  "#F59E0B", 
+  "#EF4444", 
+  "#8B5CF6", 
+  "#06B6D4", 
+  "#EC4899", 
+  "#84CC16", 
+];
 
 const allowedChannels = [
   "Mytopia",
@@ -59,6 +70,10 @@ const calendarOptions = ref({
   selectable: false,
   aspectRatio: 2,
   height: 500,
+
+  slotLabelFormat: [
+    { weekday: 'short', day: 'numeric', month: 'short' }
+  ],
 
   eventDidMount(info) {
     const { title, start, end } = info.event;
@@ -127,10 +142,18 @@ async function loadCampaigns() {
       return new Date(a.start_date) - new Date(b.start_date);
     });
 
+    const channelIndexMap = {};
+
     const adjusted = filtered.map((c) => {
+      if (!(c.channel_id in channelIndexMap)) {
+        channelIndexMap[c.channel_id] = 0;
+      }
+
+      const index = channelIndexMap[c.channel_id]++;
+      const color = ganttColors[index % ganttColors.length];
+
       const start = new Date(c.start_date);
       const end = new Date(c.end_date);
-
       end.setDate(end.getDate() + 1);
 
       return {
@@ -139,11 +162,13 @@ async function loadCampaigns() {
         title: c.name,
         start: formatLocalDate(start),
         end: formatLocalDate(end),
-        backgroundColor: c.background_color || "#3b82f6",
-        borderColor: c.background_color || "#3b82f6",
-        textColor: "#fff",
+        backgroundColor: color,
+        borderColor: color,
+        textColor: "#ffffff",
       };
     });
+
+
 
     if (adjusted.length > 0) {
       const minStart = new Date(

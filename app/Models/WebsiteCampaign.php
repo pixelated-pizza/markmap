@@ -21,6 +21,7 @@ class WebsiteCampaign extends Model
         'name',
         'campaign_type_id',
         'section_id',
+        'is_applied_to_both_stores',
         'store_id',
         'start_date',
         'end_date',

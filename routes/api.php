@@ -10,6 +10,8 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\WebsiteSaleDetailsController;
+use App\Http\Controllers\ArchivedPromotionController;
+use App\Http\Controllers\ArchivedWebsiteSaleController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -68,3 +70,21 @@ Route::prefix('website_sale_details')->group(function() {
     Route::put('/{id}',[WebsiteSaleDetailsController::class, 'update']);
     Route::get('/blank/{wc_id}', [WebsiteSaleDetailsController::class, 'blank']);    
 });
+
+Route::prefix('archived_promotions')->group(function() {
+    Route::get('/', [ArchivedPromotionController::class, 'index']);     
+    Route::get('/{id}', [ArchivedPromotionController::class, 'show']);   
+    Route::post('/', [ArchivedPromotionController::class, 'store']);     
+    Route::put('/{id}', [ArchivedPromotionController::class, 'update']); 
+    Route::delete('/{id}', [ArchivedPromotionController::class, 'destroy']);
+    Route::put('/unarchive/{id}', [ArchivedPromotionController::class, 'unarchive']); 
+});
+
+Route::prefix('archived_website_sales')->group(function() {
+    Route::get('/', [ArchivedWebsiteSaleController::class, 'index']);     
+    Route::get('/{id}', [ArchivedWebsiteSaleController::class, 'show']);   
+    Route::post('/', [ArchivedWebsiteSaleController::class, 'store']);     
+    Route::put('/unarchive/{id}', [ArchivedWebsiteSaleController::class, 'unarchive']); 
+});
+
+

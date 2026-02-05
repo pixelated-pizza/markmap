@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
-import { fetchOnsiteCampaign, createOnsiteCampaign, updateOnsiteCampaign, deleteOnsiteCampaign, archiveOnsiteCampaign } from '@/api/onsite_campaigns_api.js';
-import { fetchStores } from '@/api/website_campaign_api';
-import { fetchSections } from '@/api/website_campaign_api';
-import { fetchCampaignTypes } from '@/api/onsite_campaigns_api';
+import { fetchOnsiteCampaign, createOnsiteCampaign, updateOnsiteCampaign, deleteOnsiteCampaign, archiveOnsiteCampaign } from '@/js/api/onsite_campaigns_api.js';
+import { fetchStores } from '@/js/api/website_campaign_api';
+import { fetchSections } from '@/js/api/website_campaign_api';
+import { fetchCampaignTypes } from '@/js/api/onsite_campaigns_api';
 
 const toAUDate = (date) => {
   if (!date) return null;
@@ -37,13 +37,13 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
             this.loading = false;
         },
         async addCampaign(campaign) {
-
             try {
                 const payload = {
                     name: campaign.name,
                     campaign_type_id: campaign.campaign_type_id,
                     section_id: campaign.section_id,
                     store_id: campaign.store_id,
+                    is_applied_to_both_stores: campaign.is_all_store,
                     start_date: campaign.start_date
                         ? toAUDate(campaign.start_date)
                         : null,
@@ -56,8 +56,6 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
             } catch (error) {
                 console.error('Failed to add campaign', error);
             }
-
-
         },
         async editCampaign(id, updates) {
             try {

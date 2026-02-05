@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { fetchWSD, createWSD, updateWSD, deleteWSD, fetchBlankWSD } from "@/api/wsd_api.js";
+import { fetchWSD, createWSD, updateWSD, deleteWSD, fetchBlankWSD } from "@/js/api/wsd_api.js";
 
 export const useWSDStore = defineStore("wsd", {
   state: () => ({
@@ -12,9 +12,32 @@ export const useWSDStore = defineStore("wsd", {
     async loadWSD() {
       this.loading = true;
       this.error = null;
+
       try {
         const data = await fetchWSD();
-        this.websiteSaleDetails = data;
+
+        const today = new Date().toISOString().split("T")[0];
+
+        this.websiteSaleDetails = data.map(c => {
+          let status = "UPCOMING";
+
+          if (today >= c.start_date && today <= c.end_date) {
+            status = "RUNNING";
+          } else if (today > c.end_date) {
+            status = "ENDED";
+          }
+
+          return {
+            ...c,
+            status,
+            statusOrder: {
+              RUNNING: 1,
+              UPCOMING: 2,
+              ENDED: 3
+            }[status]
+          };
+        });
+
       } catch (err) {
         this.error = err.message || "Failed to load website sale details.";
       } finally {
@@ -44,5 +67,13 @@ export const useWSDStore = defineStore("wsd", {
     async getBlankWSD(wc_id) {
       return await fetchBlankWSD(wc_id);
     },
+
+    async rerunCampaign(id, newStartDate, newEndDate) {
+      const updates = {
+        start_date: newStartDate,
+        end_date: newEndDate,
+      };
+      return await this.updateWSD(id, updates);
+    }
   },
 });

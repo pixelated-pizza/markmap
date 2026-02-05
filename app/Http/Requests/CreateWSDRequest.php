@@ -43,7 +43,7 @@ class CreateWSDRequest extends FormRequest
             'wc_id.required' => 'Campaign ID is required.',
             'wc_id.uuid' => 'Campaign ID must be an UUID.',
             'wc_id.exists' => 'Campaign ID does not exist.',
-            'featured_products_sheet_url.url' => 'Must be a valid URL',
+            'featured_products_sheet_url.url' => 'Must be a valid Google Spreadsheet URL',
             'event_master_sheet_url.url' => 'Event master sheet must be a valid URL.',
             'run_sheet_url.url' => 'Run sheet must be a valid URL.',
             'is_sku_list_to_feature.boolean' => 'The SKU list flag must be true or false.',

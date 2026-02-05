@@ -1,11 +1,11 @@
 <template>
-  <div class="flex flex-col w-full h-full bg-gray-900 px-6 overflow-x-auto">
-    <div class="bg-gray-900 rounded-lg p-3 mt-2">
+  <div class="flex flex-col bg-white dark:bg-gray-900 h-auto max-h-[88vh] overflow-auto">
+    <div class="card dark:bg-gray-900 bg-white rounded-lg p-3 mt-2">
 
-      <h1 class="text-gray-200 font-semibold text-lg text-center p-2 bg-gray-700 rounded-full">Website Campaign Calendar - Edisons & Mytopia</h1>
+      <h4 class="text-gray-200 font-semibold text-lg text-center p-2">Website Campaign Calendar
+        - Edisons & Mytopia</h4>
 
-      <!-- Calendar / Gantt -->
-      <div class="h-[450px] overflow-hidden rounded-lg bg-black p-5 mb-5 rounded-md mt-5">
+      <div class="h-[450px] overflow-hidden rounded-lg p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
         <template v-if="loading">
           <div class="flex flex-col gap-4 w-full h-full">
             <p class="text-gray-400 text-lg">Loading Gantt Chart...</p>
@@ -20,13 +20,12 @@
           </div>
         </template>
 
-        <FullCalendar v-else ref="calendarRef" :options="calendarOptions" class="w-full h-full" />
+        <FullCalendar v-else ref="calendarRef" :options="calendarOptions"  class="w-full h-full fc-theme" />
       </div>
 
-      <!-- Data Table -->
-      <div class="mb-5 rounded-sm">
+      <div class="rounded-sm">
         <template v-if="loading">
-          <div class="flex flex-col gap-4 w-full h-full bg-black p-5 rounded-md">
+          <div class="flex flex-col gap-4 w-full h-full dark:bg-black bg-white p-5 rounded-md">
             <p class="text-gray-400 text-lg">Loading data table...</p>
             <Skeleton height="2rem" width="70%" />
             <Skeleton height="2rem" width="50%" />
@@ -38,8 +37,7 @@
             </div>
           </div>
         </template>
-
-        <DataTable v-else :value="filteredCampaigns" sortField="start_date" :sortOrder="-1" dataKey="wc_id" paginator
+        <DataTable v-else :value="filteredCampaigns" :sortOrder="-1" dataKey="wc_id" paginator
           :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" showGridlines scrollable scrollHeight="500px" stickyHeader
           tableStyle="min-width: 60rem;" :loading="loading" class="p-datatable-sm" tableLayout="fixed">
           <template #header>
@@ -51,8 +49,6 @@
                 </InputIcon>
                 <InputText placeholder="Search" v-model="searchQuery" class="w-full" />
               </IconField>
-
-              
               <div class="relative w-60">
                 <Select v-model="filterStore" :options="store.stores" optionLabel="store_name" optionValue="store_id"
                   placeholder="Filter by Website" class="w-full" />
@@ -61,7 +57,6 @@
                   <i class="pi pi-times"></i>
                 </button>
               </div>
-
               <div class="relative w-60">
                 <Select v-model="filterSection" :options="store.sections" optionLabel="name" optionValue="section_id"
                   placeholder="Filter by Section" class="w-full" />
@@ -70,22 +65,18 @@
                   <i class="pi pi-times"></i>
                 </button>
               </div>
-              <Button type="button" icon="pi pi-plus" label="Add Campaign" size="small" severity="success"
+              <Button type="button" icon="pi pi-plus" label="Add Campaign / Promo" size="small" severity="success"
                 :loading="loading" @click="openAddModal" />
-
             </div>
-
-            
-
           </template>
 
-          <Column field="name" header="Banner Name" class="w-1/4" :sortable="true">
+          <Column field="name" header="Banner Name" class="w-1/4">
             <template #body="{ data }">
               <span>{{ data.name }}</span>
             </template>
           </Column>
 
-          <Column field="start_date" header="Start Date" class="w-1/6" :sortable="true">
+          <Column field="start_date" header="Start Date" class="w-1/6">
             <template #body="{ data }">
               <span>{{ formatDate(data.start_date) }}</span>
             </template>
@@ -99,11 +90,11 @@
 
           <Column field="store_id" header="Website" class="w-1/6">
             <template #body="{ data }">
-              <span>{{ data.store?.store_name }}</span>
+              <span>{{ data.websiteDisplay }}</span>
             </template>
           </Column>
 
-          <Column field="section_id" header="Section" class="w-1/6" :sortable="true">
+          <Column field="section_id" header="Section" class="w-1/6">
             <template #body="{ data }">
               <span>{{ data.section?.name }}</span>
             </template>
@@ -123,7 +114,6 @@
               </div>
             </template>
           </Column>
-
           <template #empty>
             <div class="p-4 text-center text-gray-400">No Data available.</div>
           </template>
@@ -134,7 +124,7 @@
         <div class="flex flex-col gap-3">
           <div>
             <label class="block text-gray-300 mb-1">Name</label>
-            <InputText v-model="form.name" class="w-full" placeholder="Name of the Banner?" />
+            <InputText v-model="form.name" class="w-full" placeholder="Name of the Website Sale / Promotion" />
             <Message v-if="errors.name" severity="error" size="small" variant="simple">
               {{ errors.name }}
             </Message>
@@ -147,7 +137,6 @@
             <Message v-if="errors.campaign_type_id" severity="error" size="small" variant="simple">
               {{ errors.campaign_type_id }}
             </Message>
-
           </div>
 
           <div>
@@ -163,12 +152,13 @@
           <div>
             <label class="block text-gray-300 mb-1">What Website?</label>
             <div class="flex items-center gap-2 mb-2 mt-2">
-              <Checkbox v-model="form.is_all_store" inputId="all_store" binary />
-              <label for="all_store" class="text-gray-300 cursor-pointer">Apply to Both Stores</label>
+              <Checkbox v-model="form.is_all_store" inputId="all_store" binary :true-value="true"
+                :false-value="false" />
+              <label for="all_store" class="text-gray-300 cursor-pointer">Apply to Both Websites</label>
             </div>
 
             <Select v-model="form.store_id" :disabled="form.is_all_store" :options="store.stores"
-              optionLabel="store_name" optionValue="store_id" class="w-full" placeholder="Name of the website" />
+              optionLabel="store_name" optionValue="store_id" class="w-full" placeholder="Name of the Website" />
 
             <Message v-if="errors.store_id" severity="error" size="small" variant="simple">
               {{ errors.store_id }}
@@ -178,20 +168,18 @@
 
           <div>
             <label class="block text-gray-300 mb-1">Start Date</label>
-            <Calendar v-model="form.start_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
+            <DatePicker v-model="form.start_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
             <Message v-if="errors.start_date" severity="error" size="small" variant="simple">
               {{ errors.start_date }}
             </Message>
-
           </div>
 
           <div>
             <label class="block text-gray-300 mb-1">End Date</label>
-            <Calendar v-model="form.end_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
+            <DatePicker v-model="form.end_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
             <Message v-if="errors.end_date" severity="error" size="small" variant="simple">
               {{ errors.end_date }}
             </Message>
-
           </div>
         </div>
 
@@ -200,11 +188,9 @@
             <div class="flex gap-2">
               <Button v-if="editTargetId" label="Archive" icon="pi pi-folder" severity="warn"
                 @click="confirmArchive({ ...form, wc_id: editTargetId })" />
-
               <Button v-if="editTargetId" label="Delete" icon="pi pi-trash" severity="danger"
                 @click="confirmDelete({ ...form, wc_id: editTargetId })" />
             </div>
-
             <div class="flex gap-2">
               <Button label="Cancel" severity="secondary" @click="closeDialog" />
               <Button :label="saving ? 'Saving...' : saveLabel" icon="pi pi-check" severity="success"
@@ -212,7 +198,6 @@
             </div>
           </div>
         </template>
-
       </Dialog>
 
       <Dialog v-model:visible="showArchiveDialog" header="Confirm Archive" :modal="true" :closable="false"
@@ -232,7 +217,6 @@
           <Button label="Yes" severity="success" @click="deleteConfirmed" />
         </template>
       </Dialog>
-
     </div>
   </div>
 </template>
@@ -243,7 +227,7 @@ import FullCalendar from '@fullcalendar/vue3';
 import interactionPlugin from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
-
+import DatePicker from 'primevue/datepicker';
 import Message from 'primevue/message';
 
 import Button from 'primevue/button';
@@ -253,7 +237,7 @@ import InputText from 'primevue/inputtext';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import Calendar from 'primevue/calendar';
-import { useOnsiteCampaignStore } from '@/stores/onsite_campaign_store.js';
+import { useOnsiteCampaignStore } from '@/js/stores/onsite_campaign_store.js';
 import { Select } from 'primevue';
 import Skeleton from 'primevue/skeleton';
 
@@ -282,14 +266,19 @@ const searchQuery = ref('');
 const today = new Date();
 const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
+const ganttColors = [
+  "#B04D4D",
+  "#387EB0",
+];
+
 const form = ref({
   name: '',
   campaign_type_id: '',
   section_id: '',
   store_id: '',
   start_date: '',
-  end_date: '',
   is_all_store: false,
+  end_date: '',
 });
 
 const errors = ref({
@@ -297,6 +286,7 @@ const errors = ref({
   campaign_type_id: null,
   section_id: null,
   store_id: null,
+  is_all_store: null,
   start_date: null,
   end_date: null,
 });
@@ -308,7 +298,6 @@ const calendarOptions = ref({
   headerToolbar: {
     left: 'prev,next today',
     center: 'title',
-    right: 'resourceTimelineMonth',
   },
   resourceAreaHeaderContent: 'On-site Campaigns',
   resources: [],
@@ -316,6 +305,11 @@ const calendarOptions = ref({
   editable: true,
   selectable: true,
   height: 400,
+
+  slotLabelFormat: [
+    { weekday: 'short', day: 'numeric', month: 'short' }
+  ],
+
   slotLabelDidMount: (info) => { info.el.style.padding = '6px 0'; },
   eventDrop: async (info) => {
     const { id, start, end } = info.event;
@@ -362,7 +356,8 @@ const calendarOptions = ref({
 });
 
 const filteredCampaigns = computed(() => {
-  return store.campaigns.filter((c) => {
+  // First filter campaigns by search / store / section
+  const campaigns = store.campaigns.filter((c) => {
     const matchesSearch = !searchQuery.value || (
       c.name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       c.store?.store_name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
@@ -376,6 +371,30 @@ const filteredCampaigns = computed(() => {
 
     return matchesSearch && matchesStore && matchesSection;
   });
+
+  // Group campaigns by name
+  const grouped = {};
+  campaigns.forEach(c => {
+    // Strip "Website - " from store name
+    const cleanStoreName = c.store?.store_name?.replace(/^Website - /, '') || '';
+
+    if (!grouped[c.name]) {
+      grouped[c.name] = {
+        ...c,
+        websiteDisplay: cleanStoreName ? [cleanStoreName] : []
+      };
+    } else {
+      if (cleanStoreName && !grouped[c.name].websiteDisplay.includes(cleanStoreName)) {
+        grouped[c.name].websiteDisplay.push(cleanStoreName);
+      }
+    }
+  });
+
+  // Convert array of store names into string with " & "
+  return Object.values(grouped).map(c => ({
+    ...c,
+    websiteDisplay: c.websiteDisplay.join(' & ')
+  }));
 });
 
 
@@ -394,9 +413,9 @@ function isUpcoming(data) { return todayStr < data.start_date; }
 function getStatus(data) { return isRunning(data) ? 'Active' : isCompleted(data) ? 'Completed' : 'Upcoming'; }
 function statusClass(data) {
   return {
-    'text-yellow-400': isUpcoming(data),
-    'text-green-400': isRunning(data),
-    'text-gray-400': isCompleted(data),
+    'text-yellow-900': isUpcoming(data),
+    'text-green-900': isRunning(data),
+    'app-dark:text-gray-900': isCompleted(data),
   };
 }
 
@@ -412,42 +431,54 @@ async function loadCampaigns() {
 
 function updateCalendarResourcesAndEvents() {
   const resources = store.stores.map((st) => {
-    const sections = store.sections
+    const sections = store.campaign_types
       .filter((sec) =>
         store.campaigns.some(
           (c) =>
             String(c.store_id) === String(st.store_id) &&
-            String(c.section_id) === String(sec.section_id)
+            String(c.campaign_type_id) === String(sec.campaign_type_id)
         )
       )
-      .map((sec) => ({ id: `${String(st.store_id)}-${String(sec.section_id)}`, title: sec.name }));
+      .map((sec) => ({
+        id: `${String(st.store_id)}-${String(sec.campaign_type_id)}`,
+        title: sec.campaign_type_name,
+      }));
 
     return { id: `store-${String(st.store_id)}`, title: st.store_name, children: sections };
   });
 
-  const events = store.campaigns.map((c) => ({
-    id: String(c.wc_id),
-    resourceId: `${String(c.store_id)}-${String(c.section_id)}`,
-    title: c.name,
-    start: c.start_date
-      ? new Date(c.start_date).toLocaleDateString('en-CA')
-      : null,
-    end: c.end_date
-      ? new Date(new Date(c.end_date).setDate(new Date(c.end_date).getDate() + 1)).toLocaleDateString('en-CA')
-      : null,
+  const sectionIndexMap = {};
 
-    // 🎨 Add colors here
-    backgroundColor: getEventColor(c.name),
-    borderColor: getEventColor(c.name),
-    textColor: "#000"
-  }));
+  const events = store.campaigns.map((c) => {
+    const key = `${c.store_id}-${c.campaign_type_id}`;
 
+    if (!(key in sectionIndexMap)) {
+      sectionIndexMap[key] = 0;
+    }
+
+    const color = ganttColors[sectionIndexMap[key] % ganttColors.length];
+    sectionIndexMap[key]++;
+
+    return {
+      id: String(c.wc_id),
+      resourceId: key,
+      title: c.name,
+      start: c.start_date
+        ? new Date(c.start_date).toLocaleDateString('en-CA')
+        : null,
+      end: c.end_date
+        ? new Date(new Date(c.end_date).setDate(new Date(c.end_date).getDate() + 1)).toLocaleDateString('en-CA')
+        : null,
+      backgroundColor: color,
+      borderColor: color,
+      textColor: "#ffffff",
+    };
+  });
 
   calendarOptions.value = { ...calendarOptions.value, resources, events };
 
   const calendarApi = calendarRef.value?.getApi();
   if (calendarApi) {
-    // ✅ Only call if methods exist
     if (typeof calendarApi.removeAllResources === "function") {
       calendarApi.removeAllResources();
       resources.forEach((r) => calendarApi.addResource(r));
@@ -459,6 +490,7 @@ function updateCalendarResourcesAndEvents() {
     }
   }
 }
+
 
 
 function openAddModal() {
@@ -473,10 +505,10 @@ function openEditModal(c) {
     name: c.name,
     campaign_type_id: c.campaign_type_id,
     section_id: c.section_id,
+    is_all_store: Boolean(c.is_applied_to_both_stores),
     store_id: c.store_id,
     start_date: c.start_date,
     end_date: c.end_date,
-    is_all_store: false,
   };
   showDialog.value = true;
 }
@@ -501,6 +533,7 @@ async function saveCampaign() {
     name: form.value.name,
     campaign_type_id: form.value.campaign_type_id,
     section_id: form.value.section_id,
+    is_applied_to_both_stores: form.value.is_all_store,
     store_id: form.value.store_id,
     start_date: form.value.start_date ? new Date(form.value.start_date).toLocaleDateString('en-CA') : null,
     end_date: form.value.end_date ? new Date(form.value.end_date).toLocaleDateString('en-CA') : null,
@@ -508,7 +541,6 @@ async function saveCampaign() {
 
   try {
     if (editTargetId.value) {
-      // Update main campaign
       await store.editCampaign(editTargetId.value, payload);
 
       if (form.value.is_all_store) {
@@ -531,7 +563,6 @@ async function saveCampaign() {
         toastr.success("Campaign updated.");
       }
     } else {
-      // New campaign
       if (form.value.is_all_store) {
         const promises = store.stores.map(s => store.addCampaign({ ...payload, store_id: s.store_id }));
         const results = await Promise.allSettled(promises);
@@ -637,7 +668,7 @@ function validateForm() {
   }
 
   if (!form.value.is_all_store && !form.value.store_id) {
-    errors.value.store_id = "Select a store unless applying to all stores.";
+    errors.value.store_id = "Select a website unless applying to both websites.";
     valid = false;
   }
 
@@ -661,23 +692,6 @@ function validateForm() {
   return valid;
 }
 
-function getEventColor(name) {
-  if (!name) return "";
-
-  if (name.toLowerCase().includes("hot deals")) {
-    return "#ff4d4d";
-  }
-
-  const colors = [
-    "#4da6ff", "#66cc99", "#ffcc66", "#cc99ff",
-    "#66cccc", "#ff9966", "#99cc66"
-  ];
-
-  return colors[Math.floor(Math.random() * colors.length)];
-}
-
-
-
 onMounted(async () => {
   await loadCampaigns();
   updateCalendarResourcesAndEvents();
@@ -685,43 +699,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.fc {
-  --fc-border-color: #374151;
-  --fc-page-bg-color: #111827;
-  --fc-neutral-bg-color: #1f2937;
-  --fc-neutral-text-color: #d1d5db;
-  --fc-button-bg-color: #374151;
-  --fc-button-border-color: #4b5563;
-  --fc-button-text-color: #f9fafb;
-  --fc-button-hover-bg-color: #4b5563;
-  --fc-today-bg-color: #1d4ed8;
-  border-radius: 0.75rem;
-  font-family: "Inter", sans-serif;
-  color: #e5e7eb;
-}
 
-.animate-pulse {
-  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.fc-toolbar-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #f9fafb;
-}
-
-.fc-datagrid-cell-main {
-  font-weight: 500;
-  color: #f3f4f6;
-}
-
-.fc-event {
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-  padding: 2px 4px;
-}
-
-:deep(.fc-event-title) {
-  font-size: 11px !important;
-}
 </style>

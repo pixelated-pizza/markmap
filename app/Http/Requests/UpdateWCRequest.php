@@ -22,13 +22,32 @@ class UpdateWCRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'campaign_type_id' => 'required|uuid|exists:website_campaign_types,campaign_type_id',
-            'section_id' => 'required|uuid|exists:sections,section_id',
-            'store_id' => 'required|uuid|exists:stores,store_id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'name' => 'sometimes|string|max:255',
+            'campaign_type_id' => 'sometimes|uuid|exists:website_campaign_types,campaign_type_id',
+            'section_id' => 'sometimes|uuid|exists:sections,section_id',
+            'store_id' => 'sometimes|uuid|exists:stores,store_id',
+            'start_date' => 'sometimes|date',
+            'is_applied_to_both_stores' => 'sometimes|boolean',
+            'end_date' => 'sometimes|date',
             'is_archived' => 'sometimes|boolean',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.string' => 'The name must be a string.',
+            'name.max' => 'The name may not be greater than 255 characters.',
+            'campaign_type_id.uuid' => 'The campaign type ID must be a valid UUID.',
+            'campaign_type_id.exists' => 'The selected campaign type does not exist.',
+            'section_id.uuid' => 'The section ID must be a valid UUID.',
+            'section_id.exists' => 'The selected section does not exist.',
+            'store_id.uuid' => 'The store ID must be a valid UUID.',
+            'store_id.exists' => 'The selected store does not exist.',
+            'start_date.date' => 'The start date must be a valid date.',
+            'end_date.date' => 'The end date must be a valid date.',
+            'is_applied_to_both_stores.boolean' => 'The is applied to both stores field must be true or false.',
+            'is_archived.boolean' => 'The is archived field must be true or false.',
         ];
     }
 }

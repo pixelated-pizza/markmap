@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full mt-3 bg-gray-900 rounded-lg p-3 min-h-[500px]">
+  <div class="w-full mt-3 dark:bg-gray-900 rounded-lg p-3 min-h-[500px]">
     <template v-if="loading">
       <div class="flex flex-col h-full gap-4">
         <p class="text-gray-400 text-lg">Loading Gantt Chart...</p>
@@ -23,8 +23,8 @@ import FullCalendar from "@fullcalendar/vue3"
 import interactionPlugin from "@fullcalendar/interaction"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline"
-import { fetchWC } from "@/api/website_campaign_api.js";
-import { fetchChannels } from "@/api/campaign_service";
+import { fetchWC } from "@/js/api/website_campaign_api.js";
+import { fetchChannels } from "@/js/api/campaign_service";
 import Skeleton from 'primevue/skeleton';
 
 const calendarRef = ref(null);
@@ -57,6 +57,10 @@ const calendarOptions = ref({
   selectable: false,
   aspectRatio: 2,
   height: 500,
+
+  slotLabelFormat: [
+    { weekday: 'short', day: 'numeric', month: 'short' }
+  ],
 });
 
 function parseEndDate(dateStr) {
