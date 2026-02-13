@@ -8,7 +8,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// --- REQUEST INTERCEPTOR ---
 api.interceptors.request.use(async (config) => {
   // CSRF for mutating requests
   const needsCSRF = ["post", "put", "delete", "patch"].includes(config.method);

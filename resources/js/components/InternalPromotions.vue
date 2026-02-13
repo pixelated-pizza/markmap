@@ -206,25 +206,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.fc {
-  --fc-border-color: #374151;
-  --fc-page-bg-color: #111827;
-  --fc-neutral-bg-color: #1f2937;
-  --fc-neutral-text-color: #d1d5db;
-  --fc-button-bg-color: #374151;
-  --fc-button-border-color: #4b5563;
-  --fc-button-text-color: #f9fafb;
-  --fc-button-hover-bg-color: #4b5563;
-  --fc-today-bg-color: #1d4ed8;
-  border-radius: 0.75rem;
-  font-family: "Inter", sans-serif;
-  color: #e5e7eb;
-}
-
-.fc-toolbar-title {
+:deep(.fc-toolbar-title) {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #f9fafb;
+  color: #f9fafb; 
+}
+
+:deep(.dark .fc-toolbar-title) {
+  color: #111827; 
+}
+
+:deep(.fc-datagrid-cell-main) {
+  font-weight: 500;
+  color: #f3f4f6; 
+}
+
+:deep(.fc-timeline-slot-frame) {
+  font-weight: 500;
+  color: #f3f4f6
+}
+
+:deep(.dark .fc-timeline-slot-frame) {
+  font-weight: 500;
+  color: #f3f4f6
 }
 
 .fc-datagrid-cell-main {

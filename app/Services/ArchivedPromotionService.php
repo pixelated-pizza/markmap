@@ -24,7 +24,7 @@ class ArchivedPromotionService
                 'creatives' => $promo->creatives,
                 'coupon_label' => $promo->coupon_label,
                 'coupon_code' => $promo->coupon_code,
-                'website_store' => $promo->store ? $promo->store->store_name : null, // map store name here
+                'website_store' => $promo->store ? $promo->store->store_name : null, 
                 'store_id' => $promo->store ? $promo->store->store_id : null,
                 'start_date' => $promo->start_date,
                 'end_date' => $promo->end_date,

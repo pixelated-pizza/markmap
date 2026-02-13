@@ -1,8 +1,8 @@
 <template>
     <div class="flex flex-col w-full h-full bg-gray-900 px-6 overflow-x-auto">
-        <h2 class="text-gray-200 font-semibold text-lg text-center p-2 bg-cyan-900 mt-5">
+        <h4 class="text-gray-200 font-semibold text-lg text-center p-2 mt-5">
             Website Sale Archive
-        </h2>
+        </h4>
         <div>
             <template v-if="loading">
                 <div class="flex flex-col gap-4 w-full h-full mt-5">

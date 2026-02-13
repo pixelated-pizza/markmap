@@ -13,4 +13,9 @@ class WebsiteCampaignType extends Model
     protected $fillable = [
         'campaign_type_name',
     ];
+
+    public function campaigns()
+    {
+        return $this->hasMany(WebsiteCampaign::class, 'website_campaign_type_id', 'campaign_type_id');
+    }
 }

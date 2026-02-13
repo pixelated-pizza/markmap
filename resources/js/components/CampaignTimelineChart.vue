@@ -2,7 +2,7 @@
   <div
     class="apex-wrapper mt-5 rounded-2xl p-5 shadow-xl 
            bg-white app-dark:bg-[#000524] 
-           border border-gray-200 app-dark:border-gray-700"
+           border border-gray-200 dark:border-gray-700"
   >
     <apexchart type="bar" height="300" :options="chartOptions" :series="series" />
   </div>
@@ -10,7 +10,9 @@
 
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted } from "vue";
+
+const isDark = ref(false);
 
 const props = defineProps({
   campaigns: {
@@ -74,14 +76,23 @@ const series = computed(() => [
   }
 ]);
 
-const isDark = computed(() =>
-  document.documentElement.classList.contains("app-dark")
-);
+onMounted(() => {
+  const observer = new MutationObserver(() => {
+    isDark.value = document.documentElement.classList.contains("app-dark");
+  });
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"]
+  });
+
+  isDark.value = document.documentElement.classList.contains("app-dark");
+});
 
 const chartOptions = computed(() => ({
   chart: {
     type: "bar",
-    foreColor: isDark.value ? "#e5e7eb" : "#111827", // gray-200 vs gray-900
+    foreColor: "#ffffff",
     toolbar: { show: false },
     zoom: { enabled: true }
   },
@@ -92,7 +103,7 @@ const chartOptions = computed(() => ({
     style: {
       fontSize: "16px",
       fontWeight: "600",
-      color: isDark.value ? "#ffffff" : "#111827"
+      color: "#ffffff",
     }
   },
 

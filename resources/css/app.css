@@ -216,3 +216,19 @@ html, body {
   border-color: #374151 !important;
 }
 
+/* Light mode - soft blue */
+.p-datatable .p-sortable-column.p-highlight {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
+/* Dark mode - soft dark */
+html.app-dark .p-datatable .p-sortable-column.p-highlight {
+  background: #1f2937 !important; /* gray-800 */
+}
+
+/* Body cells too */
+html.app-dark .p-datatable .p-datatable-tbody > tr > td.p-highlight {
+  background: #111827 !important; /* gray-900 */
+}
+
+

@@ -41,6 +41,16 @@ const model = ref([
       { label: 'Website Sales', icon: 'pi pi-globe', to: '/website-sale-archive' },
       { label: 'Marketplace Promotions', icon: 'pi pi-shopping-bag', to: '/#' }
     ]
+  },
+  {
+    label: 'Admin Settings',
+    items: [
+      {
+        label: 'User Management',
+        icon: 'pi pi-user',
+        to: '/user-mgmt' 
+      },
+    ]
   }
 ]);
 

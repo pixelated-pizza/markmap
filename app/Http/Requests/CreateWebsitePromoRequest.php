@@ -4,16 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateWPDRequest extends FormRequest
+class CreateWebsitePromoRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         // Allow all users to make this request, adjust if needed
         return true;
     }
+
     public function rules(): array
     {
         return [
@@ -49,4 +47,3 @@ class CreateWPDRequest extends FormRequest
         ];
     }
 }
-

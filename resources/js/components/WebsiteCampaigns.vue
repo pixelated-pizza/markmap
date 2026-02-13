@@ -1,13 +1,14 @@
 <template>
   <div class="flex flex-col bg-white dark:bg-gray-900 h-auto max-h-[88vh] overflow-auto">
-    <div class="card dark:bg-gray-900 bg-white rounded-lg p-3 mt-2">
+    <div class="card dark:bg-gray-900 bg-white rounded-lg mt-2">
 
       <h4 class="text-gray-200 font-semibold text-lg text-center p-2">Website Campaign Calendar
         - Edisons & Mytopia</h4>
 
-      <div class="h-[450px] overflow-hidden rounded-lg p-5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+      <div
+        class="h-[450px] overflow-hidden rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
         <template v-if="loading">
-          <div class="flex flex-col gap-4 w-full h-full">
+          <div class="flex flex-col gap-4 w-full h-full p-3">
             <p class="text-gray-400 text-lg">Loading Gantt Chart...</p>
             <Skeleton height="2rem" width="70%" />
             <Skeleton height="2rem" width="50%" />
@@ -20,7 +21,7 @@
           </div>
         </template>
 
-        <FullCalendar v-else ref="calendarRef" :options="calendarOptions"  class="w-full h-full fc-theme" />
+        <FullCalendar v-else ref="calendarRef" :options="calendarOptions" class="w-full h-full fc-theme" />
       </div>
 
       <div class="rounded-sm">
@@ -37,7 +38,7 @@
             </div>
           </div>
         </template>
-        <DataTable v-else :value="filteredCampaigns" :sortOrder="-1" dataKey="wc_id" paginator
+        <DataTable v-else :value="filteredCampaigns" sortField="start_date" :sortOrder="-1" dataKey="wc_id" paginator
           :rows="5" :rowsPerPageOptions="[5, 10, 20, 50]" showGridlines scrollable scrollHeight="500px" stickyHeader
           tableStyle="min-width: 60rem;" :loading="loading" class="p-datatable-sm" tableLayout="fixed">
           <template #header>
@@ -102,8 +103,16 @@
 
           <Column header="Status" class="w-1/6">
             <template #body="{ data }">
-              <span :class="statusClass(data)">{{ getStatus(data) }}</span>
+              <span :class="[
+                'px-2 py-1 rounded text-sm font-medium',
+                isUpcoming(data) ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                  isRunning(data) ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                    'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+              ]">
+                {{ getStatus(data) }}
+              </span>
             </template>
+
           </Column>
 
           <Column header="Action" class="w-1/6">
@@ -120,10 +129,12 @@
         </DataTable>
       </div>
 
-      <Dialog v-model:visible="showDialog" modal :header="dialogHeader" :style="{ width: '30vw' }" class="app-dark">
+      <Dialog v-model:visible="showDialog" modal :header="dialogHeader" :style="{ width: '30vw' }"
+        class="bg-white dark:bg-gray-900">
+
         <div class="flex flex-col gap-3">
           <div>
-            <label class="block text-gray-300 mb-1">Name</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-1">Name</label>
             <InputText v-model="form.name" class="w-full" placeholder="Name of the Website Sale / Promotion" />
             <Message v-if="errors.name" severity="error" size="small" variant="simple">
               {{ errors.name }}
@@ -131,7 +142,7 @@
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-1">Campaign Category</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-1">Campaign Category</label>
             <Select v-model="form.campaign_type_id" :options="store.campaign_types" optionLabel="campaign_type_name"
               optionValue="campaign_type_id" class="w-full" placeholder="Campaign Category" />
             <Message v-if="errors.campaign_type_id" severity="error" size="small" variant="simple">
@@ -140,7 +151,7 @@
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-1">Where do we place this?</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-1">Where do we place this?</label>
             <Select v-model="form.section_id" :options="store.sections" optionLabel="name" optionValue="section_id"
               class="w-full" placeholder="Section Name" />
             <Message v-if="errors.section_id" severity="error" size="small" variant="simple">
@@ -150,11 +161,11 @@
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-1">What Website?</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-1">What Website?</label>
             <div class="flex items-center gap-2 mb-2 mt-2">
               <Checkbox v-model="form.is_all_store" inputId="all_store" binary :true-value="true"
                 :false-value="false" />
-              <label for="all_store" class="text-gray-300 cursor-pointer">Apply to Both Websites</label>
+              <label for="all_store" class="text-gray-700 dark:text-gray-300 cursor-pointer">Apply to Both Websites</label>
             </div>
 
             <Select v-model="form.store_id" :disabled="form.is_all_store" :options="store.stores"
@@ -167,7 +178,7 @@
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-1">Start Date</label>
+            <label class="block dark:text-gray-300 mb-1 text-black">Start Date</label>
             <DatePicker v-model="form.start_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
             <Message v-if="errors.start_date" severity="error" size="small" variant="simple">
               {{ errors.start_date }}
@@ -175,7 +186,7 @@
           </div>
 
           <div>
-            <label class="block text-gray-300 mb-1">End Date</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-1">End Date</label>
             <DatePicker v-model="form.end_date" dateFormat="yy-mm-dd" showIcon class="w-full" />
             <Message v-if="errors.end_date" severity="error" size="small" variant="simple">
               {{ errors.end_date }}
@@ -372,10 +383,8 @@ const filteredCampaigns = computed(() => {
     return matchesSearch && matchesStore && matchesSection;
   });
 
-  // Group campaigns by name
   const grouped = {};
   campaigns.forEach(c => {
-    // Strip "Website - " from store name
     const cleanStoreName = c.store?.store_name?.replace(/^Website - /, '') || '';
 
     if (!grouped[c.name]) {
@@ -390,7 +399,6 @@ const filteredCampaigns = computed(() => {
     }
   });
 
-  // Convert array of store names into string with " & "
   return Object.values(grouped).map(c => ({
     ...c,
     websiteDisplay: c.websiteDisplay.join(' & ')
@@ -411,13 +419,19 @@ function isRunning(data) {
 function isCompleted(data) { return todayStr > data.end_date; }
 function isUpcoming(data) { return todayStr < data.start_date; }
 function getStatus(data) { return isRunning(data) ? 'Active' : isCompleted(data) ? 'Completed' : 'Upcoming'; }
-function statusClass(data) {
-  return {
-    'text-yellow-900': isUpcoming(data),
-    'text-green-900': isRunning(data),
-    'app-dark:text-gray-900': isCompleted(data),
-  };
-}
+// function statusClass(data) {
+//   return {
+//     // UPCOMING
+//     'text-orange-600 dark:text-orange-400': isUpcoming(data),
+
+//     // ACTIVE
+//     'text-green-700 dark:text-green-400': isRunning(data),
+
+//     // COMPLETED
+//     'text-gray-800 dark:text-gray-300': isCompleted(data),
+//   };
+// }
+
 
 async function loadCampaigns() {
   loading.value = true;
@@ -699,5 +713,22 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.p-datatable .p-sortable-column.p-highlight {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
 
+html.app-dark .p-datatable .p-sortable-column.p-highlight {
+  background: #1f2937 !important;
+  color: #e5e7eb !important;
+}
+
+html.app-dark .p-datatable .p-datatable-tbody>tr>td.p-highlight {
+  background: #111827 !important;
+  color: #e5e7eb !important;
+}
+
+.p-datatable .p-sortable-column,
+.p-datatable .p-sortable-column.p-highlight {
+  transition: background-color 0.15s ease;
+}
 </style>

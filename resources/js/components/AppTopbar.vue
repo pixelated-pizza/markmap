@@ -15,7 +15,7 @@
           <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
         </button>
 
-        <div class="relative">
+        <!-- <div class="relative">
           <Button
             icon="pi pi-bell"
             rounded
@@ -31,7 +31,7 @@
           >
             {{ newNotifications.length }}
           </span>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>

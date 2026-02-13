@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col h-auto max-h-[88vh] overflow-auto p-5">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-300 rounded-xl p-5 flex flex-col items-start transition"
+      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-200 rounded-xl p-5 flex flex-col items-start transition"
         @click="openModal('total')">
         <div v-if="loading" class="flex items-center gap-3 w-full">
           <Skeleton shape="circle" size="2.5rem" />
@@ -22,7 +22,7 @@
         </div>
       </div>
 
-      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-300 rounded-xl p-5 flex flex-col items-start transition"
+      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-200 rounded-xl p-5 flex flex-col items-start transition"
         @click="openModal('active')">
         <div v-if="loading" class="flex items-center gap-3 w-full">
           <Skeleton shape="circle" size="2.5rem" />
@@ -43,7 +43,7 @@
         </div>
       </div>
 
-      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-300 rounded-xl p-5 flex flex-col items-start transition"
+      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-200 rounded-xl p-5 flex flex-col items-start transition"
         @click="openModal('upcoming')">
         <div v-if="loading" class="flex items-center gap-3 w-full">
           <Skeleton shape="circle" size="2.5rem" />
@@ -64,7 +64,7 @@
         </div>
       </div>
 
-      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-300 rounded-xl p-5 flex flex-col items-start transition"
+      <div class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-200 rounded-xl p-5 flex flex-col items-start transition"
         @click="openModal('completed')">
         <div v-if="loading" class="flex items-center gap-3 w-full">
           <Skeleton shape="circle" size="2.5rem" />

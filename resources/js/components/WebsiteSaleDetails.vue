@@ -1,6 +1,6 @@
 <template>
-  <div class="card">
-    <h4 class=" font-semibold text-lg text-center p-2 app-dark:text-white">
+  <div class="dark:bg-gray-900 bg-white p-5">
+    <h4 class="font-semibold text-lg text-center p-2 app-dark:text-white ">
       Website Sale Details
     </h4>
     <template v-if="loading">
@@ -17,7 +17,7 @@
       </div>
     </template>
 
-    <div v-else class="dark:bg-gray-800 bg-white p-2">
+    <div v-else>
       <div class="mb-2 flex justify-content-between flex-wrap gap-4 w-full">
 
         <div class="flex items-center w-full md:w-auto">
@@ -38,21 +38,16 @@
         </div>
       </div>
       <DataTable :value="filteredCampaigns" v-model:expandedRows="expandedRows" dataKey="campaign_id" showGridlines
-        scrollable scrollDirection="horizontal" tableStyle="min-width: 100rem;" size="small" class="text-md bg-gray-900"
-        @rowExpand="onRowExpand" @rowCollapse="onRowCollapse" paginator :rows="15">
+        scrollable scrollHeight="60vh" scrollDirection="both" tableStyle="min-width: 100rem;" size="small"
+        class="text-md bg-gray-900 mt-5" @rowExpand="onRowExpand" @rowCollapse="onRowCollapse" paginator :rows="15">
         <Column expander style="width: 3rem" header="Expand" />
 
         <Column header="Status" sortable sortField="statusOrder">
           <template #body="{ data }">
-            <span :class="{
-              'text-green-400 font-semibold': isRunning(data),
-              'text-red-400 font-semibold': isCompleted(data),
-              'text-orange-400 font-semibold': isUpcoming(data),
-            }">
-              {{ getStatus(data) }}
-            </span>
+            <Badge :value="data.status" :severity="getSeverity(data.status)" class="font-semibold" />
           </template>
         </Column>
+
 
         <Column field="store_name" header="Channel" />
         <Column field="name" header="Event Name" />
@@ -250,11 +245,21 @@ const fieldsList = [
 ];
 const replacer = (val) => (val == null || val === "" ? "No Data Yet" : val);
 
-const todayStr = new Date().toISOString().split("T")[0];
-const isRunning = (data) => todayStr >= data.start_date && todayStr <= data.end_date;
-const isCompleted = (data) => todayStr > data.end_date;
-const isUpcoming = (data) => todayStr < data.start_date;
-const getStatus = (data) => (isRunning(data) ? "RUNNING" : isCompleted(data) ? "ENDED" : "UPCOMING");
+const getStatus = (data) => {
+  if (!data.start_date || !data.end_date) return "UPCOMING";
+
+  const today = new Date();
+  const start = new Date(data.start_date + "T00:00:00"); // start of day
+  const end = new Date(data.end_date + "T23:59:59");     // end of day
+
+  if (today >= start && today <= end) return "RUNNING";
+  if (today > end) return "ENDED";
+  return "UPCOMING"; // today < start
+};
+
+const isRunning = (data) => getStatus(data) === "RUNNING";
+const isCompleted = (data) => getStatus(data) === "ENDED";
+
 
 const buildTextTable = (data) => [
   {
@@ -375,16 +380,9 @@ const saveChanges = async (data) => {
   }
 };
 
-
 const addStatusFields = (list) => {
-  const today = new Date().toISOString().split("T")[0];
-
   return list.map(c => {
-    let status = "UPCOMING";
-
-    if (today >= c.start_date && today <= c.end_date) status = "RUNNING";
-    else if (today > c.end_date) status = "ENDED";
-
+    const status = getStatus(c);
     return {
       ...c,
       status,
@@ -396,7 +394,6 @@ const addStatusFields = (list) => {
     };
   });
 };
-
 
 const cancelEdit = (data) => {
   data.isEditing = false;
@@ -419,6 +416,15 @@ const autoLink = (text) => {
     .replace(urlRegex, (url) => {
       return `<a href="${url}" target="_blank" class="text-blue-400 underline">${url}</a>`;
     });
+};
+
+const getSeverity = (status) => {
+  switch (status) {
+    case "RUNNING": return "success";
+    case "ENDED": return "danger";
+    case "UPCOMING": return "warning";
+    default: return "info";
+  }
 };
 
 //for rerun campaign
@@ -471,14 +477,42 @@ const submitRerunCampaign = async () => {
   }
 };
 
+const updateStatuses = (list) => {
+  const today = new Date();
+  return list.map(c => {
+    const start = new Date(c.start_date + "T00:00:00");
+    const end = new Date(c.end_date + "T23:59:59");
+    let status = "UPCOMING";
+    if (today >= start && today <= end) status = "RUNNING";
+    else if (today > end) status = "ENDED";
+    return {
+      ...c,
+      status,
+      statusOrder: { RUNNING: 1, UPCOMING: 2, ENDED: 3 }[status]
+    };
+  });
+};
+
+setInterval(() => {
+  wsdStore.websiteSaleDetails.forEach((c, i) => {
+    const start = new Date(c.start_date + "T00:00:00");
+    const end = new Date(c.end_date + "T23:59:59");
+    let status = "UPCOMING";
+    const today = new Date();
+    if (today >= start && today <= end) status = "RUNNING";
+    else if (today > end) status = "ENDED";
+    
+    c.status = status;
+    c.statusOrder = { RUNNING: 1, UPCOMING: 2, ENDED: 3 }[status];
+  });
+}, 30 * 1000); 
 
 
 onMounted(async () => {
   loading.value = true;
   await wsdStore.loadWSD();
 
-  wsdStore.websiteSaleDetails =
-    addStatusFields(wsdStore.websiteSaleDetails);
+  wsdStore.websiteSaleDetails = updateStatuses(wsdStore.websiteSaleDetails);
 
   loading.value = false;
 });

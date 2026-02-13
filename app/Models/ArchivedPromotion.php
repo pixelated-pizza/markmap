@@ -12,7 +12,7 @@ class ArchivedPromotion extends Model
 
     protected $table = 'archived_promotions';
 
-    protected $primaryKey = 'promo_id';
+    protected $primaryKey = 'archived_promo_id';
     public $incrementing = false;
     protected $keyType = 'string';
 
@@ -20,36 +20,14 @@ class ArchivedPromotion extends Model
 
     protected $fillable = [
         'promo_id',
-        'wc_id',
-        'promo_name',
-        'description',
-        'does_include_parts',
-        'does_include_marketplace_products',
-        'terms_and_conditions',
-        'creatives',
-        'coupon_label',
-        'coupon_code',
-        'website_store',
-        'start_date',
-        'end_date',
-        'status',
-        'updated_at', // custom field
     ];
 
-    protected $casts = [
-        'promo_id' => 'string',
-        'website_store' => 'string',
-        'does_include_parts' => 'boolean',
-        'does_include_marketplace_products' => 'boolean',
-        'start_date' => 'date',
-        'end_date' => 'date',
-    ];
 
     /**
-     * Store relationship (UUID FK)
+     * Promo relationship (UUID FK)
      */
-    public function store()
+    public function promos()
     {
-        return $this->belongsTo(Store::class, 'website_store', 'store_id');
+        return $this->belongsTo(WebsitePromoDetails::class, 'promo_id', 'promo_id');
     }
 }

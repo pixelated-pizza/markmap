@@ -22,7 +22,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import AppMenu from './AppMenu.vue';   // ✅ IMPORTANT
+import AppMenu from './AppMenu.vue';   
 import { useUserStore } from '@/js/utils/user.js';
 import Button from 'primevue/button';
 import { logout } from '@/js/api/login_api.js';
@@ -32,39 +32,6 @@ const router = useRouter();
 const userStore = useUserStore();
 
 const userName = computed(() => userStore.name);
-
-const model = ref([
-  { label: 'Home', items: [{ label: 'Dashboard', icon: 'pi pi-chart-bar', to: '/dashboard' }] },
-  {
-    label: 'Marketing Calendar',
-    items: [
-      {
-        label: 'Website & Marketplaces Campaigns',
-        icon: 'pi pi-globe',
-        to: '/campaigns'
-      },
-      {
-        label: 'Website Sales / Promotions - Mytopia & Edisons',
-        icon: 'pi pi-globe',
-        to: '/website_campaigns'
-      },
-      { label: 'Website Sale Details', icon: 'pi pi-pen-to-square', to: '/website-sale' },
-      { label: 'Website Promotion Details', icon: 'pi pi-pen-to-square', to: '/website-promo' }
-    ]
-  },
-  {
-    label: 'Archive',
-    items: [
-      {
-        label: 'Website Promotions',
-        icon: 'pi pi-chart-line',
-        to: '/website-promotions-archive'
-      },
-      { label: 'Website Sales', icon: 'pi pi-globe', to: '/website-sale-archive' },
-      { label: 'Marketplace Promotions', icon: 'pi pi-shopping-bag', to: '/#' }
-    ]
-  }
-]);
 
 async function handleLogout() {
   try {

@@ -23,6 +23,7 @@ const routes = [
       { path: 'website-promotions-archive', name: 'WebsitePromoArchive', component: () => import('@/js/components/WebsitePromoArchive.vue') },
       { path: 'website-sale-archive', name: 'WebsiteSaleArchive', component: () => import('@/js/components/WebsiteSaleArchive.vue') },
       { path: 'website-promo', name: 'WebsitePromo', component: () => import('@/js/components/WebsitePromos.vue') },
+      { path: 'user-mgmt', name: 'UserMgmt', component: () => import('@/js/components/super_admin/UserMgmt.vue') },
     ]
   }
 ];

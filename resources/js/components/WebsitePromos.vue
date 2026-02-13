@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col w-full h-full bg-gray-900 px-6 overflow-x-auto">
+    <div class="flex flex-col h-auto max-h-[88vh] overflow-auto dark:bg-gray-900 p-3 bg-gray-200">
         <h4 class="text-gray-200 font-semibold text-lg text-center p-2 mt-5">
             Website Promotions Details
         </h4>
@@ -18,11 +18,11 @@
                 </div>
             </template>
             <div v-else>
-                <div v-if="archiveStore.archivedPromotions.length === 0" class="text-center text-gray-500 mt-10">
-                    No archived promotions found.
+                <div v-if="websitePromosStore.websitePromotions.length === 0" class="text-center text-gray-500 mt-10">
+                    No website promotions found.
                 </div>
                 <div v-else>
-                    <DataTable :value="archiveStore.archivedPromotions" dataKey="promo_id"
+                    <DataTable :value="mergedPromotions" :dataKey="row => row.promo_name"
                         v-model:expandedRows="expandedRows" class="p-datatable-sm" rowHover paginator :rows="20">
                         <Column expander style="width: 3rem" />
                         <Column field="promo_name" header="Promotion" />
@@ -30,22 +30,24 @@
                             <template #body="{ data }">
                                 <div class="flex gap-2">
                                     <span class="text-md px-2 py-1 rounded"
-                                        :class="data.does_include_parts ? 'bg-green-600' : 'bg-red-600'">
+                                        :class="data.does_include_parts ? 'bg-green-400 text-black font-bold' : 'bg-red-600 dark:text-white font-bold'">
                                         {{ data.does_include_parts ? 'Parts Included' : 'Parts Excluded' }}
                                     </span>
 
                                     <span class="text-md px-2 py-1 rounded"
-                                        :class="data.does_include_marketplace_products ? 'bg-green-600' : 'bg-red-600'">
-                                        {{ data.does_include_marketplace_products ? 'Marketplace Included' : 'Marketplace Excluded' }}
+                                        :class="data.does_include_marketplace_products ? 'bg-green-400 text-black font-bold' : 'bg-red-600 dark:text-white font-bold'">
+                                        {{ data.does_include_marketplace_products ? 'Marketplace Included' :
+                                            'Marketplace Excluded' }}
                                     </span>
                                 </div>
                             </template>
                         </Column>
                         <Column header="Website">
                             <template #body="{ data }">
-                                {{ data.website_store || '-' }}
+                                {{ data.storeNames }}
                             </template>
                         </Column>
+
                         <Column header="Status">
                             <template #body="{ data }">
                                 <span class="text-md font-bold" :class="statusBadge(data.status)">
@@ -53,63 +55,87 @@
                                 </span>
                             </template>
                         </Column>
+
                         <Column header="Actions" style="width: 10rem">
                             <template #body="{ data }">
-                                <Button icon="pi pi-pencil" severity="success" rounded text size="medium"
+                                <Button icon="pi pi-pencil" severity="success" label="Edit" rounded text size="medium"
                                     @click="editPromo(data)" />
-                                <Button icon="pi pi-folder" severity="warn" rounded text size="medium"
-                                    @click="confirmUnarchive(data)" />
                             </template>
                         </Column>
                         <template #expansion="{ data }">
-                            <div class="p-4 bg-black rounded-lg">
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-white">
+                            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-4">
 
-                                    <div>
-                                        <p class="text-md text-gray-300">Description</p>
-                                        <p class="break-words text-green-500 font-bold">{{ data.description || 'No description' }}</p>
+                                <!-- Description -->
+                                <div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm">
+                                    <p class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1">Description
+                                    </p>
+                                    <p class="text-gray-800 dark:text-gray-100 break-words">
+                                        {{ data.description || 'No description available' }}
+                                    </p>
+                                </div>
+
+                                <!-- Coupon Info -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm">
+                                        <p class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1">Coupon
+                                            Label</p>
+                                        <p class="text-gray-800 dark:text-gray-100">{{ data.coupon_label || '-' }}</p>
                                     </div>
-                                    <div>
-                                        <p class="text-md text-gray-300">Terms & Conditions</p>
-                                        <p class="break-words text-red-400 font-bold">
-                                            {{ Array.isArray(data.terms_and_conditions)
-                                                ? data.terms_and_conditions.join(', ')
-                                                : data.terms_and_conditions || '-' }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-md text-gray-300">Coupon Label</p>
-                                        <p>{{ data.coupon_label || '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-md text-gray-300">Coupon Code</p>
-                                        <p>{{ data.coupon_code || '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-md text-gray-300">Creatives</p>
-                                        <p class="truncate">
-                                            {{ Array.isArray(data.creatives)
-                                                ? data.creatives.join(', ')
-                                                : data.creatives || '-' }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-md text-gray-300">Start Date</p>
-                                        <p class="text-green-500">{{ dayjs(data.start_date).format('DD-MM-YYYY') }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-md text-gray-300">End Date</p>
-                                        <p class="text-green-500">{{ dayjs(data.end_date).format('DD-MM-YYYY') }}</p>
+                                    <div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm">
+                                        <p class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1">Coupon
+                                            Code</p>
+                                        <p class="text-gray-800 dark:text-gray-100">{{ data.coupon_code || '-' }}</p>
                                     </div>
                                 </div>
-                                <p class="text-[11px] text-gray-300 mt-4">
+
+                                <!-- Dates -->
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm">
+                                        <p class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1">Start
+                                            Date</p>
+                                        <p class="text-gray-800 dark:text-gray-100">{{
+                                            dayjs(data.start_date).format('DD-MM-YYYY') }}</p>
+                                    </div>
+                                    <div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm">
+                                        <p class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1">End Date
+                                        </p>
+                                        <p class="text-gray-800 dark:text-gray-100">{{
+                                            dayjs(data.end_date).format('DD-MM-YYYY') }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Creatives -->
+                                <div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm">
+                                    <p class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1">Creatives</p>
+                                    <p class="text-gray-800 dark:text-gray-100 truncate">
+                                        {{ Array.isArray(data.creatives) ? data.creatives.join(', ') : data.creatives ||
+                                            'N/A' }}
+                                    </p>
+                                </div>
+
+                                <!-- Terms & Conditions -->
+                                <div class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm">
+                                    <p class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1">Terms &
+                                        Conditions</p>
+                                    <p class="text-gray-800 dark:text-gray-100 break-words">
+                                        {{ Array.isArray(data.terms_and_conditions) ?
+                                            data.terms_and_conditions.join(',') : data.terms_and_conditions || 'No T&Cs' }}
+                                    </p>
+                                </div>
+
+                                <!-- Footer: Last Updated -->
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400">
                                     Last Updated: {{ dayjs(data.updated_at).format('DD-MM-YYYY HH:mm') }}
                                 </p>
+
                             </div>
                         </template>
+
+
                     </DataTable>
                 </div>
-                <Dialog v-model:visible="editVisible" modal header="Edit Archived Promotion" :style="{ width: '640px' }"
+
+                <Dialog v-model:visible="editVisible" modal header="Edit Website Promotion" :style="{ width: '640px' }"
                     class="p-fluid">
                     <div class="flex flex-col gap-6">
 
@@ -125,8 +151,18 @@
                                 <label class="block text-xs font-medium text-gray-400 mb-1">
                                     Website Store
                                 </label>
-                                <Dropdown v-model="editForm.website_store" :options="stores" optionLabel="store_name"
-                                    optionValue="store_id" placeholder="Select Website" class="w-full" />
+                                <div>
+                                    <div class="flex flex-col gap-3">
+                                        <div v-for="store in stores" :key="store.store_id"
+                                            class="flex items-center gap-3">
+                                            <Checkbox v-model="editForm.website_stores" :value="store.store_id" />
+                                            <span class="text-sm text-gray-300">
+                                                {{ store.store_name }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-400 mb-1">
@@ -193,24 +229,15 @@
                         </div>
                     </template>
                 </Dialog>
-
-                <Dialog v-model:visible="showArchiveDialog" header="Confirm Unrchive" :modal="true" :closable="false"
-                    :style="{ width: '400px' }">
-                    <p>Are you sure you want to archive this campaign?</p>
-                    <template #footer>
-                        <Button label="No" severity="danger" text @click="showArchiveDialog = false" />
-                        <Button label="Yes" severity="success" @click="archiveConfirmed" />
-                    </template>
-                </Dialog>
             </div>
         </div>
 
     </div>
 </template>
 <script setup>
-import { onMounted, ref, getCurrentInstance } from 'vue';
+import { onMounted, ref, getCurrentInstance, computed } from 'vue';
 import dayjs from 'dayjs';
-import { useArchivePromosStore } from '@/js/stores/archive_promos_store.js';
+import { useWebsitePromosStore } from '@/js/stores/website_promos_store.js';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
@@ -219,16 +246,13 @@ import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import Skeleton from 'primevue/skeleton';
 
-import { updateArchivedPromotion, fetchUnarchivePromotion } from '@/js/api/archive_promos_api';
+import { createWebsitePromotion, updateWebsitePromotion, deleteWebsitePromotion } from '@/js/api/website_promos_api';
 import { fetchStores } from '@/js/api/website_campaign_api.js';
-const archiveStore = useArchivePromosStore();
+const websitePromosStore = useWebsitePromosStore();
 
 const stores = ref([]);
 const $instance = getCurrentInstance();
 const toastr = $instance.appContext.config.globalProperties.$toastr;
-
-const showArchiveDialog = ref(false);
-const promoToUnarchive = ref(null);
 
 const editVisible = ref(false);
 const editForm = ref({});
@@ -238,54 +262,60 @@ const expandedRows = ref({});
 
 const loading = ref(true);
 
-const editPromo = (promo) => {
-    editingId.value = promo.promo_id;
+const editPromo = (mergedPromo) => {
+    openEditDialog(mergedPromo);
+};
+
+const openEditDialog = (mergedPromo) => {
     editForm.value = {
-        ...promo,
-        terms_and_conditions: promo.terms_and_conditions || '',
-        website_store: promo.store_id || null,
-        start_date: promo.start_date ? new Date(promo.start_date) : null,
-        end_date: promo.end_date ? new Date(promo.end_date) : null,
+        ...mergedPromo,
+        promoRows: mergedPromo.promoRows || [],
+        website_stores: mergedPromo.storeIds || [],
+        start_date: mergedPromo.start_date ? new Date(mergedPromo.start_date) : null,
+        end_date: mergedPromo.end_date ? new Date(mergedPromo.end_date) : null,
     };
+
     editVisible.value = true;
 };
-
 const saveEdit = async () => {
     try {
-        await updateArchivedPromotion(editingId.value, {
-            ...editForm.value,
-            start_date: dayjs(editForm.value.start_date).format('DD-MM-YYYY'),
-            end_date: dayjs(editForm.value.end_date).format('DD-MM-YYYY'),
-        });
+        const selectedStores = editForm.value.website_stores || [];
+
+        // Loop through existing promos for this promo_name
+        const existingPromos = websitePromosStore.websitePromotions.filter(
+            p => p.promo_name === editForm.value.promo_name
+        );
+
+        for (const promo of existingPromos) {
+            // Update each promo with new selected stores and other fields
+            const payload = {
+                ...editForm.value,
+                website_store: selectedStores, // Update front-end store list
+                start_date: editForm.value.start_date
+                    ? dayjs(editForm.value.start_date).format('DD-MM-YYYY')
+                    : null,
+                end_date: editForm.value.end_date
+                    ? dayjs(editForm.value.end_date).format('DD-MM-YYYY')
+                    : null,
+            };
+            const { promo_id, promoRows, ...updatePayload } = payload;
+
+            await updateWebsitePromotion(promo.promo_id, updatePayload);
+        }
+        if (selectedStores.length === 0) {
+            for (const promo of existingPromos) {
+                await deleteWebsitePromotion(promo.promo_id);
+            }
+        }
+        await websitePromosStore.loadWebsitePromotions();
 
         editVisible.value = false;
-        await archiveStore.loadArchivedPromotions();
-        toastr.success("Data Updated successfully.");
+        toastr.success('Promotion updated successfully.');
     } catch (error) {
         console.error('Failed to update promotion', error);
+        toastr.error('Failed to update promotion. See console for details.');
     }
 };
-
-const confirmUnarchive = (promo) => {
-    promoToUnarchive.value = promo;
-    showArchiveDialog.value = true;
-};
-
-const archiveConfirmed = async () => {
-    try {
-        await fetchUnarchivePromotion(promoToUnarchive.value.promo_id);
-        await archiveStore.loadArchivedPromotions();
-
-        toastr.success("Promotion unarchived successfully.");
-    } catch (error) {
-        console.error('Failed to unarchive promotion', error);
-        toastr.error("Failed to unarchive promotion.");
-    } finally {
-        showArchiveDialog.value = false;
-        promoToUnarchive.value = null;
-    }
-};
-
 
 const loadStores = async () => {
     try {
@@ -299,24 +329,75 @@ const loadStores = async () => {
     }
 };
 
+const getPromoStatus = (promo) => {
+    if (!promo.start_date || !promo.end_date) return "UPCOMING";
+
+    const today = dayjs();
+    const start = dayjs(promo.start_date);
+    const end = dayjs(promo.end_date);
+
+    if (today.isAfter(end)) return "ENDED";
+    if (today.isBefore(start)) return "UPCOMING";
+    return "RUNNING"; // today is between start and end
+};
+
+const mergedPromotions = computed(() => {
+    const map = {};
+
+    websitePromosStore.websitePromotions.forEach(promo => {
+        const key = promo.promo_name;
+        if (!map[key]) {
+            map[key] = { ...promo, stores: [], storeIds: [], promoRows: [] };
+        }
+
+        if (promo.store?.store_name) {
+            map[key].stores.push(promo.store.store_name.replace(/^Website - /, ''));
+        }
+
+        if (promo.store?.store_id) {
+            map[key].storeIds.push(promo.store.store_id);
+        }
+
+        map[key].promoRows.push(promo); // ✅ keep original rows
+    });
+
+    return Object.values(map).map(promo => ({
+        ...promo,
+        storeNames: promo.stores.length ? promo.stores.join(' & ') : '-',
+        status: getPromoStatus(promo),
+        storeIds: promo.storeIds,
+        promoRows: promo.promoRows,
+    }));
+});
+
 
 onMounted(async () => {
     loading.value = true;
 
-    await Promise.all([
-        archiveStore.loadArchivedPromotions(),
-        loadStores()
-    ]);
-
-    loading.value = false;
+    try {
+        await Promise.all([
+            websitePromosStore.loadWebsitePromotions(),
+            loadStores()
+        ]);
+    } catch (err) {
+        console.error("Failed to load data:", err);
+    } finally {
+        loading.value = false;
+    }
 });
+
 
 const statusBadge = (status) => {
     switch (status) {
-        case 'ACTIVE': return 'bg-green-500 text-white px-2 py-1 rounded';
-        case 'ENDED': return 'bg-white text-red-500 px-2 py-1 rounded font-bold';
-        case 'UP NEXT': return 'bg-yellow-500 text-black px-2 py-1 rounded';
-        default: return 'bg-gray-300 px-2 py-1 rounded';
+        case 'RUNNING':
+            return 'bg-green-400 text-black px-2 py-1 rounded';
+        case 'ENDED':
+            return 'bg-red-600 text-white px-2 py-1 rounded font-bold';
+        case 'UPCOMING':
+            return 'bg-yellow-500 text-black px-2 py-1 rounded';
+        default:
+            return 'bg-gray-300 px-2 py-1 rounded';
     }
 };
+
 </script>

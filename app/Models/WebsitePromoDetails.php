@@ -32,7 +32,6 @@ class WebsitePromoDetails extends Model
         'website_store',
         'start_date',
         'end_date',
-        'status',
         'updated_at', // custom field
     ];
 
