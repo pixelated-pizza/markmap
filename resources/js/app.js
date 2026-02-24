@@ -17,17 +17,6 @@ import VueApexCharts from "vue3-apexcharts";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBzXaWzsWGmt29UTNYUwXFJRLZfNKwJcKg",
-  authDomain: "marketing-map-calendar.firebaseapp.com",
-  projectId: "marketing-map-calendar",
-  storageBucket: "marketing-map-calendar.firebasestorage.app",
-  messagingSenderId: "803518998967",
-  appId: "1:803518998967:web:1a507700e5580610686032",
-  measurementId: "G-BT5TNC3RGC"
-};
-
-
 import '../css/assets/tailwind.css';      
 import '../css/assets/styles.scss';       
 
