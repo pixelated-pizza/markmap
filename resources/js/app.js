@@ -18,9 +18,9 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBzXaWzsWGmt29UTNYUwXFJRLZfNKwJcKg",
-  authDomain: "marketing-map-calendar.firebaseapp.com",
-  projectId: "marketing-map-calendar",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: "marketing-map-calendar.firebasestorage.app",
   messagingSenderId: "803518998967",
   appId: "1:803518998967:web:1a507700e5580610686032",
