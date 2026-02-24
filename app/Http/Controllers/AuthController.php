@@ -15,6 +15,29 @@ class AuthController extends Controller
         $this->userService = $userService;
     }
 
+    public function firebaseLogin(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'idToken' => 'required|string',
+        ]);
+
+        $user = $this->userService->loginWithFirebase($request->idToken);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Invalid Firebase token'
+            ], 401);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login successful via Firebase',
+            'user'    => $user,
+            'token'   => $token,
+        ]);
+    }
+
     public function login(LoginUserRequest $request): JsonResponse
     {
         $user = $this->userService->login(

@@ -27,8 +27,8 @@ class Campaign extends Model
     ];
 
     protected $casts = [
-        'start_date' => 'date:Y-m-d',
-        'end_date' => 'date:Y-m-d',
+        'start_date' => 'datetime:Y-m-d H:i',
+        'end_date' => 'datetime:Y-m-d H:i',
     ];
     public function channel()
     {

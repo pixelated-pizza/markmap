@@ -24,6 +24,7 @@ const routes = [
       { path: 'website-sale-archive', name: 'WebsiteSaleArchive', component: () => import('@/js/components/WebsiteSaleArchive.vue') },
       { path: 'website-promo', name: 'WebsitePromo', component: () => import('@/js/components/WebsitePromos.vue') },
       { path: 'user-mgmt', name: 'UserMgmt', component: () => import('@/js/components/super_admin/UserMgmt.vue') },
+      { path: 'forgot-password', name: 'ResetPassword', component: () => import('@/js/components/login/ResetPassword.vue') },
     ]
   }
 ];

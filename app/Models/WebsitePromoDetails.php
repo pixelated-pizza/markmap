@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class WebsitePromoDetails extends Model
 {
-     use HasFactory, HasUuids;
+    use HasFactory, HasUuids;
 
     protected $table = 'website_promo_details';
 
@@ -40,8 +40,8 @@ class WebsitePromoDetails extends Model
         'website_store' => 'string',
         'does_include_parts' => 'boolean',
         'does_include_marketplace_products' => 'boolean',
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'start_date' => 'datetime:Y-m-d H:i:s',
+        'end_date' => 'datetime:Y-m-d H:i:s',
     ];
 
     /**

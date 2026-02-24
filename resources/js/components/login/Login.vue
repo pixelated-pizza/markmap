@@ -1,60 +1,110 @@
 <template>
-  <div class="flex h-screen w-screen overflow-hidden 
-            bg-gray-100 dark:bg-gray-950 
-            text-gray-800 dark:text-gray-100">
-    <div class="hidden md:flex w-1/2 relative items-center justify-center bg-gradient-to-br 
-from-blue-100 via-indigo-200 to-purple-200 
-dark:from-gray-800 dark:via-gray-900 dark:to-black
-text-gray-900 dark:text-white overflow-hidden">
-      <div
-        class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1),transparent_70%)] animate-pulse">
-      </div>
+    <div
+        class="flex h-screen w-screen overflow-hidden bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100"
+    >
+        <div
+            class="hidden md:flex w-1/2 relative items-center justify-center bg-gradient-to-br from-blue-100 via-indigo-200 to-purple-200 dark:from-gray-800 dark:via-gray-900 dark:to-black text-gray-900 dark:text-white overflow-hidden"
+        >
+            <div
+                class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1),transparent_70%)] animate-pulse"
+            ></div>
 
-      <div class="relative z-10 text-center">
-        <h1 class="text-3xl font-bold tracking-wide mb-2">MillsBrands&copy;</h1>
-        <p class="text-gray-600 dark:text-gray-400 text-sm">The world of seamless eCommerce</p>
-      </div>
-
-      <div class="absolute ecommerce-world ml-10">
-        <div class="globe"></div>
-
-        <i class="pi pi-shopping-cart float-icon" style="--i:1"></i>
-        <i class="pi pi-box float-icon" style="--i:2"></i>
-        <i class="pi pi-truck float-icon" style="--i:3"></i>
-        <i class="pi pi-globe float-icon" style="--i:4"></i>
-        <i class="pi pi-store float-icon" style="--i:5"></i>
-      </div>
-    </div>
-
-    <div class="flex w-full md:w-1/2 items-center justify-center p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <div class="w-full max-w-md">
-        <img :src="'/app_icon.png'" alt="Logo" class="w-34 h-34 mx-auto mb-4 rounded-full" />
-        <h2 class="text-xl font-semibold mb-6 text-center text-white dark:text-white">Marketing Campaign Calendar</h2>
-
-        <form @submit.prevent="handleLogin" class="space-y-4">
-          <div>
-            <label for="email" class="block text-sm font-medium mb-1">Email</label>
-            <InputText id="email" v-model="email" fluid placeholder="Enter your email" class="bg-gray-50 dark:bg-gray-800"/>
-          </div>
-          <div>
-            <label for="password" class="block text-sm font-medium mb-1">Password</label>
-            <Password id="password" v-model="password" class="bg-gray-50 dark:bg-gray-800" :feedback="false" fluid
-              placeholder="Enter your password" />
-          </div>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <Checkbox v-model="rememberMe" binary />
-              <label class="text-sm">Remember Me</label>
+            <div class="relative z-10 text-center">
+                <h1 class="text-3xl font-bold tracking-wide mb-2">
+                    MillsBrands&copy;
+                </h1>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    The world of seamless eCommerce
+                </p>
             </div>
-            <router-link to="#">
-              <span class="text-sm text-primary-500 hover:text-primary-600 dark:text-primary-400 hover:underline">Forgot password?</span>
-            </router-link>
-          </div>
-          <Button type="submit" icon="pi pi-unlock" label="Login" fluid :loading="loading" severity="contrast" />
-        </form>
-      </div>
+
+            <div class="absolute ecommerce-world ml-10">
+                <div class="globe"></div>
+
+                <i class="pi pi-shopping-cart float-icon" style="--i: 1"></i>
+                <i class="pi pi-box float-icon" style="--i: 2"></i>
+                <i class="pi pi-truck float-icon" style="--i: 3"></i>
+                <i class="pi pi-globe float-icon" style="--i: 4"></i>
+                <i class="pi pi-store float-icon" style="--i: 5"></i>
+            </div>
+        </div>
+
+        <div
+            class="flex w-full md:w-1/2 items-center justify-center p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+        >
+            <div class="w-full max-w-md">
+                <img
+                    :src="'/app_icon.png'"
+                    alt="Logo"
+                    class="w-34 h-34 mx-auto mb-4 rounded-full"
+                />
+                <h2
+                    class="text-xl font-semibold mb-6 text-center text-white dark:text-white"
+                >
+                    Marketing Campaign Calendar
+                </h2>
+
+                <form @submit.prevent="handleLogin" class="space-y-4">
+                    <div>
+                        <label
+                            for="email"
+                            class="block text-sm font-medium mb-1"
+                            >Email</label
+                        >
+                        <InputText
+                            id="email"
+                            v-model="email"
+                            fluid
+                            placeholder="Enter your email"
+                            class="bg-gray-50 dark:bg-gray-800"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            for="password"
+                            class="block text-sm font-medium mb-1"
+                            >Password</label
+                        >
+                        <Password
+                            id="password"
+                            v-model="password"
+                            class="bg-gray-50 dark:bg-gray-800"
+                            :feedback="false"
+                            fluid
+                            placeholder="Enter your password"
+                        />
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <Checkbox v-model="rememberMe" binary />
+                            <label class="text-sm">Remember Me</label>
+                        </div>
+                        <router-link to="#">
+                            <span
+                                class="text-sm text-primary-500 hover:text-primary-600 dark:text-primary-400 hover:underline"
+                                >Forgot password?</span
+                            >
+                        </router-link>
+                    </div>
+                    <Button
+                        label="Sign in with Google"
+                        icon="pi pi-google"
+                        severity="primary"
+                        class="w-full mb-4"
+                        @click="handleFirebaseLogin"
+                    />
+                    <Button
+                        type="submit"
+                        icon="pi pi-unlock"
+                        label="Login"
+                        fluid
+                        :loading="loading"
+                        severity="contrast"
+                    />
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -64,7 +114,10 @@ import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
-import { login } from "@/js/api/login_api.js";
+import { login, loginWithFirebase } from "@/js/api/login_api.js";
+import { auth } from "@/js/app.js";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 const loading = ref(false);
 const email = ref("");
@@ -75,119 +128,140 @@ const { appContext } = getCurrentInstance();
 const $toastr = appContext.config.globalProperties.$toastr;
 
 const handleLogin = async () => {
-  loading.value = true;
-  try {
-    const response = await login({
-      email: email.value,
-      password: password.value,
-      remember: rememberMe.value,
-    });
+    loading.value = true;
+    try {
+        const response = await login({
+            email: email.value,
+            password: password.value,
+            remember: rememberMe.value,
+        });
 
-    if (response.token) localStorage.setItem("auth_token", response.token);
+        if (response.token) localStorage.setItem("auth_token", response.token);
 
-    $toastr.success("Welcome back!", "Login Successful");
-    router.push("/dashboard");
-  } catch (err) {
-    const message = err.response?.data?.message || "Invalid credentials";
-    $toastr.error(message, "Login Failed");
-  } finally {
-    loading.value = false;
-  }
+        $toastr.success("Welcome back!", "Login Successful");
+        router.push("/dashboard");
+    } catch (err) {
+        const message = err.response?.data?.message || "Invalid credentials";
+        $toastr.error(message, "Login Failed");
+    } finally {
+        loading.value = false;
+    }
+};
+
+const handleFirebaseLogin = async () => {
+    loading.value = true;
+    try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const idToken = await result.user.getIdToken();
+
+        const response = await loginWithFirebase(idToken);
+        if (response.token) localStorage.setItem("auth_token", response.token);
+
+        $toastr.success("Welcome back!", "Google Login Successful");
+        router.push("/dashboard");
+    } catch (err) {
+        console.error("Google login error:", err);
+        const message =
+            err.response?.data?.message || err.message || "Google login failed";
+        $toastr.error(message, "Login Failed");
+    } finally {
+        loading.value = false;
+    }
 };
 </script>
 
 <style scoped>
 .ecommerce-world {
-  position: relative;
-  width: 250px;
-  height: 250px;
-  animation: rotateWorld 20s linear infinite;
+    position: relative;
+    width: 250px;
+    height: 250px;
+    animation: rotateWorld 20s linear infinite;
 }
 
 .globe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin: auto;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #4ade80, #1e3a8a 70%);
-  box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #4ade80, #1e3a8a 70%);
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
 }
 
 .float-icon {
-  position: absolute;
-  font-size: 1.5rem;
-  color: #facc15;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-  animation: floatIcons 6s ease-in-out infinite;
+    position: absolute;
+    font-size: 1.5rem;
+    color: #3b82f6;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+    animation: floatIcons 6s ease-in-out infinite;
 }
 
 .float-icon[style*="--i:1"] {
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  animation-delay: 0s;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation-delay: 0s;
 }
 
 .float-icon[style*="--i:2"] {
-  bottom: -10px;
-  left: 20%;
-  animation-delay: 1.5s;
+    bottom: -10px;
+    left: 20%;
+    animation-delay: 1.5s;
 }
 
 .float-icon[style*="--i:3"] {
-  right: -10px;
-  top: 40%;
-  animation-delay: 3s;
+    right: -10px;
+    top: 40%;
+    animation-delay: 3s;
 }
 
 .float-icon[style*="--i:4"] {
-  top: 10%;
-  left: 10%;
-  animation-delay: 2s;
+    top: 10%;
+    left: 10%;
+    animation-delay: 2s;
 }
 
 .float-icon[style*="--i:5"] {
-  bottom: 15%;
-  right: 25%;
-  animation-delay: 4.5s;
+    bottom: 15%;
+    right: 25%;
+    animation-delay: 4.5s;
 }
 
 @keyframes spinGlobe {
-  0% {
-    transform: rotateY(0deg);
-  }
+    0% {
+        transform: rotateY(0deg);
+    }
 
-  100% {
-    transform: rotateY(360deg);
-  }
+    100% {
+        transform: rotateY(360deg);
+    }
 }
 
 @keyframes rotateWorld {
-  0% {
-    transform: rotate(0deg);
-  }
+    0% {
+        transform: rotate(0deg);
+    }
 
-  100% {
-    transform: rotate(360deg);
-  }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 @keyframes floatIcons {
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
 
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: translateY(-10px) scale(1.1);
-    opacity: 0.8;
-  }
+    50% {
+        transform: translateY(-10px) scale(1.1);
+        opacity: 0.8;
+    }
 }
 </style>

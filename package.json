@@ -39,6 +39,8 @@
         "apexcharts": "^5.3.6",
         "dhtmlx-gantt": "^9.0.14",
         "element-plus": "^2.11.3",
+        "firebase": "^12.9.0",
+        "frappe-gantt": "^1.0.4",
         "handsontable": "^16.1.1",
         "jsgantt-improved": "^2.8.10",
         "lucide-vue-next": "^0.546.0",
@@ -50,6 +52,7 @@
         "tailwindcss-primeui": "^0.6.1",
         "tippy.js": "^6.3.7",
         "toastr": "^2.1.4",
+        "vue-ganttastic": "^0.9.34",
         "vue-router": "^4.5.1",
         "vue3-apexcharts": "^1.10.0",
         "vuex": "^4.0.2"

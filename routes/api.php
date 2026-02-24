@@ -19,6 +19,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login/firebase', [AuthController::class, 'firebaseLogin']); // firebase login route
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::get('/get-name', [AuthController::class, 'getUser'])->middleware('auth:sanctum');
 
@@ -78,7 +79,7 @@ Route::prefix('archived_promotions')->group(function() {
     Route::post('/', [ArchivedPromotionController::class, 'store']);     
     Route::put('/{id}', [ArchivedPromotionController::class, 'update']); 
     Route::delete('/{id}', [ArchivedPromotionController::class, 'destroy']);
-    Route::put('/unarchive/{id}', [ArchivedPromotionController::class, 'unarchive']); 
+    Route::put('/unarchive-promo/{id}', [ArchivedPromotionController::class, 'unarchive']); 
 });
 
 Route::prefix('archived_website_sales')->group(function() {
@@ -94,6 +95,7 @@ Route::prefix('website_promos')->group(function() {
     Route::post('/', [WebsitePromoController::class, 'store']);     
     Route::put('/{id}', [WebsitePromoController::class, 'update']); 
     Route::delete('/{id}', [WebsitePromoController::class, 'destroy']);
+    Route::patch('/archive/{id}', [WebsitePromoController::class, 'archive']);
     // Route::put('/unarchive/{id}', [WebsitePromoController::class, 'unarchive']); 
 });
 

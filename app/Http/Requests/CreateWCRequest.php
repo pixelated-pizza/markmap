@@ -27,8 +27,8 @@ class CreateWCRequest extends FormRequest
             'section_id' => 'required|uuid|exists:sections,section_id',
             'store_id' => 'required|uuid|exists:stores,store_id',
             'is_applied_to_both_stores' => 'sometimes|boolean',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
+            'start_date' => 'required|date_format:Y-m-d H:i:s',
+            'end_date' => 'required|date_format:Y-m-d H:i:s|after_or_equal:start_date',
         ];
     }
 }

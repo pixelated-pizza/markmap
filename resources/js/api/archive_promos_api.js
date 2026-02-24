@@ -29,6 +29,6 @@ export async function deleteArchivedPromotion(id) {
 }
 
 export async function fetchUnarchivePromotion(id) {
-  const { data } = await api.put(`/archived_promotions/unarchive/${id}`);
+  const { data } = await api.put(`/archived_promotions/unarchive-promo/${id}`);
   return data;
 }

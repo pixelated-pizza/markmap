@@ -10,6 +10,11 @@ export async function login(credentials) {
   return data;
 }
 
+export async function loginWithFirebase(idToken) {
+  const { data } = await api.post("/login/firebase", { idToken });
+  return data;
+}
+
 export async function getName() {
   const token = localStorage.getItem("auth_token");
   const { data } = await api.get("/get-name", {

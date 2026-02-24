@@ -7,7 +7,6 @@ import toastr from "toastr";
 import "toastr/build/toastr.min.css";
 import PrimeVue from 'primevue/config';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
-// import 'primeicons/primeicons.css';
 import Aura from '@primeuix/themes/aura';
 import { ref } from "vue";
 import ganttastic from '@infectoone/vue-ganttastic';
@@ -15,9 +14,22 @@ import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
 import VueApexCharts from "vue3-apexcharts";
 
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 
-import '../css/assets/tailwind.css';      // Tailwind base
-import '../css/assets/styles.scss';        // layout/demo SCSS
+const firebaseConfig = {
+  apiKey: "AIzaSyBzXaWzsWGmt29UTNYUwXFJRLZfNKwJcKg",
+  authDomain: "marketing-map-calendar.firebaseapp.com",
+  projectId: "marketing-map-calendar",
+  storageBucket: "marketing-map-calendar.firebasestorage.app",
+  messagingSenderId: "803518998967",
+  appId: "1:803518998967:web:1a507700e5580610686032",
+  measurementId: "G-BT5TNC3RGC"
+};
+
+
+import '../css/assets/tailwind.css';      
+import '../css/assets/styles.scss';       
 
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -62,6 +74,8 @@ toastr.options = {
 
 const app = createApp(App);
 
+const firebase = initializeApp(firebaseConfig);
+
 const pinia = createPinia();
 app.config.globalProperties.$toastr = toastr;
 
@@ -82,3 +96,6 @@ app.use(PrimeVue, {
   .use(ConfirmationService)
   .use(ElementPlusIconsVue).use(ganttastic)
   .use(router).mount('#app');
+
+  export const auth = getAuth(firebase);
+

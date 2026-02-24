@@ -26,10 +26,10 @@ class UpdateWCRequest extends FormRequest
             'campaign_type_id' => 'sometimes|uuid|exists:website_campaign_types,campaign_type_id',
             'section_id' => 'sometimes|uuid|exists:sections,section_id',
             'store_id' => 'sometimes|uuid|exists:stores,store_id',
-            'start_date' => 'sometimes|date',
             'is_applied_to_both_stores' => 'sometimes|boolean',
-            'end_date' => 'sometimes|date',
             'is_archived' => 'sometimes|boolean',
+            'start_date' => 'required|date_format:Y-m-d H:i:s',
+            'end_date' => 'required|date_format:Y-m-d H:i:s|after_or_equal:start_date',
         ];
     }
 

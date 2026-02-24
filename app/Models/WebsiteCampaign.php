@@ -28,9 +28,11 @@ class WebsiteCampaign extends Model
     ];
 
     protected $casts = [
-        'start_date' => 'date:Y-m-d',
-        'end_date' => 'date:Y-m-d',
+        'start_date' => 'datetime:Y-m-d H:i:s',
+        'end_date' => 'datetime:Y-m-d H:i:s',
     ];
+
+
     public function store()
     {
         return $this->belongsTo(Store::class, 'store_id', 'store_id');
@@ -45,4 +47,18 @@ class WebsiteCampaign extends Model
     {
         return $this->belongsTo(WebsiteCampaignType::class, 'campaign_type_id', 'campaign_type_id');
     }
+
+    protected static function booted()
+{
+    static::creating(function ($campaign) {
+        if (!$campaign->start_date) {
+            $campaign->start_date = Carbon::now()->setHour(9)->setMinute(0)->setSecond(0);
+        }
+
+        if (!$campaign->end_date) {
+            $campaign->end_date = Carbon::now()->setHour(23)->setMinute(59)->setSecond(59);
+        }
+    });
+}
+
 }

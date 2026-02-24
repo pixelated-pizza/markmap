@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col bg-gray-100 dark:bg-gray-900 h-auto max-h-[88vh] overflow-auto">
+  <div class="flex flex-col bg-gray-100 dark:bg-gray-900">
     <div class="bg-white dark:bg-gray-800 mb-5 border-b border-gray-200 dark:border-gray-700">
-      <h4 class="text-md font-bold text-gray-900 dark:text-white text-center tracking-wide drop-shadow-sm py-3">
+      <h4 class="text-sm text-gray-900 dark:text-white text-center tracking-wide drop-shadow-sm py-3">
         Website Sales, Promotions, Marketplaces Campaigns
       </h4>
 
@@ -19,11 +19,9 @@
     </div>
 
     <div
-      class="gantt-wrapper relative w-full max-h-[70vh] sm:max-h-[75vh] md:max-h-[80vh] lg:max-h-[85vh] overflow-auto touch-pan-y">
+      class="gantt-wrapper relative w-full overflow-auto touch-pan-y">
 
-      <div ref="ganttContainer" class="gantt-container w-full min-h-[400px] sm:min-h-[500px]
-         bg-white dark:bg-gray-900
-">
+      <div ref="ganttContainer" class="gantt-container w-full bg-white dark:bg-gray-900">
       </div>
 
 
@@ -52,7 +50,6 @@ import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { getCurrentInstance } from "vue";
 import gantt from "dhtmlx-gantt";
 import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
-import { ganttColors } from "@/js/colors/dhtmlxgantt_colorselector";
 
 import Select from "primevue/select";
 import InputText from "primevue/inputtext";
@@ -81,19 +78,12 @@ let allCampaigns = [];
 const dateRange = ref(null);
 
 const newTasks = new Set();
+const justCreatedTasks = new Set();
 const channels = ref([]);
 let resizeObserver;
 
-function parseLocalDate(dateStr) {
-  const [year, month, day] = dateStr.split("-");
-  return new Date(year, month - 1, day);
-}
-
-function parseEndDate(dateStr) {
-  const d = parseLocalDate(dateStr);
-  d.setDate(d.getDate() + 1);
-  d.setHours(0, 0, 0, 0);
-  return d;
+function parseEndDate(dateInput) {
+  return dateInput ? new Date(dateInput) : new Date();
 }
 
 
@@ -112,9 +102,10 @@ function formatLocalDateTime(date) {
   const day = String(d.getDate()).padStart(2, "0");
   const h = String(d.getHours()).padStart(2, "0");
   const min = String(d.getMinutes()).padStart(2, "0");
-  const sec = String(d.getSeconds()).padStart(2, "0");
-  return `${y}-${m}-${day} ${h}:${min}:${sec}`;
+  return `${y}-${m}-${day} ${h}:${min}`;
 }
+
+gantt.config.time_step = 1;
 
 
 async function initGantt() {
@@ -126,7 +117,7 @@ async function initGantt() {
       name: "text",
       label: "Campaigns",
       tree: true,
-      width: window.innerWidth < 640 ? 180 : 400, // small screens
+      width: window.innerWidth < 640 ? 180 : 400, 
       template: task => task.type !== "project" ? `<span style="margin-left:8px">${task.text}</span>` : `<b>${task.text}</b>`
     },
     {
@@ -138,8 +129,6 @@ async function initGantt() {
     }
   ];
 
-
-
   gantt.config.xml_date = "%Y-%m-%d %H:%i";
   gantt.config.drag_move = true;
   gantt.config.drag_resize = true;
@@ -148,23 +137,29 @@ async function initGantt() {
   const fmt = gantt.date.date_to_str("%Y-%m-%d %H:%i");
 
   gantt.templates.tooltip_text = (start, end, task) => `
-    Task: <b>${task.text}</b><br/>
-    Start: <b>${fmt(start)}</b><br/>
-    End: <b>${fmt(end)}</b><br/>
-    Progress: <b>${Math.round((task.progress || 0) * 100)}%</b>
-  `;
+  Task: <b>${task.text}</b><br/>
+  Start: <b>${fmt(start)}</b><br/>
+  End: <b>${fmt(end)}</b><br/>
+  Progress: <b>${Math.round((task.progress || 0) * 100)}%</b>
+`;
 
-  gantt.config.scales = [{ step: 1, format: "%d %M" }];
+  gantt.config.scales = [
+  { unit: "day", step: 1, format: "%d %M" },       // Top scale: day
+];
 
-  gantt.config.lightbox.sections = [
-    { name: "description", height: 70, map_to: "text", type: "textarea", focus: true, label: "Campaign Name / Promo" },
-    {
-      name: "color", height: 30, map_to: "color", type: "select", label: "Background Color",
-      options: ganttColors
-    },
-    { name: "time", type: "time", map_to: "auto", label: "Time period (Start - End)" },
+gantt.config.scale_height = 60;
+gantt.config.work_time = true;  
+gantt.config.skip_off_time = true; 
 
-  ];
+gantt.config.lightbox.sections = [
+  { name: "description", height: 70, map_to: "text", type: "textarea", label: "Campaign Name / Promo" },
+  { name: "time", type: "time", map_to: "auto", time_format:["%d","%m","%Y","%H:%i"], label: "Time period (Start - End)" }
+];
+
+gantt.templates.time_picker = function(date){
+    return gantt.date.date_to_str(gantt.config.time_picker)(date);
+};
+
 
   gantt.eachTask(task => {
     if (!task.channel_id && channels.value.length) {
@@ -188,29 +183,30 @@ async function initGantt() {
 
       applyHiddenCampaigns();
     }
-
-    
   });
 
-  gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
-    if (typeof id === "number") return;
+gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
+  if (newTasks.has(id) || justCreatedTasks.has(id)) return; // skip temp/new tasks
 
-    task.parent = `channel_${task.channel_id}`;
+  task.parent = `channel_${task.channel_id}`;
 
-    try {
-      await updateCampaign(id, {
-        name: task.text,
-        start_date: formatLocalDateTime(task.start_date),
-        end_date: formatDateForDB(task.end_date),
-        channel_id: task.channel_id,
-        background_color: task.color || null,
-      });
-      toastr.success("Campaign updated successfully.");
-    } catch (err) {
-      console.error("Error updating campaign:", err);
-      toastr.error("Failed to update campaign.");
-    }
-  });
+  try {
+    await updateCampaign(id, {
+      name: task.text,
+      start_date: formatLocalDateTime(task.start_date),
+      end_date: formatLocalDateTime(task.end_date),
+      channel_id: task.channel_id,
+      background_color: task.color || null,
+    });
+    toastr.success("Campaign updated successfully.");
+  } catch (err) {
+    console.error("Error updating campaign:", err);
+    toastr.error("Failed to update campaign.");
+  } finally {
+    justCreatedTasks.delete(id);
+  }
+});
+
 
   gantt.attachEvent("onBeforeTaskDelete", function (id, task) {
     if (task.type === "project" && !task.$virtual) {
@@ -220,68 +216,71 @@ async function initGantt() {
     return true;
   });
 
+gantt.attachEvent("onTaskCreated", function (task) {
+  task.type = "task";
+  task.text = "New Campaign";
+  task.start_date = new Date();
+  task.end_date = new Date(task.start_date.getTime() + 13 * 24 * 60 * 60 * 1000);
 
-  gantt.attachEvent("onAfterTaskDelete", async id => {
-    if (typeof id === "number") return;
-    try {
-      await deleteCampaign(id);
-      toastr.success("Campaign deleted successfully.");
-      loadCampaigns();
-    } catch (err) {
-      console.error("Error deleting campaign:", err);
-      toastr.error("Failed to delete campaign.");
-    }
-  });
+  if (task.parent) {
+    task.channel_id = task.parent.replace("channel_", "");
+  }
 
-  gantt.attachEvent("onTaskCreated", function (task) {
-    const parent = gantt.getTask(task.parent);
+  newTasks.add(task.id);
+  return true;
+});
 
-    if (parent.channel_id) {
-      task.channel_id = parent.channel_id;
-      task.type = "task";
-    }
-
-    task.text = "New Campaign";
-    task.start_date = new Date();
-    task.end_date = new Date(task.start_date.getTime() + 13 * 24 * 60 * 60 * 1000);
-
-    return true;
-  });
 
 
   gantt.attachEvent("onLightboxSave", async (id, task) => {
-    if (!task.channel_id && task.parent?.startsWith("channel_")) {
-      task.channel_id = task.parent.replace("channel_", "");
+  const defaultColor = "#60A5FA";
+
+  if (newTasks.has(id)) {
+    try {
+      const payload = {
+        name: task.text || "New Campaign / Promo",
+        start_date: formatLocalDateTime(task.start_date),
+        end_date: formatDateForDB(task.end_date),
+        channel_id: task.channel_id,
+        background_color: task.color || defaultColor,
+      };
+
+      const saved = await createCampaign(payload);
+      gantt.changeTaskId(id, saved.campaign_id);
+
+      newTasks.delete(id);
+      justCreatedTasks.add(saved.campaign_id);
+
+      toastr.success("Campaign created successfully.");
+    } catch (err) {
+      console.error("Error creating campaign:", err);
+      task.failedToSave = true;
+      gantt.updateTask(id);
+      toastr.error("Failed to create campaign. Retry saving.");
+      return false;
     }
-    task.parent = `channel_${task.channel_id}`;
 
-    const isNew = newTasks.has(id) || typeof id === "number";
+    return false;
+  }
 
-    if (isNew) {
-      try {
-        const payload = {
-          name: task.text || "New Campaign / Promo",
-          start_date: formatLocalDateTime(task.start_date),
-          end_date: formatDateForDB(task.end_date),
-          channel_id: task.channel_id,
-          background_color: task.color,
-        };
-        const saved = await createCampaign(payload);
+  try {
+    await updateCampaign(id, {
+      name: task.text,
+      start_date: formatLocalDateTime(task.start_date),
+      end_date: formatDateForDB(task.end_date),
+      channel_id: task.channel_id,
+      background_color: task.color || defaultColor,
+    });
+    toastr.success("Campaign updated successfully.");
+  } catch (err) {
+    console.error("Error updating campaign:", err);
+    toastr.error("Failed to update campaign.");
+    return false;
+  }
 
-        gantt.changeTaskId(id, saved.campaign_id);
-        newTasks.delete(id);
+  return true;
+});
 
-        toastr.success("Campaign created successfully.");
-      } catch (err) {
-        console.error("Error saving campaign:", err);
-        gantt.deleteTask(id);
-        newTasks.delete(id);
-        toastr.error("Failed to create campaign.");
-        return false;
-      }
-    }
-    return true;
-  });
 }
 
 function autoAdjustTimeline(filteredTasks = []) {
@@ -313,8 +312,6 @@ function autoAdjustTimeline(filteredTasks = []) {
     applyGanttTheme(); 
   }
 }
-
-
 
 async function loadCampaigns() {
   try {
@@ -373,24 +370,27 @@ function renderFilteredCampaigns() {
     return matchChannel && matchSearch && matchDate;
   });
 
-  filtered.forEach(c => {
+  sortedChannels.forEach(c => {
+  const channelTasks = filtered.filter(f => f.channel_id === c.channel_id);
+  channelTasks.forEach(campaign => {
+
     data.push({
-      id: c.campaign_id,
-      text: c.name,
-      start_date: new Date(c.start_date),
-      end_date: parseEndDate(c.end_date),
-      channel_id: c.channel_id,
-      color: c.background_color,
-      parent: channelMap[c.channel_id],
+      id: campaign.campaign_id,
+      text: campaign.name,
+      start_date: new Date(campaign.start_date),
+      end_date: parseEndDate(campaign.end_date),
+      channel_id: campaign.channel_id,
+      color: campaign.background_color,
+      parent: channelMap[campaign.channel_id],
     });
   });
+});
 
-  // ✅ Only clear once, then parse
+
   gantt.clearAll();
   gantt.parse({ data });
   gantt.render();
-  applyGanttTheme(); 
-
+  applyGanttTheme();
   applyHiddenCampaigns();
 
   setTimeout(() => autoAdjustTimeline(filtered), 50);
@@ -413,6 +413,23 @@ function applyHiddenCampaigns() {
     }
   });
 }
+
+gantt.attachEvent("onAfterTaskDelete", async (id, task) => {
+  if (newTasks.has(id)) {
+    newTasks.delete(id);
+    return;
+  }
+  if (task.type !== "project") {
+    try {
+      await deleteCampaign(id);  
+      toastr.success("Campaign deleted successfully.");
+    } catch (err) {
+      console.error("Failed to delete campaign:", err);
+      toastr.error("Failed to delete campaign.");
+    }
+  }
+});
+
 
 watch([searchTerm, selectedChannel, dateRange], () => {
   renderFilteredCampaigns();

@@ -28,7 +28,8 @@ export async function deleteWebsitePromotion(id) {
   return true;
 }
 
-// export async function fetchUnarchivePromotion(id) {
-//   const { data } = await api.put(`/website_promotions/unarchive/${id}`);
-//   return data;
-// }
+export async function archiveWebsitePromotion(id, is_archived) {
+  const { data } = await api.patch(`/website_promos/archive/${id}`, { is_archived });
+  return data;
+}
+

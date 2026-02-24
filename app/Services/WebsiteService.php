@@ -10,7 +10,7 @@ use App\Models\ArchivedPromotion;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Models\WebsitePromoDetails;
-
+use App\Models\WebsiteSaleDetails;
 
 class WebsiteService
 {
@@ -68,7 +68,6 @@ class WebsiteService
                     'end_date' => $data['end_date'],
                 ]);
 
-                // Create Promo Details if Adhoc
                 $adhocPromoTypeId = DB::table('website_campaign_types')
                     ->where('campaign_type_name', 'Adhoc Promos/Coupons')
                     ->value('campaign_type_id');
@@ -89,7 +88,7 @@ class WebsiteService
                         'start_date' => $data['start_date'],
                         'end_date' => $data['end_date'],
                     ]);
-                }
+                } 
 
                 $createdCampaigns->push($website_campaign);
             }
@@ -123,6 +122,8 @@ class WebsiteService
                         'start_date' => $data['start_date'],
                         'end_date' => $data['end_date'],
                     ]);
+
+                
                 }
             }
 
@@ -135,6 +136,7 @@ class WebsiteService
         $website_campaign = WebsiteCampaign::find($id);
         if (!$website_campaign) {
             return false;
+            
         }
 
         return DB::transaction(function () use ($website_campaign) {
@@ -157,35 +159,6 @@ class WebsiteService
 
         $campaign->is_archived = true;
         $campaign->save();
-
-        // $promotionTypeId = DB::table('website_campaign_types')
-        //     ->where('campaign_type_name', 'Adhoc Promos/Coupons')
-        //     ->value('campaign_type_id');
-
-        // $websiteSaleId = DB::table('website_campaign_types')
-        //     ->where('campaign_type_name', 'Website Sale')
-        //     ->value('campaign_type_id');
-
-        // if ($campaign->campaign_type_id === $promotionTypeId) {
-        //     try {
-        //         ArchivedPromotion::create([
-        //             'archived_promo_id' => Str::uuid()->toString(),
-        //             'wc_id' => $campaign->wc_id,
-        //         ]);
-        //     } catch (\Exception $e) {
-        //         Log::error("Failed to archive promotion: " . $e->getMessage());
-        //     }
-        // } else if ($campaign->campaign_type_id === $websiteSaleId) {
-        //     try {
-        //         DB::table('archived_website_sales')->insert([
-        //             'ws_archive_id' => Str::uuid()->toString(),
-        //             'wc_id' => $campaign->wc_id,
-        //             'archived_at' => now(),
-        //         ]);
-        //     } catch (\Exception $e) {
-        //         Log::error("Failed to archive website sale: " . $e->getMessage());
-        //     }
-        // }
 
         return $campaign;
     }

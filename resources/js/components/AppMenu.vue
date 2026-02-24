@@ -39,7 +39,6 @@ const model = ref([
         to: '/website-promotions-archive'
       },
       { label: 'Website Sales', icon: 'pi pi-globe', to: '/website-sale-archive' },
-      { label: 'Marketplace Promotions', icon: 'pi pi-shopping-bag', to: '/#' }
     ]
   },
   {

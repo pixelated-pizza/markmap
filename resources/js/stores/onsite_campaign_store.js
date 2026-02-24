@@ -4,18 +4,26 @@ import { fetchStores } from '@/js/api/website_campaign_api';
 import { fetchSections } from '@/js/api/website_campaign_api';
 import { fetchCampaignTypes } from '@/js/api/onsite_campaigns_api';
 
-const toAUDate = (date) => {
-  if (!date) return null;
-  const auDate = new Date(
-    new Date(date).toLocaleString("en-US", { timeZone: "Australia/Sydney" })
-  );
+const toAUDateTime = (date) => {
+    if (!date) return null;
 
-  const year = auDate.getFullYear();
-  const month = String(auDate.getMonth() + 1).padStart(2, "0");
-  const day = String(auDate.getDate()).padStart(2, "0");
+    const d = new Date(date);
 
-  return `${year}-${month}-${day}`; 
+    const auDate = new Date(
+        d.toLocaleString("en-US", { timeZone: "Australia/Sydney" })
+    );
+
+    const year = auDate.getFullYear();
+    const month = String(auDate.getMonth() + 1).padStart(2, "0");
+    const day = String(auDate.getDate()).padStart(2, "0");
+
+    const hours = String(auDate.getHours()).padStart(2, "0");
+    const minutes = String(auDate.getMinutes()).padStart(2, "0");
+    const seconds = String(auDate.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
+
 
 
 export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
@@ -43,12 +51,12 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
                     campaign_type_id: campaign.campaign_type_id,
                     section_id: campaign.section_id,
                     store_id: campaign.store_id,
-                    is_applied_to_both_stores: campaign.is_all_store,
+                    store_id: campaign.is_all_store ? null : campaign.store_id,
                     start_date: campaign.start_date
-                        ? toAUDate(campaign.start_date)
+                        ? toAUDateTime(campaign.start_date)
                         : null,
                     end_date: campaign.end_date
-                        ? toAUDate(campaign.end_date)
+                        ? toAUDateTime(campaign.end_date)
                         : null,
                 };
                 const newCampaign = await createOnsiteCampaign(payload);

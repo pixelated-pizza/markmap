@@ -4,7 +4,7 @@ const layoutConfig = reactive({
     preset: 'Aura',
     primary: 'emerald',
     surface: null,
-    darkTheme: false,
+    darkTheme: true,
     menuMode: 'static'
 });
 
@@ -18,6 +18,10 @@ const layoutState = reactive({
     activeMenuItem: null,
     activePath: null
 });
+
+if (layoutConfig.darkTheme) {
+    document.documentElement.classList.add('app-dark');
+}
 
 export function useLayout() {
     const toggleDarkMode = () => {
@@ -84,3 +88,5 @@ export function useLayout() {
         hasOpenOverlay
     };
 }
+
+

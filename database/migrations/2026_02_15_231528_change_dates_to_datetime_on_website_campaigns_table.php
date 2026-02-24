@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('website_campaigns', function (Blueprint $table) {
-            $table->string('website_campaign_key')->nullable()->after('wc_id');
+            $table->dateTime('start_date')->nullable()->change();
+            $table->dateTime('end_date')->nullable()->change();
         });
     }
 
@@ -22,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('website_campaigns', function (Blueprint $table) {
-            $table->dropColumn('website_campaign_key');
+            $table->dateTime('start_date')->nullable()->change();
+            $table->dateTime('end_date')->nullable()->change();
         });
     }
 };

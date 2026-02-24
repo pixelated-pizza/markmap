@@ -16,7 +16,7 @@ class WebsitePromoService
 
     public function all(): Collection
     {
-        return WebsitePromoDetails::with('store')->get();
+        return WebsitePromoDetails::with('store')->where('is_archived', false)->get();
     }
 
     public function find(string $id): ?WebsitePromoDetails
@@ -68,20 +68,25 @@ class WebsitePromoService
     public function archive(string $id): ?WebsitePromoDetails
     {
         $promo = WebsitePromoDetails::find($id);
+
         if (!$promo) {
             return null;
         }
 
-        $promo->is_archived = true;
-        $promo->save();
+        $matchingPromos = WebsitePromoDetails::where('promo_name', $promo->promo_name)
+            ->where('start_date', $promo->start_date)
+            ->where('end_date', $promo->end_date)
+            ->where('coupon_code', $promo->coupon_code)
+            ->get();
 
-        try {
+        foreach ($matchingPromos as $p) {
+            $p->is_archived = true;
+            $p->save();
+
             ArchivedPromotion::create([
                 'archived_promo_id' => Str::uuid()->toString(),
-                'promo_id' => $promo->promo_id,
+                'promo_id' => $p->promo_id,
             ]);
-        } catch (\Exception $e) {
-            Log::error("Failed to archive promotion: " . $e->getMessage());
         }
 
         return $promo;
