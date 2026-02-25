@@ -1,0 +1,1 @@
+import{a8 as s}from"./app-CbSpuZWz.js";const t=s.create({baseURL:"/api"});async function e(){const{data:a}=await t.get("/website_campaign");return a}async function n(){const{data:a}=await t.get("/stores");return Array.isArray(a)?a:[]}async function c(){const{data:a}=await t.get("/sections");return Array.isArray(a)?a:[]}export{c as a,n as b,e as f};
