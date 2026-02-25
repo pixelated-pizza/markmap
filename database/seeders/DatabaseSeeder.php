@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             SmaAccountSeeder::class,
             WebsiteCampaignTypeSeeder::class,
             EditorAccountSeeder::class,
+            AddAdhocPromoSeeder::class,
         ]);
     }
 }
