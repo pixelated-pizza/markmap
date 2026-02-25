@@ -8,12 +8,9 @@ import { fileURLToPath, URL } from "url";
 
 export default defineConfig({
     server: {
-        host: "192.168.23.132",
+        host: "192.168.25.104",
         port: 5173,
         cors: true,
-    },
-    build: {
-        outDir: "dist",
     },
     plugins: [
         laravel({
