@@ -30,9 +30,6 @@ const firebaseConfig = {
 
 
 
-app.config.globalProperties.$backendUrl = import.meta.env.VITE_APP_URL
-
-
 import '../css/assets/tailwind.css';      
 import '../css/assets/styles.scss';       
 
@@ -77,7 +74,9 @@ toastr.options = {
   hideMethod: "fadeOut"
 };
 
+const app = createApp(App);
 
+app.config.globalProperties.$backendUrl = import.meta.env.VITE_APP_URL
 
 const firebase = initializeApp(firebaseConfig);
 
