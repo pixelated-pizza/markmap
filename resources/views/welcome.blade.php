@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MarketMap</title>
     
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css','resources/css/campaign_chart.css','resources/css/internal_promos.css','resources/css/external_promos.css',
+    'resources/css/website_campaigns.css','resources/css/mainlayout.css','resources/css/dashboard.css'])
 </head>
 
 <body class="">

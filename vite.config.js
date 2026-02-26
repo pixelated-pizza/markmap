@@ -10,7 +10,16 @@ export default defineConfig({
     base: "https://markmap-production.up.railway.app/",
     plugins: [
         laravel({
-            input: ["resources/css/app.css", "resources/js/app.js"],
+            input: [
+                "resources/css/app.css",
+                "resources/css/campaign_chart.css",
+                "resources/css/internal_promos.css",
+                "resources/css/external_promos.css",
+                "resources/css/website_campaigns.css",
+                "resources/css/mainlayout.css",
+                "resources/css/dashboard.css",
+                "resources/js/app.js",
+            ],
             refresh: true,
         }),
         tailwindcss(),
