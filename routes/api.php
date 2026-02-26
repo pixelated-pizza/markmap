@@ -15,7 +15,7 @@ use App\Http\Controllers\ArchivedWebsiteSaleController;
 use App\Http\Controllers\WebsitePromoController;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+return $request->user();
 })->middleware('auth:sanctum');
 
 Route::post('/login', [AuthController::class, 'login']);

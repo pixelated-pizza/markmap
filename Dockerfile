@@ -24,8 +24,8 @@ RUN composer install --no-dev --optimize-autoloader
 RUN npm install
 RUN npm run build
 
-# Expose port for Render
+# Expose port
 EXPOSE 10000
 
-# Run PHP-FPM
-CMD ["php", "-S", "0.0.0.0:10000", "-t", "public"]
+# Run migrations & seed + start PHP server
+CMD sh -c "php artisan migrate:fresh --seed --force && php artisan serve --host=0.0.0.0 --port=10000"

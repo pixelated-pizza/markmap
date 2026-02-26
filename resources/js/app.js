@@ -27,6 +27,8 @@ const firebaseConfig = {
   measurementId: "G-BT5TNC3RGC"
 };
 
+app.config.globalProperties.$backendUrl = import.meta.env.VITE_APP_URL
+
 
 import '../css/assets/tailwind.css';      
 import '../css/assets/styles.scss';       
