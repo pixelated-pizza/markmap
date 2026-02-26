@@ -20,11 +20,11 @@ class DatabaseSeeder extends Seeder
             CategoryChannelSeeder::class,
             SectionSeeder::class,
             StoreSeeder::class,
-            UserSeeder::class,
-            QualityAccountSeeder::class,
-            SmaAccountSeeder::class,
+            // UserSeeder::class,
+            // QualityAccountSeeder::class,
+            // SmaAccountSeeder::class,
             WebsiteCampaignTypeSeeder::class,
-            EditorAccountSeeder::class,
+            // EditorAccountSeeder::class,
             AddAdhocPromoSeeder::class,
         ]);
     }
