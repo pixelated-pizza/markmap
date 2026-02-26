@@ -7,7 +7,7 @@ import { PrimeVueResolver } from "@primevue/auto-import-resolver";
 import { fileURLToPath, URL } from "url";
 
 export default defineConfig({
-    base: '',
+    base: import.meta.env.VITE_APP_URL + "/",
     plugins: [
         laravel({
             input: ["resources/css/app.css", "resources/js/app.js"],
