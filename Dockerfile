@@ -17,20 +17,15 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
-# Copy production env
-COPY .env.production .env
-
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
 # Install Node dependencies and build Vue
-ARG VITE_APP_URL
-ENV VITE_APP_URL=$VITE_APP_URL
 RUN npm install
-RUN VITE_APP_URL=$VITE_APP_URL npm run build
+RUN npm run build
 
 # Expose port
 EXPOSE 10000
 
-# Run migrations & seed + start PHP server
-CMD sh -c "php artisan migrate:fresh --seed --force && php artisan serve --host=0.0.0.0 --port=10000"
+# Start PHP-FPM (production)
+CMD ["php-fpm"]
