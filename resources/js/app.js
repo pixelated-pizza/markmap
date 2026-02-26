@@ -27,6 +27,9 @@ const firebaseConfig = {
   measurementId: "G-BT5TNC3RGC"
 };
 
+
+
+
 app.config.globalProperties.$backendUrl = import.meta.env.VITE_APP_URL
 
 
@@ -74,7 +77,7 @@ toastr.options = {
   hideMethod: "fadeOut"
 };
 
-const app = createApp(App);
+
 
 const firebase = initializeApp(firebaseConfig);
 
