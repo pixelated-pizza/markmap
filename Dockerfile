@@ -17,12 +17,17 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
+# Copy production env
+COPY .env.production .env
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
 # Install Node dependencies and build Vue
+ARG VITE_APP_URL
+ENV VITE_APP_URL=$VITE_APP_URL
 RUN npm install
-RUN npm run build
+RUN VITE_APP_URL=$VITE_APP_URL npm run build
 
 # Expose port
 EXPOSE 10000
