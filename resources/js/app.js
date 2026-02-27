@@ -5,7 +5,6 @@ import App from './App.vue';
 import router from './router';
 import toastr from "toastr";
 import "toastr/build/toastr.min.css";
-import 'primevue/resources/primevue.min.css';
 import 'primeicons/primeicons.css';
 import PrimeVue from 'primevue/config';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
