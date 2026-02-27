@@ -19,6 +19,7 @@ export default defineConfig({
                 "resources/css/mainlayout.css",
                 "resources/css/dashboard.css",
                 "resources/js/app.js",
+                "resources/css/campaigns.css",
             ],
             refresh: true,
         }),
