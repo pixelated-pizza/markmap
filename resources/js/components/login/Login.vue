@@ -140,6 +140,12 @@ const handleLogin = async () => {
 
         $toastr.success("Welcome back!", "Login Successful");
         router.push("/dashboard");
+        Promise.all([
+            import('@/js/components/Campaigns.vue'),
+            import('@/js/components/WebsiteCampaigns.vue'),
+            import('@/js/components/WebsiteSaleDetails.vue'),
+            import('@/js/components/WebsitePromos.vue')
+        ]);
     } catch (err) {
         const message = err.response?.data?.message || "Invalid credentials";
         $toastr.error(message, "Login Failed");
@@ -160,6 +166,12 @@ const handleFirebaseLogin = async () => {
 
         $toastr.success("Welcome back!", "Google Login Successful");
         router.push("/dashboard");
+        Promise.all([
+            import('@/js/components/Campaigns.vue'),
+            import('@/js/components/WebsiteCampaigns.vue'),
+            import('@/js/components/WebsiteSaleDetails.vue'),
+            import('@/js/components/WebsitePromos.vue')
+        ]);
     } catch (err) {
         console.error("Google login error:", err);
         const message =

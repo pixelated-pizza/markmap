@@ -7,7 +7,7 @@ import { PrimeVueResolver } from "@primevue/auto-import-resolver";
 import { fileURLToPath, URL } from "url";
 
 export default defineConfig({
-    base: "https://markmap-production.up.railway.app/",
+    base: "/",
     plugins: [
         laravel({
             input: [
@@ -33,7 +33,7 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": fileURLToPath(new URL("./resources", import.meta.url)),
-            '@public': fileURLToPath(new URL("./public", import.meta.url)),
+            "@public": fileURLToPath(new URL("./public", import.meta.url)),
             vue: "vue/dist/vue.esm-bundler.js",
         },
         dedupe: ["@fullcalendar/core"],
@@ -41,6 +41,16 @@ export default defineConfig({
     build: {
         outDir: "public/build",
         emptyOutDir: true,
+        chunkSizeWarningLimit: 1000,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vue: ["vue", "vue-router"],
+                    primevue: ["primevue"],
+                    firebase: ["firebase/app", "firebase/auth"],
+                },
+            },
+        },
     },
     css: {
         preprocessorOptions: {
