@@ -32,6 +32,7 @@ export default defineConfig({
     resolve: {
         alias: {
             "@": fileURLToPath(new URL("./resources", import.meta.url)),
+            '@public': fileURLToPath(new URL("./public", import.meta.url)),
             vue: "vue/dist/vue.esm-bundler.js",
         },
         dedupe: ["@fullcalendar/core"],

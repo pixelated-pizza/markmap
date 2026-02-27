@@ -9,6 +9,8 @@
     @vite(['resources/css/app.css','resources/css/campaign_chart.css','resources/css/internal_promos.css','resources/css/external_promos.css',
     'resources/css/website_campaigns.css','resources/css/mainlayout.css','resources/css/dashboard.css'])
     <link rel="stylesheet" href="{{ asset('primeicons.css') }}">
+    <link rel="stylesheet" href="/vendor/gantt/dhtmlxgantt.css">
+    <script src="/vendor/gantt/dhtmlxgantt.js"></script>
 </head>
 
 <body class="">

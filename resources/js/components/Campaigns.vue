@@ -48,8 +48,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { getCurrentInstance } from "vue";
-import gantt from "dhtmlx-gantt";
-import "dhtmlx-gantt/codebase/dhtmlxgantt.css";
+const gantt = window.gantt;
 
 import Select from "primevue/select";
 import InputText from "primevue/inputtext";

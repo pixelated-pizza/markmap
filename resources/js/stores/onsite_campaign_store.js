@@ -1,8 +1,14 @@
-import { defineStore } from 'pinia';
-import { fetchOnsiteCampaign, createOnsiteCampaign, updateOnsiteCampaign, deleteOnsiteCampaign, archiveOnsiteCampaign } from '@/js/api/onsite_campaigns_api.js';
-import { fetchStores } from '@/js/api/website_campaign_api';
-import { fetchSections } from '@/js/api/website_campaign_api';
-import { fetchCampaignTypes } from '@/js/api/onsite_campaigns_api';
+import { defineStore } from "pinia";
+import {
+    fetchOnsiteCampaign,
+    createOnsiteCampaign,
+    updateOnsiteCampaign,
+    deleteOnsiteCampaign,
+    archiveOnsiteCampaign,
+} from "@/js/api/onsite_campaigns_api.js";
+import { fetchStores } from "@/js/api/website_campaign_api";
+import { fetchSections } from "@/js/api/website_campaign_api";
+import { fetchCampaignTypes } from "@/js/api/onsite_campaigns_api";
 
 const toAUDateTime = (date) => {
     if (!date) return null;
@@ -10,7 +16,7 @@ const toAUDateTime = (date) => {
     const d = new Date(date);
 
     const auDate = new Date(
-        d.toLocaleString("en-US", { timeZone: "Australia/Sydney" })
+        d.toLocaleString("en-US", { timeZone: "Australia/Sydney" }),
     );
 
     const year = auDate.getFullYear();
@@ -24,9 +30,7 @@ const toAUDateTime = (date) => {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
-
-
-export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
+export const useOnsiteCampaignStore = defineStore("onsiteCampaign", {
     state: () => ({
         campaigns: [],
         stores: [],
@@ -38,11 +42,17 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
         async loadCampaigns() {
             this.loading = true;
             try {
-                this.campaigns = await fetchOnsiteCampaign();
+                const response = await fetchOnsiteCampaign();
+                // Make sure campaigns is always an array
+                this.campaigns = Array.isArray(response)
+                    ? response
+                    : (response?.data ?? []);
             } catch (error) {
-                console.error('Failed to load campaigns', error);
+                console.error("Failed to load campaigns", error);
+                this.campaigns = [];
+            } finally {
+                this.loading = false;
             }
-            this.loading = false;
         },
         async addCampaign(campaign) {
             try {
@@ -62,19 +72,30 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
                 const newCampaign = await createOnsiteCampaign(payload);
                 this.campaigns.push(newCampaign);
             } catch (error) {
-                console.error('Failed to add campaign', error);
+                console.error("Failed to add campaign", error);
             }
         },
         async editCampaign(id, updates) {
             try {
                 const updatedCampaign = await updateOnsiteCampaign(id, updates);
-                const index = this.campaigns.findIndex(c => String(c.wc_id) === String(id));
+                const index = this.campaigns.findIndex(
+                    (c) => String(c.wc_id) === String(id),
+                );
 
                 if (index !== -1) {
-                    if (updatedCampaign && typeof updatedCampaign === "object") {
-                        this.campaigns[index] = { ...this.campaigns[index], ...updatedCampaign };
+                    if (
+                        updatedCampaign &&
+                        typeof updatedCampaign === "object"
+                    ) {
+                        this.campaigns[index] = {
+                            ...this.campaigns[index],
+                            ...updatedCampaign,
+                        };
                     } else {
-                        this.campaigns[index] = { ...this.campaigns[index], ...updates };
+                        this.campaigns[index] = {
+                            ...this.campaigns[index],
+                            ...updates,
+                        };
                     }
                 }
             } catch (error) {
@@ -85,21 +106,24 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
         async removeCampaign(id) {
             try {
                 await deleteOnsiteCampaign(id);
-                this.campaigns = this.campaigns.filter(c => c.wc_id !== id);
+                this.campaigns = this.campaigns.filter((c) => c.wc_id !== id);
             } catch (error) {
-                console.error('Failed to delete campaign', error);
+                console.error("Failed to delete campaign", error);
             }
         },
 
         async archiveCampaign(id, is_archived) {
             try {
-                const updatedCampaign = await archiveOnsiteCampaign(id, is_archived);
-                const index = this.campaigns.findIndex(c => c.wc_id === id);
+                const updatedCampaign = await archiveOnsiteCampaign(
+                    id,
+                    is_archived,
+                );
+                const index = this.campaigns.findIndex((c) => c.wc_id === id);
                 if (index !== -1) {
                     this.campaigns[index] = updatedCampaign;
                 }
             } catch (error) {
-                console.error('Failed to archive campaign', error);
+                console.error("Failed to archive campaign", error);
             }
         },
 
@@ -108,7 +132,7 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
                 this.stores = await fetchStores();
                 return this.stores;
             } catch (error) {
-                console.error('Failed to load stores', error);
+                console.error("Failed to load stores", error);
             }
         },
 
@@ -116,7 +140,7 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
             try {
                 this.sections = await fetchSections();
             } catch (error) {
-                console.error('Failed to load sections', error);
+                console.error("Failed to load sections", error);
             }
         },
 
@@ -124,14 +148,12 @@ export const useOnsiteCampaignStore = defineStore('onsiteCampaign', {
             try {
                 this.campaign_types = await fetchCampaignTypes();
             } catch (error) {
-                console.error('Failed to load campaign types', error);
+                console.error("Failed to load campaign types", error);
             }
-        }
+        },
     },
     getters: {
         allCampaigns: (state) => state.campaigns,
         isLoading: (state) => state.loading,
-    }
+    },
 });
-
-
