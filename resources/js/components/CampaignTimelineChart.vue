@@ -10,7 +10,7 @@
 
 
 <script setup>
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, onMounted, watch, nextTick } from "vue";
 
 const isDark = ref(false);
 
@@ -69,10 +69,10 @@ function buildCompletedCampaignCount(campaigns) {
 }
 
 
-const series = computed(() => [
+const series = ref([
   {
     name: "Completed Campaigns",
-    data: buildCompletedCampaignCount(props.campaigns)
+    data: []
   }
 ]);
 
@@ -162,6 +162,29 @@ const chartOptions = computed(() => ({
     borderColor: isDark.value ? "#374151" : "#e5e7eb"
   }
 }));
+
+watch(
+  () => props.campaigns,
+  async (newVal) => {
+    if (!newVal || !newVal.length) return;
+
+    // Let UI render first
+    await nextTick();
+
+    // Delay heavy work so UI doesn't freeze
+    setTimeout(() => {
+      const processed = buildCompletedCampaignCount(newVal);
+
+      series.value = [
+        {
+          name: "Completed Campaigns",
+          data: processed
+        }
+      ];
+    }, 0);
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>

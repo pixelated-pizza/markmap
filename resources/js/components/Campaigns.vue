@@ -475,31 +475,42 @@ let darkObserver;
 
 onMounted(async () => {
   try {
-    channels.value = await fetchChannels();
+    loading.value = true
 
-    darkObserver = watchDarkMode();
+    // 1️⃣ Let layout render first
+    await nextTick()
 
-    // wait DOM to be painted
-    await nextTick();
+    // 2️⃣ Delay heavy gantt init so UI paints
+    setTimeout(async () => {
+      try {
+        channels.value = await fetchChannels()
 
-    if (!ganttContainer.value) {
-      console.error("Gantt container not found");
-      loading.value = false;
-      return;
-    }
+        darkObserver = watchDarkMode()
 
-    await initGantt();
-    await loadCampaigns();
+        if (!ganttContainer.value) {
+          console.error("Gantt container not found")
+          loading.value = false
+          return
+        }
 
-    loading.value = false;
+        await initGantt()
+        await loadCampaigns()
 
-    resizeObserver = new ResizeObserver(() => gantt.setSizes());
-    resizeObserver.observe(ganttContainer.value);
+        resizeObserver = new ResizeObserver(() => gantt.setSizes())
+        resizeObserver.observe(ganttContainer.value)
+
+      } catch (err) {
+        console.error("Error initializing gantt:", err)
+      } finally {
+        loading.value = false
+      }
+    }, 0)
+
   } catch (err) {
-    console.error("Error initializing gantt:", err);
-    loading.value = false;
+    console.error(err)
+    loading.value = false
   }
-});
+})
 
 onBeforeUnmount(() => {
   try {

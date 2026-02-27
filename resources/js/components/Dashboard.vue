@@ -239,7 +239,7 @@
     </div>
 </template>
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, nextTick } from "vue";
 import InternalPromotions from "@/js/components/InternalPromotions.vue";
 import ExternalPromotions from "@/js/components/ExternalPromotions.vue";
 import { fetchCampaigns } from "@/js/api/campaign_service.js";
@@ -309,40 +309,65 @@ function openModal(status) {
 }
 
 const filteredCampaignsSorted = computed(() => {
-    if (!filteredCampaigns?.value) return [];
+    if (!filteredCampaigns.value) return [];
+
+    const term = searchTerm.value.toLowerCase();
+
     return filteredCampaigns.value.filter((c) =>
-        c?.name?.toLowerCase().includes(searchTerm.value.toLowerCase()),
+        c?.name?.toLowerCase().includes(term)
     );
 });
 
+
+
 onMounted(async () => {
     try {
+        loading.value = true;
+
         const result = await fetchCampaigns();
 
-        campaigns.value = result;
-        stats.value.total = result.length;
+        // 1️⃣ Let UI render skeletons first
+        await nextTick();
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // 2️⃣ Delay heavy processing
+        setTimeout(() => {
+            campaigns.value = result;
+            stats.value.total = result.length;
 
-        result.forEach((c) => {
-            const start = new Date(c.start_date);
-            const end = new Date(c.end_date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-            start.setHours(0, 0, 0, 0);
-            end.setHours(0, 0, 0, 0);
+            let active = 0;
+            let upcoming = 0;
+            let completed = 0;
 
-            if (today >= start && today <= end) {
-                stats.value.active++;
-            } else if (start > today) {
-                stats.value.upcoming++;
-            } else if (end < today) {
-                stats.value.completed++;
+            for (let i = 0; i < result.length; i++) {
+                const c = result[i];
+
+                const start = new Date(c.start_date);
+                const end = new Date(c.end_date);
+
+                start.setHours(0, 0, 0, 0);
+                end.setHours(0, 0, 0, 0);
+
+                if (today >= start && today <= end) {
+                    active++;
+                } else if (start > today) {
+                    upcoming++;
+                } else if (end < today) {
+                    completed++;
+                }
             }
-        });
+
+            stats.value.active = active;
+            stats.value.upcoming = upcoming;
+            stats.value.completed = completed;
+
+            loading.value = false;
+        }, 0);
+
     } catch (err) {
         console.error("Failed to fetch campaigns:", err);
-    } finally {
         loading.value = false;
     }
 });
