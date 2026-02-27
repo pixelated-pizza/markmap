@@ -24,6 +24,14 @@ export default defineConfig({
         }),
         tailwindcss(),
         vue(),
+        viteStaticCopy({
+            targets: [
+                {
+                    src: "node_modules/primeicons/fonts",
+                    dest: "assets/fonts",
+                },
+            ],
+        }),
         Components({
             resolvers: [PrimeVueResolver()],
         }),
@@ -35,6 +43,10 @@ export default defineConfig({
             vue: "vue/dist/vue.esm-bundler.js",
         },
         dedupe: ["@fullcalendar/core"],
+    },
+    build: {
+        outDir: "public/build",
+        emptyOutDir: true,
     },
     css: {
         preprocessorOptions: {
