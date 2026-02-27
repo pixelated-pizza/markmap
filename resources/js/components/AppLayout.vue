@@ -2,13 +2,28 @@
     <div class="layout-wrapper" :class="containerClass">
         <AppTopbar />
         <AppSidebar />
+
         <div class="layout-main-container">
             <div class="layout-main">
-                <router-view />
+
+                <Suspense>
+                    <template #default>
+                        <router-view />
+                    </template>
+
+                    <template #fallback>
+                        <div class="p-6 text-gray-400 animate-pulse">
+                            Loading page...
+                        </div>
+                    </template>
+                </Suspense>
+
             </div>
         </div>
+
         <div class="layout-mask animate-fadein" @click="hideMobileMenu" />
     </div>
+
     <Toast />
 </template>
 <script setup>
