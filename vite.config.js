@@ -5,7 +5,7 @@ import vue from "@vitejs/plugin-vue";
 import Components from "unplugin-vue-components/vite";
 import { PrimeVueResolver } from "@primevue/auto-import-resolver";
 import { fileURLToPath, URL } from "url";
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 export default defineConfig({
     base: "https://markmap-production.up.railway.app/",
@@ -28,7 +28,7 @@ export default defineConfig({
         viteStaticCopy({
             targets: [
                 {
-                    src: "node_modules/primeicons/fonts",
+                    src: "resources/assets/fonts/primeicons",
                     dest: "assets/fonts",
                 },
             ],
