@@ -21,7 +21,7 @@
     <div
       class="gantt-wrapper relative w-full overflow-auto touch-pan-y">
 
-      <div ref="ganttContainer" class="gantt-container w-full bg-white dark:bg-gray-900">
+      <div ref="ganttContainer" style="min-height:500px; height:600px;" class="gantt-container w-full bg-white dark:bg-gray-900">
       </div>
 
 
@@ -336,6 +336,7 @@ function renderFilteredCampaigns() {
     return a.name.localeCompare(b.name);
   });
 
+  // ALWAYS create project rows for channels
   sortedChannels.forEach(c => {
     const parentId = `channel_${c.channel_id}`;
     channelMap[c.channel_id] = parentId;
@@ -352,6 +353,7 @@ function renderFilteredCampaigns() {
 
   const [startFilter, endFilter] = dateRange.value || [];
 
+  // Only add tasks if campaigns exist
   const filtered = allCampaigns.filter(c => {
     const matchChannel = selectedChannel.value ? c.channel_id === selectedChannel.value : true;
     const matchSearch = searchTerm.value
@@ -369,22 +371,21 @@ function renderFilteredCampaigns() {
     return matchChannel && matchSearch && matchDate;
   });
 
+  // Add campaign tasks (if any)
   sortedChannels.forEach(c => {
-  const channelTasks = filtered.filter(f => f.channel_id === c.channel_id);
-  channelTasks.forEach(campaign => {
-
-    data.push({
-      id: campaign.campaign_id,
-      text: campaign.name,
-      start_date: new Date(campaign.start_date),
-      end_date: parseEndDate(campaign.end_date),
-      channel_id: campaign.channel_id,
-      color: campaign.background_color,
-      parent: channelMap[campaign.channel_id],
+    const channelTasks = filtered.filter(f => f.channel_id === c.channel_id);
+    channelTasks.forEach(campaign => {
+      data.push({
+        id: campaign.campaign_id,
+        text: campaign.name,
+        start_date: new Date(campaign.start_date),
+        end_date: parseEndDate(campaign.end_date),
+        channel_id: campaign.channel_id,
+        color: campaign.background_color,
+        parent: channelMap[campaign.channel_id],
+      });
     });
   });
-});
-
 
   gantt.clearAll();
   gantt.parse({ data });
@@ -394,7 +395,6 @@ function renderFilteredCampaigns() {
 
   setTimeout(() => autoAdjustTimeline(filtered), 50);
 }
-
 
 function applyHiddenCampaigns() {
   gantt.eachTask(task => {
