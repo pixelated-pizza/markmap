@@ -83,9 +83,17 @@ import { useUIStore } from "@/js/stores/ui.js";
 import { getCurrentInstance } from "vue";
 const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
 
+const campaignsCache = ref(null);
+const ganttTasksLoaded = ref(false);
+let timelineTimeout;
+
 const loading = ref(true);
 
 const ui = useUIStore();
+
+import { debounce } from "lodash";
+
+const renderFilteredCampaignsDebounced = debounce(renderFilteredCampaigns, 200);
 
 import {
     fetchCampaigns,
@@ -361,19 +369,26 @@ function autoAdjustTimeline(filteredTasks = []) {
 }
 
 async function loadCampaigns() {
+    if (campaignsCache.value) {
+        allCampaigns = campaignsCache.value;
+        incrementalRender(allCampaigns);
+        return;
+    }
+
     try {
         const campaigns = await fetchCampaigns();
+        campaignsCache.value = campaigns;
         allCampaigns = campaigns;
-        renderFilteredCampaigns();
+        incrementalRender(allCampaigns);
     } catch (err) {
         console.error("Failed to load campaigns:", err);
     }
 }
 
-function renderFilteredCampaigns() {
-    const channelMap = {};
-    const data = [];
+function incrementalRender(campaigns) {
+    if (!channels.value.length) return;
 
+    // 1️⃣ Sort channels by preferred order
     const preferredOrder = ["Edisons", "Mytopia"];
     const sortedChannels = [...channels.value].sort((a, b) => {
         const ai = preferredOrder.indexOf(a.name);
@@ -384,8 +399,11 @@ function renderFilteredCampaigns() {
         return a.name.localeCompare(b.name);
     });
 
-    // ALWAYS create project rows for channels
-    sortedChannels.forEach((c) => {
+    // 2️⃣ Create channel/project rows only
+    const channelMap = {};
+    const data = [];
+
+    sortedChannels.forEach(c => {
         const parentId = `channel_${c.channel_id}`;
         channelMap[c.channel_id] = parentId;
 
@@ -399,36 +417,33 @@ function renderFilteredCampaigns() {
         });
     });
 
-    const [startFilter, endFilter] = dateRange.value || [];
+    gantt.clearAll();
+    gantt.parse({ data });
 
-    // Only add tasks if campaigns exist
-    const filtered = allCampaigns.filter((c) => {
-        const matchChannel = selectedChannel.value
-            ? c.channel_id === selectedChannel.value
-            : true;
-        const matchSearch = searchTerm.value
-            ? c.name.toLowerCase().includes(searchTerm.value.toLowerCase())
-            : true;
+    setTimeout(() => {
+        const [startFilter, endFilter] = dateRange.value || [];
 
-        const campaignStart = new Date(c.start_date);
-        const campaignEnd = new Date(c.end_date);
+        const filtered = campaigns.filter(c => {
+            const matchChannel = selectedChannel.value
+                ? c.channel_id === selectedChannel.value
+                : true;
+            const matchSearch = searchTerm.value
+                ? c.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+                : true;
 
-        let matchDate = true;
-        if (startFilter && endFilter) {
-            matchDate =
-                campaignEnd >= startFilter && campaignStart <= endFilter;
-        }
+            const campaignStart = new Date(c.start_date);
+            const campaignEnd = new Date(c.end_date);
 
-        return matchChannel && matchSearch && matchDate;
-    });
+            let matchDate = true;
+            if (startFilter && endFilter) {
+                matchDate = campaignEnd >= startFilter && campaignStart <= endFilter;
+            }
 
-    // Add campaign tasks (if any)
-    sortedChannels.forEach((c) => {
-        const channelTasks = filtered.filter(
-            (f) => f.channel_id === c.channel_id,
-        );
-        channelTasks.forEach((campaign) => {
-            data.push({
+            return matchChannel && matchSearch && matchDate;
+        });
+
+        filtered.forEach(campaign => {
+            gantt.addTask({
                 id: campaign.campaign_id,
                 text: campaign.name,
                 start_date: new Date(campaign.start_date),
@@ -438,15 +453,18 @@ function renderFilteredCampaigns() {
                 parent: channelMap[campaign.channel_id],
             });
         });
-    });
 
-    gantt.clearAll();
-    gantt.parse({ data });
-    gantt.render();
-    applyGanttTheme();
-    applyHiddenCampaigns();
+        applyHiddenCampaigns();
 
-    setTimeout(() => autoAdjustTimeline(filtered), 50);
+        clearTimeout(timelineTimeout);
+        timelineTimeout = setTimeout(() => autoAdjustTimeline(filtered), 100);
+
+        ganttTasksLoaded.value = true;
+    }, 50);
+}
+function renderFilteredCampaigns() {
+    if (!allCampaigns.length || !channels.value.length) return;
+    incrementalRender(allCampaigns);
 }
 
 function applyHiddenCampaigns() {
@@ -486,7 +504,7 @@ gantt.attachEvent("onAfterTaskDelete", async (id, task) => {
 });
 
 watch([searchTerm, selectedChannel, dateRange], () => {
-    renderFilteredCampaigns();
+    renderFilteredCampaignsDebounced();
 });
 
 function resetFilters() {
