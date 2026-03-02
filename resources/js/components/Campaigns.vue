@@ -502,13 +502,13 @@ onMounted(async () => {
       } catch (err) {
         console.error("Error initializing gantt:", err)
       } finally {
-        loading.value = false
+        loading.value = false;
       }
     }, 0)
 
   } catch (err) {
     console.error(err)
-    loading.value = false
+    loading.value = false;
   }
 })
 

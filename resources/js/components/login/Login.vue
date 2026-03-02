@@ -133,6 +133,7 @@ const ui = useUIStore();
 const handleLogin = async () => {
     loading.value = true;
     ui.showLoader();
+
     try {
         const response = await login({
             email: email.value,
@@ -140,10 +141,13 @@ const handleLogin = async () => {
             remember: rememberMe.value,
         });
 
+        // Save token
         if (response.token) localStorage.setItem("auth_token", response.token);
 
         $toastr.success("Welcome back!", "Login Successful");
         router.push("/dashboard");
+
+        // Prefetch common pages
         Promise.all([
             import("@/js/components/Campaigns.vue"),
             import("@/js/components/WebsiteCampaigns.vue"),
@@ -151,27 +155,40 @@ const handleLogin = async () => {
             import("@/js/components/WebsitePromos.vue"),
         ]);
     } catch (err) {
-        const message = err.response?.data?.message || "Invalid credentials";
+        let message;
+
+        // backend returned 422 for invalid email domain
+        if (err.response?.status === 422) {
+            message = err.response.data?.message || "Invalid email";
+        } else if (err.response?.status === 401) {
+            message = err.response.data?.message || "Invalid credentials";
+        } else {
+            message = err.message || "Login failed";
+        }
+
         $toastr.error(message, "Login Failed");
     } finally {
         ui.hideLoader();
+        loading.value = false;
     }
-    loading.value = false;
 };
 
 const handleFirebaseLogin = async () => {
     loading.value = true;
     ui.showLoader();
+
     try {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
         const idToken = await result.user.getIdToken();
 
         const response = await loginWithFirebase(idToken);
+
         if (response.token) localStorage.setItem("auth_token", response.token);
 
         $toastr.success("Welcome back!", "Google Login Successful");
         router.push("/dashboard");
+
         Promise.all([
             import("@/js/components/Campaigns.vue"),
             import("@/js/components/WebsiteCampaigns.vue"),
@@ -179,10 +196,18 @@ const handleFirebaseLogin = async () => {
             import("@/js/components/WebsitePromos.vue"),
         ]);
     } catch (err) {
-        console.error("Google login error:", err);
-        const message =
-            err.response?.data?.message || err.message || "Google login failed";
+        let message;
+
+        if (err.response?.status === 422) {
+            message = err.response.data?.message || "Invalid email";
+        } else if (err.response?.status === 401) {
+            message = err.response.data?.message || "Invalid credentials";
+        } else {
+            message = err.message || "Google login failed";
+        }
+
         $toastr.error(message, "Login Failed");
+        console.error("Google login error:", err);
     } finally {
         loading.value = false;
         ui.hideLoader();

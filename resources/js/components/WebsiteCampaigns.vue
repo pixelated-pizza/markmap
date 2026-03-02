@@ -721,10 +721,11 @@ function getStatus(data) {
 
 async function loadCampaigns() {
     loading.value = true;
+    await store.loadCampaignTypes();
     await store.loadCampaigns();
     await store.loadStores();
     await store.loadSections();
-    await store.loadCampaignTypes();
+    
     updateCalendarResourcesAndEvents();
     loading.value = false;
 }
@@ -800,8 +801,14 @@ function updateCalendarResourcesAndEvents() {
     }
 }
 
-function openAddModal() {
+async function openAddModal() {
     editTargetId.value = null;
+
+    // Ensure campaign types are loaded first
+    if (!store.campaign_types.length) {
+        await store.loadCampaignTypes();
+    }
+
     form.value = {
         name: "",
         campaign_type_id: "",
@@ -811,6 +818,7 @@ function openAddModal() {
         end_date: null,
         is_all_store: false,
     };
+
     showDialog.value = true;
 }
 

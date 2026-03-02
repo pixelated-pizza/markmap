@@ -90,12 +90,14 @@ async function confirmLogout() {
     await logout();
     localStorage.removeItem('auth_token');
     router.push('/login');
+    
   } catch (err) {
     console.error(err);
   } finally {
     ui.hideLoader();
     loggingOut.value = false;
     showLogoutDialog.value = false;
+    toastr.success("You have been logged out.", "Logout Successful");
   }
 }
 

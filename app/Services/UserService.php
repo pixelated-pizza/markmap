@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
 use App\Services\FirebaseService;
+use Illuminate\Validation\ValidationException;
+
 
 class UserService
 {
@@ -32,11 +34,20 @@ class UserService
      */
     public function login(string $email, string $password, bool $remember = false): ?User
     {
+        // 🔒 Check MillsTrading email
+        if (!str_starts_with($email, 'millstrading.')) {
+            throw ValidationException::withMessages([
+                'email' => ['Use your MillsTrading email to sign in.']
+            ]);
+        }
+
         if (Auth::attempt(['email' => $email, 'password' => $password], $remember)) {
             return Auth::user();
         }
+
         return null;
     }
+
 
     /**
      * Login via Firebase token
@@ -49,20 +60,26 @@ class UserService
             return null; // Invalid token
         }
 
+        $email = $payload['email'] ?? null;
+
+        if (!$email || !str_starts_with($email, 'millstrading.')) {
+            throw ValidationException::withMessages([
+                'email' => ['Use your MillsTrading email to sign in.']
+            ]);
+        }
+
         $defaultRoleId = DB::table('roles')->where('role_name', 'Editor')->value('role_id');
 
-        // Find or create Laravel user by firebase_uid
         $user = User::firstOrCreate(
             ['firebase_uid' => $payload['uid']],
             [
-                'email' => $payload['email'] ?? null,
+                'email' => $email,
                 'name' => $payload['name'] ?? 'Unknown',
                 'password' => bcrypt(bin2hex(random_bytes(16))),
                 'role_id' => $defaultRoleId,
             ]
         );
 
-        // If you want to link existing email to firebase_uid
         if ($user->firebase_uid === null) {
             $user->firebase_uid = $payload['uid'];
             $user->save();
