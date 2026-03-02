@@ -369,26 +369,19 @@ function autoAdjustTimeline(filteredTasks = []) {
 }
 
 async function loadCampaigns() {
-    if (campaignsCache.value) {
-        allCampaigns = campaignsCache.value;
-        incrementalRender(allCampaigns);
-        return;
-    }
-
     try {
         const campaigns = await fetchCampaigns();
-        campaignsCache.value = campaigns;
         allCampaigns = campaigns;
-        incrementalRender(allCampaigns);
+        renderFilteredCampaigns();
     } catch (err) {
         console.error("Failed to load campaigns:", err);
     }
 }
 
-function incrementalRender(campaigns) {
-    if (!channels.value.length) return;
+function renderFilteredCampaigns() {
+    const channelMap = {};
+    const data = [];
 
-    // 1️⃣ Sort channels by preferred order
     const preferredOrder = ["Edisons", "Mytopia"];
     const sortedChannels = [...channels.value].sort((a, b) => {
         const ai = preferredOrder.indexOf(a.name);
@@ -399,11 +392,8 @@ function incrementalRender(campaigns) {
         return a.name.localeCompare(b.name);
     });
 
-    // 2️⃣ Create channel/project rows only
-    const channelMap = {};
-    const data = [];
-
-    sortedChannels.forEach(c => {
+    // ALWAYS create project rows for channels
+    sortedChannels.forEach((c) => {
         const parentId = `channel_${c.channel_id}`;
         channelMap[c.channel_id] = parentId;
 
@@ -417,33 +407,36 @@ function incrementalRender(campaigns) {
         });
     });
 
-    gantt.clearAll();
-    gantt.parse({ data });
+    const [startFilter, endFilter] = dateRange.value || [];
 
-    setTimeout(() => {
-        const [startFilter, endFilter] = dateRange.value || [];
+    // Only add tasks if campaigns exist
+    const filtered = allCampaigns.filter((c) => {
+        const matchChannel = selectedChannel.value
+            ? c.channel_id === selectedChannel.value
+            : true;
+        const matchSearch = searchTerm.value
+            ? c.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+            : true;
 
-        const filtered = campaigns.filter(c => {
-            const matchChannel = selectedChannel.value
-                ? c.channel_id === selectedChannel.value
-                : true;
-            const matchSearch = searchTerm.value
-                ? c.name.toLowerCase().includes(searchTerm.value.toLowerCase())
-                : true;
+        const campaignStart = new Date(c.start_date);
+        const campaignEnd = new Date(c.end_date);
 
-            const campaignStart = new Date(c.start_date);
-            const campaignEnd = new Date(c.end_date);
+        let matchDate = true;
+        if (startFilter && endFilter) {
+            matchDate =
+                campaignEnd >= startFilter && campaignStart <= endFilter;
+        }
 
-            let matchDate = true;
-            if (startFilter && endFilter) {
-                matchDate = campaignEnd >= startFilter && campaignStart <= endFilter;
-            }
+        return matchChannel && matchSearch && matchDate;
+    });
 
-            return matchChannel && matchSearch && matchDate;
-        });
-
-        filtered.forEach(campaign => {
-            gantt.addTask({
+    // Add campaign tasks (if any)
+    sortedChannels.forEach((c) => {
+        const channelTasks = filtered.filter(
+            (f) => f.channel_id === c.channel_id,
+        );
+        channelTasks.forEach((campaign) => {
+            data.push({
                 id: campaign.campaign_id,
                 text: campaign.name,
                 start_date: new Date(campaign.start_date),
@@ -453,18 +446,15 @@ function incrementalRender(campaigns) {
                 parent: channelMap[campaign.channel_id],
             });
         });
+    });
 
-        applyHiddenCampaigns();
+    gantt.clearAll();
+    gantt.parse({ data });
+    gantt.render();
+    applyGanttTheme();
+    applyHiddenCampaigns();
 
-        clearTimeout(timelineTimeout);
-        timelineTimeout = setTimeout(() => autoAdjustTimeline(filtered), 100);
-
-        ganttTasksLoaded.value = true;
-    }, 50);
-}
-function renderFilteredCampaigns() {
-    if (!allCampaigns.length || !channels.value.length) return;
-    incrementalRender(allCampaigns);
+    setTimeout(() => autoAdjustTimeline(filtered), 50);
 }
 
 function applyHiddenCampaigns() {
@@ -504,7 +494,7 @@ gantt.attachEvent("onAfterTaskDelete", async (id, task) => {
 });
 
 watch([searchTerm, selectedChannel, dateRange], () => {
-    renderFilteredCampaignsDebounced();
+    renderFilteredCampaigns();
 });
 
 function resetFilters() {

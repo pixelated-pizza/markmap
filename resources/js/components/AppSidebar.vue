@@ -94,10 +94,11 @@ async function confirmLogout() {
   } catch (err) {
     console.error(err);
   } finally {
-    ui.hideLoader();
+    
     loggingOut.value = false;
     showLogoutDialog.value = false;
     toastr.success("You have been logged out.", "Logout Successful");
+    ui.hideLoader();
   }
 }
 
