@@ -1,483 +1,493 @@
 <template>
-   <BlockUI :blocked="processing" fullScreen>
-    <div
-        class="flex flex-col bg-white dark:bg-gray-900 h-auto max-h-[88vh] overflow-auto"
-    >
-        <div class="card dark:bg-gray-900 bg-white rounded-lg mt-2">
-            <h4 class="text-gray-200 font-semibold text-lg text-center p-2">
-                Website Campaign Calendar - Edisons & Mytopia
-            </h4>
+    <BlockUI :blocked="processing" fullScreen>
+        <div
+            class="flex flex-col bg-white dark:bg-gray-900 h-auto max-h-[88vh] overflow-auto"
+        >
+            <div class="card dark:bg-gray-900 bg-white rounded-lg mt-2">
+                <h4 class="text-gray-200 font-semibold text-lg text-center p-2">
+                    Website Campaign Calendar - Edisons & Mytopia
+                </h4>
 
-            <div
-                class="h-[450px] overflow-hidden rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
-            >
-                <template v-if="loading">
-                    <div class="flex flex-col gap-4 w-full h-full p-3">
-                        <p class="text-gray-400 text-lg">
-                            Loading Gantt Chart...
-                        </p>
-                        <Skeleton height="2rem" width="70%" />
-                        <Skeleton height="2rem" width="50%" />
-                        <Skeleton height="1rem" width="90%" />
-                        <Skeleton height="1rem" width="85%" />
-                        <Skeleton height="1rem" width="95%" />
-                        <div class="flex-1 mt-2">
-                            <Skeleton height="100%" borderRadius="8px" />
-                        </div>
-                    </div>
-                </template>
-
-                <FullCalendar
-                    v-else
-                    ref="calendarRef"
-                    :options="calendarOptions"
-                    class="w-full h-full fc-theme"
-                />
-            </div>
-
-            <div class="rounded-sm">
-                <template v-if="loading">
-                    <div
-                        class="flex flex-col gap-4 w-full h-full dark:bg-black bg-white p-5 rounded-md"
-                    >
-                        <p class="text-gray-400 text-lg">
-                            Loading data table...
-                        </p>
-                        <Skeleton height="2rem" width="70%" />
-                        <Skeleton height="2rem" width="50%" />
-                        <Skeleton height="1rem" width="90%" />
-                        <Skeleton height="1rem" width="85%" />
-                        <Skeleton height="1rem" width="95%" />
-                        <div class="flex-1 mt-2">
-                            <Skeleton height="100%" borderRadius="8px" />
-                        </div>
-                    </div>
-                </template>
-                <DataTable
-                    v-else
-                    :value="filteredCampaigns"
-                    sortField="start_date"
-                    :sortOrder="-1"
-                    dataKey="wc_id"
-                    paginator
-                    :rows="5"
-                    :rowsPerPageOptions="[5, 10, 20, 50]"
-                    showGridlines
-                    scrollable
-                    scrollHeight="500px"
-                    stickyHeader
-                    tableStyle="min-width: 60rem;"
-                    :loading="loading"
-                    class="p-datatable-sm"
-                    tableLayout="fixed"
+                <div
+                    class="h-[450px] overflow-hidden rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
                 >
-                    <template #header>
-                        <div
-                            class="table-header flex flex-wrap gap-2 items-center p-2"
-                        >
-                            <!-- Search -->
-                            <IconField class="w-60 relative">
-                                <InputIcon>
-                                    <i class="pi pi-search" />
-                                </InputIcon>
-                                <InputText
-                                    placeholder="Search"
-                                    v-model="searchQuery"
-                                    class="w-full"
-                                />
-                            </IconField>
-                            <div class="relative w-60">
-                                <Select
-                                    v-model="filterStore"
-                                    :options="store.stores"
-                                    optionLabel="store_name"
-                                    optionValue="store_id"
-                                    placeholder="Filter by Website"
-                                    class="w-full"
-                                />
-                                <button
-                                    v-if="filterStore"
-                                    @click="filterStore = null"
-                                    class="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
-                                >
-                                    <i class="pi pi-times"></i>
-                                </button>
+                    <template v-if="loading">
+                        <div class="flex flex-col gap-4 w-full h-full p-3">
+                            <p class="text-gray-400 text-lg">
+                                Loading Gantt Chart...
+                            </p>
+                            <Skeleton height="2rem" width="70%" />
+                            <Skeleton height="2rem" width="50%" />
+                            <Skeleton height="1rem" width="90%" />
+                            <Skeleton height="1rem" width="85%" />
+                            <Skeleton height="1rem" width="95%" />
+                            <div class="flex-1 mt-2">
+                                <Skeleton height="100%" borderRadius="8px" />
                             </div>
-                            <div class="relative w-60">
-                                <Select
-                                    v-model="filterSection"
-                                    :options="store.sections"
-                                    optionLabel="name"
-                                    optionValue="section_id"
-                                    placeholder="Filter by Section"
-                                    class="w-full"
-                                />
-                                <button
-                                    v-if="filterSection"
-                                    @click="filterSection = null"
-                                    class="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
-                                >
-                                    <i class="pi pi-times"></i>
-                                </button>
-                            </div>
-                            <Button
-                                type="button"
-                                icon="pi pi-plus"
-                                label="Add Campaign / Promo"
-                                size="small"
-                                severity="success"
-                                :loading="loading"
-                                @click="openAddModal"
-                            />
                         </div>
                     </template>
 
-                    <Column field="name" header="Banner Name" class="w-1/4">
-                        <template #body="{ data }">
-                            <span>{{ data.name }}</span>
-                        </template>
-                    </Column>
-
-                    <Column
-                        field="start_date"
-                        header="Start Date"
-                        class="w-1/6"
-                    >
-                        <template #body="{ data }">
-                            <span>{{ formatDate(data.start_date) }}</span>
-                        </template>
-                    </Column>
-
-                    <Column field="end_date" header="End Date" class="w-1/6">
-                        <template #body="{ data }">
-                            <span>{{ formatDate(data.end_date) }}</span>
-                        </template>
-                    </Column>
-
-                    <Column field="store_id" header="Website" class="w-1/6">
-                        <template #body="{ data }">
-                            <span>{{ data.websiteDisplay }}</span>
-                        </template>
-                    </Column>
-
-                    <Column field="section_id" header="Section" class="w-1/6">
-                        <template #body="{ data }">
-                            <span>{{ data.section?.name }}</span>
-                        </template>
-                    </Column>
-
-                    <Column header="Status" class="w-1/6">
-                        <template #body="{ data }">
-                            <span
-                                :class="[
-                                    'px-2 py-1 rounded text-sm font-medium',
-                                    isUpcoming(data)
-                                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                                        : isRunning(data)
-                                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                          : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-                                ]"
-                            >
-                                {{ getStatus(data) }}
-                            </span>
-                        </template>
-                    </Column>
-
-                    <Column header="Action" class="w-1/6">
-                        <template #body="{ data }">
-                            <div class="flex flex-col gap-2">
-                                <Button
-                                    type="button"
-                                    icon="pi pi-pencil"
-                                    label="Edit"
-                                    size="small"
-                                    severity="info"
-                                    :loading="
-                                        loading && editTargetId === data.wc_id
-                                    "
-                                    @click="openEditModal(data)"
-                                />
-                            </div>
-                        </template>
-                    </Column>
-                    <template #empty>
-                        <div class="p-4 text-center text-gray-400">
-                            No Data available.
-                        </div>
-                    </template>
-                </DataTable>
-            </div>
-
-            <Dialog
-                v-model:visible="showDialog"
-                modal
-                :header="dialogHeader"
-                :style="{ width: '30vw' }"
-                class="bg-white dark:bg-gray-900"
-            >
-                <div class="flex flex-col gap-3">
-                    <div>
-                        <label
-                            class="block text-gray-700 dark:text-gray-300 mb-1"
-                            >Name</label
-                        >
-                        <InputText
-                            v-model="form.name"
-                            class="w-full"
-                            placeholder="Name of the Website Sale / Promotion"
-                        />
-                        <Message
-                            v-if="errors.name"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ errors.name }}
-                        </Message>
-                    </div>
-
-                    <div>
-                        <label
-                            class="block text-gray-700 dark:text-gray-300 mb-1"
-                            >Campaign Category</label
-                        >
-                        <Select
-                            v-model="form.campaign_type_id"
-                            :options="store.campaign_types"
-                            optionLabel="campaign_type_name"
-                            optionValue="campaign_type_id"
-                            class="w-full"
-                            placeholder="Campaign Category"
-                        />
-                        <Message
-                            v-if="errors.campaign_type_id"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ errors.campaign_type_id }}
-                        </Message>
-                    </div>
-
-                    <div>
-                        <label
-                            class="block text-gray-700 dark:text-gray-300 mb-1"
-                            >Where do we place this?</label
-                        >
-                        <Select
-                            v-model="form.section_id"
-                            :options="store.sections"
-                            optionLabel="name"
-                            optionValue="section_id"
-                            class="w-full"
-                            placeholder="Section Name"
-                        />
-                        <Message
-                            v-if="errors.section_id"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ errors.section_id }}
-                        </Message>
-                    </div>
-
-                    <div>
-                        <label
-                            class="block text-gray-700 dark:text-gray-300 mb-1"
-                            >What Website?</label
-                        >
-                        <div class="flex items-center gap-2 mb-2 mt-2">
-                            <Checkbox
-                                v-model="form.is_all_store"
-                                inputId="all_store"
-                                binary
-                                :true-value="true"
-                                :false-value="false"
-                            />
-                            <label
-                                for="all_store"
-                                class="text-gray-700 dark:text-gray-300 cursor-pointer"
-                                >Apply to Both Websites</label
-                            >
-                        </div>
-
-                        <Select
-                            v-model="form.store_id"
-                            :disabled="form.is_all_store"
-                            :options="store.stores"
-                            optionLabel="store_name"
-                            optionValue="store_id"
-                            class="w-full"
-                            placeholder="Name of the Website"
-                        />
-
-                        <Message
-                            v-if="errors.store_id"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ errors.store_id }}
-                        </Message>
-                    </div>
-
-                    <div>
-                        <label class="block dark:text-gray-300 mb-1 text-black"
-                            >Start Date</label
-                        >
-                        <DatePicker
-                            v-model="form.start_date"
-                            showTime
-                            hourFormat="12"
-                            timePickerMode="slider"
-                            stepMinute="1"
-                            stepSecond="1"
-                            fluid
-                        />
-                        <Message
-                            v-if="errors.start_date"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ errors.start_date }}
-                        </Message>
-                    </div>
-
-                    <div>
-                        <label
-                            class="block text-gray-700 dark:text-gray-300 mb-1"
-                            >End Date</label
-                        >
-                        <DatePicker
-                            v-model="form.end_date"
-                            showTime
-                            hourFormat="12"
-                            timePickerMode="slider"
-                            stepMinute="1"
-                            stepSecond="1"
-                            fluid
-                        />
-                        <Message
-                            v-if="errors.end_date"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ errors.end_date }}
-                        </Message>
-                    </div>
+                    <FullCalendar
+                        v-else
+                        ref="calendarRef"
+                        :options="calendarOptions"
+                        class="w-full h-full fc-theme"
+                    />
                 </div>
 
-                <template #footer>
-                    <div class="flex justify-between w-full">
-                        <div class="flex gap-2">
-                            <Button
-                                v-if="editTargetId"
-                                label="Archive"
-                                icon="pi pi-folder"
-                                severity="warn"
-                                @click="
-                                    confirmArchive({
-                                        ...form,
-                                        wc_id: editTargetId,
-                                    })
-                                "
-                            />
-                            <Button
-                                v-if="editTargetId"
-                                label="Delete"
-                                icon="pi pi-trash"
-                                :loading="processing"
-                                :disabled="processing"
-                                severity="danger"
-                                @click="
-                                    confirmDelete({
-                                        ...form,
-                                        wc_id: editTargetId,
-                                    })
-                                "
-                            />
+                <div class="rounded-sm">
+                    <template v-if="loading">
+                        <div
+                            class="flex flex-col gap-4 w-full h-full dark:bg-black bg-white p-5 rounded-md"
+                        >
+                            <p class="text-gray-400 text-lg">
+                                Loading data table...
+                            </p>
+                            <Skeleton height="2rem" width="70%" />
+                            <Skeleton height="2rem" width="50%" />
+                            <Skeleton height="1rem" width="90%" />
+                            <Skeleton height="1rem" width="85%" />
+                            <Skeleton height="1rem" width="95%" />
+                            <div class="flex-1 mt-2">
+                                <Skeleton height="100%" borderRadius="8px" />
+                            </div>
                         </div>
-                        <div class="flex gap-2">
-                            <Button
-                                label="Cancel"
-                                severity="secondary"
-                                @click="closeDialog"
+                    </template>
+                    <DataTable
+                        v-else
+                        :value="filteredCampaigns"
+                        sortField="start_date"
+                        :sortOrder="-1"
+                        dataKey="wc_id"
+                        paginator
+                        :rows="5"
+                        :rowsPerPageOptions="[5, 10, 20, 50]"
+                        showGridlines
+                        scrollable
+                        scrollHeight="500px"
+                        stickyHeader
+                        tableStyle="min-width: 60rem;"
+                        :loading="loading"
+                        class="p-datatable-sm"
+                        tableLayout="fixed"
+                    >
+                        <template #header>
+                            <div
+                                class="table-header flex flex-wrap gap-2 items-center p-2"
+                            >
+                                <!-- Search -->
+                                <IconField class="w-60 relative">
+                                    <InputIcon>
+                                        <i class="pi pi-search" />
+                                    </InputIcon>
+                                    <InputText
+                                        placeholder="Search"
+                                        v-model="searchQuery"
+                                        class="w-full"
+                                    />
+                                </IconField>
+                                <div class="relative w-60">
+                                    <Select
+                                        v-model="filterStore"
+                                        :options="store.stores"
+                                        optionLabel="store_name"
+                                        optionValue="store_id"
+                                        placeholder="Filter by Website"
+                                        class="w-full"
+                                    />
+                                    <button
+                                        v-if="filterStore"
+                                        @click="filterStore = null"
+                                        class="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                                    >
+                                        <i class="pi pi-times"></i>
+                                    </button>
+                                </div>
+                                <div class="relative w-60">
+                                    <Select
+                                        v-model="filterSection"
+                                        :options="store.sections"
+                                        optionLabel="name"
+                                        optionValue="section_id"
+                                        placeholder="Filter by Section"
+                                        class="w-full"
+                                    />
+                                    <button
+                                        v-if="filterSection"
+                                        @click="filterSection = null"
+                                        class="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                                    >
+                                        <i class="pi pi-times"></i>
+                                    </button>
+                                </div>
+                                <Button
+                                    type="button"
+                                    icon="pi pi-plus"
+                                    label="Add Campaign / Promo"
+                                    size="small"
+                                    severity="success"
+                                    :loading="loading"
+                                    @click="openAddModal"
+                                />
+                            </div>
+                        </template>
+
+                        <Column field="name" header="Banner Name" class="w-1/4">
+                            <template #body="{ data }">
+                                <span>{{ data.name }}</span>
+                            </template>
+                        </Column>
+
+                        <Column
+                            field="start_date"
+                            header="Start Date"
+                            class="w-1/6"
+                        >
+                            <template #body="{ data }">
+                                <span>{{ formatDate(data.start_date) }}</span>
+                            </template>
+                        </Column>
+
+                        <Column
+                            field="end_date"
+                            header="End Date"
+                            class="w-1/6"
+                        >
+                            <template #body="{ data }">
+                                <span>{{ formatDate(data.end_date) }}</span>
+                            </template>
+                        </Column>
+
+                        <Column field="store_id" header="Website" class="w-1/6">
+                            <template #body="{ data }">
+                                <span>{{ data.websiteDisplay }}</span>
+                            </template>
+                        </Column>
+
+                        <Column
+                            field="section_id"
+                            header="Section"
+                            class="w-1/6"
+                        >
+                            <template #body="{ data }">
+                                <span>{{ data.section?.name }}</span>
+                            </template>
+                        </Column>
+
+                        <Column header="Status" class="w-1/6">
+                            <template #body="{ data }">
+                                <span
+                                    :class="[
+                                        'px-2 py-1 rounded text-sm font-medium',
+                                        isUpcoming(data)
+                                            ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                                            : isRunning(data)
+                                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                                    ]"
+                                >
+                                    {{ getStatus(data) }}
+                                </span>
+                            </template>
+                        </Column>
+
+                        <Column header="Action" class="w-1/6">
+                            <template #body="{ data }">
+                                <div class="flex flex-col gap-2">
+                                    <Button
+                                        type="button"
+                                        icon="pi pi-pencil"
+                                        label="Edit"
+                                        size="small"
+                                        severity="info"
+                                        :loading="
+                                            loading &&
+                                            editTargetId === data.wc_id
+                                        "
+                                        @click="openEditModal(data)"
+                                    />
+                                </div>
+                            </template>
+                        </Column>
+                        <template #empty>
+                            <div class="p-4 text-center text-gray-400">
+                                No Data available.
+                            </div>
+                        </template>
+                    </DataTable>
+                </div>
+
+                <Dialog
+                    v-model:visible="showDialog"
+                    modal
+                    :header="dialogHeader"
+                    :style="{ width: '30vw' }"
+                    class="bg-white dark:bg-gray-900"
+                >
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <label
+                                class="block text-gray-700 dark:text-gray-300 mb-1"
+                                >Name</label
+                            >
+                            <InputText
+                                v-model="form.name"
+                                class="w-full"
+                                placeholder="Name of the Website Sale / Promotion"
                             />
-                            <Button
-                                :label="saving ? 'Saving...' : saveLabel"
-                                icon="pi pi-check"
-                                severity="success"
-                                :disabled="processing"
-                                @click="saveCampaign"
-                                :loading="saving"
+                            <Message
+                                v-if="errors.name"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ errors.name }}
+                            </Message>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-gray-700 dark:text-gray-300 mb-1"
+                                >Campaign Category</label
+                            >
+                            <Select
+                                v-model="form.campaign_type_id"
+                                :options="store.campaign_types"
+                                optionLabel="campaign_type_name"
+                                optionValue="campaign_type_id"
+                                class="w-full"
+                                placeholder="Campaign Category"
                             />
+                            <Message
+                                v-if="errors.campaign_type_id"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ errors.campaign_type_id }}
+                            </Message>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-gray-700 dark:text-gray-300 mb-1"
+                                >Where do we place this?</label
+                            >
+                            <Select
+                                v-model="form.section_id"
+                                :options="store.sections"
+                                optionLabel="name"
+                                optionValue="section_id"
+                                class="w-full"
+                                placeholder="Section Name"
+                            />
+                            <Message
+                                v-if="errors.section_id"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ errors.section_id }}
+                            </Message>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-gray-700 dark:text-gray-300 mb-1"
+                                >What Website?</label
+                            >
+                            <div class="flex items-center gap-2 mb-2 mt-2">
+                                <Checkbox
+                                    v-model="form.is_all_store"
+                                    inputId="all_store"
+                                    binary
+                                    :true-value="true"
+                                    :false-value="false"
+                                />
+                                <label
+                                    for="all_store"
+                                    class="text-gray-700 dark:text-gray-300 cursor-pointer"
+                                    >Apply to Both Websites</label
+                                >
+                            </div>
+
+                            <Select
+                                v-model="form.store_id"
+                                :disabled="form.is_all_store"
+                                :options="store.stores"
+                                optionLabel="store_name"
+                                optionValue="store_id"
+                                class="w-full"
+                                placeholder="Name of the Website"
+                            />
+
+                            <Message
+                                v-if="errors.store_id"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ errors.store_id }}
+                            </Message>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block dark:text-gray-300 mb-1 text-black"
+                                >Start Date</label
+                            >
+                            <DatePicker
+                                v-model="form.start_date"
+                                showTime
+                                hourFormat="12"
+                                timePickerMode="slider"
+                                stepMinute="1"
+                                stepSecond="1"
+                                fluid
+                            />
+                            <Message
+                                v-if="errors.start_date"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ errors.start_date }}
+                            </Message>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-gray-700 dark:text-gray-300 mb-1"
+                                >End Date</label
+                            >
+                            <DatePicker
+                                v-model="form.end_date"
+                                showTime
+                                hourFormat="12"
+                                timePickerMode="slider"
+                                stepMinute="1"
+                                stepSecond="1"
+                                fluid
+                            />
+                            <Message
+                                v-if="errors.end_date"
+                                severity="error"
+                                size="small"
+                                variant="simple"
+                            >
+                                {{ errors.end_date }}
+                            </Message>
                         </div>
                     </div>
-                </template>
-            </Dialog>
 
-            <Dialog
-                v-model:visible="showArchiveDialog"
-                header="Confirm Archive"
-                :modal="true"
-                :closable="false"
-                :style="{ width: '400px' }"
-            >
-                <p>
-                    Are you sure you want to archive the campaign "{{
-                        campaignToArchive?.name
-                    }}"?
-                </p>
-                <template #footer>
-                    <Button
-                        label="No"
-                        severity="danger"
-                        text
-                        @click="showArchiveDialog = false"
-                    />
-                    <Button
-                        label="Yes"
-                        severity="success"
-                        :loading="processing"
-                        :disabled="processing"
-                        @click="archiveConfirmed"
-                    />
-                </template>
-            </Dialog>
+                    <template #footer>
+                        <div class="flex justify-between w-full">
+                            <div class="flex gap-2">
+                                <Button
+                                    v-if="editTargetId"
+                                    label="Archive"
+                                    icon="pi pi-folder"
+                                    severity="warn"
+                                    @click="
+                                        confirmArchive({
+                                            ...form,
+                                            wc_id: editTargetId,
+                                        })
+                                    "
+                                />
+                                <Button
+                                    v-if="editTargetId"
+                                    label="Delete"
+                                    icon="pi pi-trash"
+                                    :loading="processing"
+                                    :disabled="processing"
+                                    severity="danger"
+                                    @click="
+                                        confirmDelete({
+                                            ...form,
+                                            wc_id: editTargetId,
+                                        })
+                                    "
+                                />
+                            </div>
+                            <div class="flex gap-2">
+                                <Button
+                                    label="Cancel"
+                                    severity="secondary"
+                                    @click="closeDialog"
+                                />
+                                <Button
+                                    :label="saving ? 'Saving...' : saveLabel"
+                                    icon="pi pi-check"
+                                    severity="success"
+                                    :disabled="processing"
+                                    @click="saveCampaign"
+                                    :loading="saving"
+                                />
+                            </div>
+                        </div>
+                    </template>
+                </Dialog>
 
-            <Dialog
-                v-model:visible="showDeleteDialog"
-                header="Delete Campaign"
-                :modal="true"
-                :closable="false"
-                :style="{ width: '400px' }"
-            >
-                <p>
-                    Are you sure you want to delete the campaign "{{
-                        campaignToDelete?.name
-                    }}"?
-                </p>
-                <template #footer>
-                    <Button
-                        label="No"
-                        severity="danger"
-                        text
-                        @click="showDeleteDialog = false"
-                    />
-                    <Button
-                        label="Yes"
-                        severity="success"
-                        :loading="processing"
-                        :disabled="processing"
-                        @click="deleteConfirmed"
-                    />
-                </template>
-            </Dialog>
+                <Dialog
+                    v-model:visible="showArchiveDialog"
+                    header="Confirm Archive"
+                    :modal="true"
+                    :closable="false"
+                    :style="{ width: '400px' }"
+                >
+                    <p>
+                        Are you sure you want to archive the campaign "{{
+                            campaignToArchive?.name
+                        }}"?
+                    </p>
+                    <template #footer>
+                        <Button
+                            label="No"
+                            severity="danger"
+                            text
+                            @click="showArchiveDialog = false"
+                        />
+                        <Button
+                            label="Yes"
+                            severity="success"
+                            :loading="processing"
+                            :disabled="processing"
+                            @click="archiveConfirmed"
+                        />
+                    </template>
+                </Dialog>
+
+                <Dialog
+                    v-model:visible="showDeleteDialog"
+                    header="Delete Campaign"
+                    :modal="true"
+                    :closable="false"
+                    :style="{ width: '400px' }"
+                >
+                    <p>
+                        Are you sure you want to delete the campaign "{{
+                            campaignToDelete?.name
+                        }}"?
+                    </p>
+                    <template #footer>
+                        <Button
+                            label="No"
+                            severity="danger"
+                            text
+                            @click="showDeleteDialog = false"
+                        />
+                        <Button
+                            label="Yes"
+                            severity="success"
+                            :loading="processing"
+                            :disabled="processing"
+                            @click="deleteConfirmed"
+                        />
+                    </template>
+                </Dialog>
+            </div>
         </div>
-    </div>
     </BlockUI>
 </template>
 
@@ -500,6 +510,9 @@ import Calendar from "primevue/calendar";
 import { useOnsiteCampaignStore } from "@/js/stores/onsite_campaign_store.js";
 import { Select } from "primevue";
 import Skeleton from "primevue/skeleton";
+import { useUIStore } from "@/js/stores/ui.js";
+
+const ui = useUIStore();
 
 const $instance = getCurrentInstance();
 const toastr = $instance.appContext.config.globalProperties.$toastr;
@@ -721,16 +734,20 @@ function getStatus(data) {
 
 async function loadCampaigns() {
     loading.value = true;
-    await store.loadCampaignTypes();
-    await store.loadCampaigns();
-    await store.loadStores();
-    await store.loadSections();
-    
+    await Promise.all([
+        store.loadCampaignTypes(),
+        store.loadCampaigns(),
+        store.loadStores(),
+        store.loadSections(),
+    ]);
+
     updateCalendarResourcesAndEvents();
     loading.value = false;
 }
 
 function updateCalendarResourcesAndEvents() {
+
+    const resourcesBuilt = ref(false);
     const resources = store.stores.map((st) => {
         const sections = store.campaign_types
             .filter((sec) =>
@@ -790,12 +807,12 @@ function updateCalendarResourcesAndEvents() {
     const calendarApi = calendarRef.value?.getApi();
     if (calendarApi) {
         if (typeof calendarApi.removeAllResources === "function") {
-            calendarApi.removeAllResources();
+            
             resources.forEach((r) => calendarApi.addResource(r));
         }
 
         if (typeof calendarApi.removeAllEvents === "function") {
-            calendarApi.removeAllEvents();
+            
             events.forEach((e) => calendarApi.addEvent(e));
         }
     }
@@ -848,6 +865,8 @@ const saveLabel = computed(() => (editTargetId.value ? "Update" : "Create"));
 
 async function saveCampaign() {
     processing.value = true;
+    ui.showLoader();
+
     if (!validateForm()) {
         toastr.warning("Please correct the errors before saving.");
         processing.value = false;
@@ -905,6 +924,7 @@ async function saveCampaign() {
             } else {
                 toastr.success("Campaign updated.");
                 processing.value = false;
+                ui.hideLoader();
             }
         } else {
             if (form.value.is_all_store) {
@@ -932,6 +952,7 @@ async function saveCampaign() {
                 await store.addCampaign(payload);
                 toastr.success("Campaign added.");
                 processing.value = false;
+                ui.hideLoader();
             }
         }
 
@@ -1074,7 +1095,6 @@ function validateForm() {
 
 onMounted(async () => {
     await loadCampaigns();
-    updateCalendarResourcesAndEvents();
 });
 </script>
 
