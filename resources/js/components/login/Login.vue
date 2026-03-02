@@ -118,6 +118,7 @@ import { login, loginWithFirebase } from "@/js/api/login_api.js";
 import { auth } from "@/js/app.js";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useUIStore } from "@/js/stores/ui.js";
 
 const loading = ref(false);
 const email = ref("");
@@ -127,8 +128,11 @@ const router = useRouter();
 const { appContext } = getCurrentInstance();
 const $toastr = appContext.config.globalProperties.$toastr;
 
+const ui = useUIStore();
+
 const handleLogin = async () => {
     loading.value = true;
+    ui.showLoader();
     try {
         const response = await login({
             email: email.value,
@@ -141,21 +145,23 @@ const handleLogin = async () => {
         $toastr.success("Welcome back!", "Login Successful");
         router.push("/dashboard");
         Promise.all([
-            import('@/js/components/Campaigns.vue'),
-            import('@/js/components/WebsiteCampaigns.vue'),
-            import('@/js/components/WebsiteSaleDetails.vue'),
-            import('@/js/components/WebsitePromos.vue')
+            import("@/js/components/Campaigns.vue"),
+            import("@/js/components/WebsiteCampaigns.vue"),
+            import("@/js/components/WebsiteSaleDetails.vue"),
+            import("@/js/components/WebsitePromos.vue"),
         ]);
     } catch (err) {
         const message = err.response?.data?.message || "Invalid credentials";
         $toastr.error(message, "Login Failed");
     } finally {
-        loading.value = false;
+        ui.hideLoader();
     }
+    loading.value = false;
 };
 
 const handleFirebaseLogin = async () => {
     loading.value = true;
+    ui.showLoader();
     try {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
@@ -167,10 +173,10 @@ const handleFirebaseLogin = async () => {
         $toastr.success("Welcome back!", "Google Login Successful");
         router.push("/dashboard");
         Promise.all([
-            import('@/js/components/Campaigns.vue'),
-            import('@/js/components/WebsiteCampaigns.vue'),
-            import('@/js/components/WebsiteSaleDetails.vue'),
-            import('@/js/components/WebsitePromos.vue')
+            import("@/js/components/Campaigns.vue"),
+            import("@/js/components/WebsiteCampaigns.vue"),
+            import("@/js/components/WebsiteSaleDetails.vue"),
+            import("@/js/components/WebsitePromos.vue"),
         ]);
     } catch (err) {
         console.error("Google login error:", err);
@@ -179,6 +185,7 @@ const handleFirebaseLogin = async () => {
         $toastr.error(message, "Login Failed");
     } finally {
         loading.value = false;
+        ui.hideLoader();
     }
 };
 </script>

@@ -47,7 +47,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
-import { getCurrentInstance } from "vue";
+
 const gantt = window.gantt;
 
 import Select from "primevue/select";
@@ -55,7 +55,7 @@ import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import DatePicker from "primevue/datepicker";
 import Skeleton from 'primevue/skeleton';
-
+import { getCurrentInstance } from "vue";
 const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
 
 const loading = ref(true);

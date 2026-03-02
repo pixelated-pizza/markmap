@@ -21,6 +21,8 @@
 <script setup>
 import { useLayout } from '@/js/layouts/composables/layout';
 import { computed } from 'vue';
+import { useUIStore } from '@/js/stores/ui';
+const ui = useUIStore();
 
 const { layoutState, isDesktop } = useLayout();
 
@@ -51,6 +53,8 @@ const itemClick = (event, item) => {
         return;
     }
 
+    ui.showLoader();
+
     if (item.command) {
         item.command({ originalEvent: event, item: item });
     }
@@ -62,7 +66,9 @@ const itemClick = (event, item) => {
             layoutState.activePath = fullPath.value;
             layoutState.menuHoverActive = true;
         }
+        ui.hideLoader();
     } else {
+        setTimeout(() => ui.hideLoader(), 50);
         layoutState.overlayMenuActive = false;
         layoutState.mobileMenuActive = false;
         layoutState.menuHoverActive = false;
