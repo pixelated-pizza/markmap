@@ -6,17 +6,11 @@
         <div class="layout-main-container">
             <div class="layout-main">
 
-                <Suspense>
-                    <template #default>
-                        <router-view />
-                    </template>
-
-                    <template #fallback>
-                        <div class="p-6 text-gray-400 animate-pulse">
-                            Loading page...
-                        </div>
-                    </template>
-                </Suspense>
+                <router-view v-slot="{ Component }">
+                    <KeepAlive>
+                        <component :is="Component" />
+                    </KeepAlive>
+                </router-view>
 
             </div>
         </div>

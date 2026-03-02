@@ -1,24 +1,33 @@
 import { defineStore } from "pinia";
-import { fetchWSD, createWSD, updateWSD, deleteWSD, fetchBlankWSD } from "@/js/api/wsd_api.js";
+import {
+  fetchWSD,
+  createWSD,
+  updateWSD,
+  deleteWSD,
+  fetchBlankWSD,
+} from "@/js/api/wsd_api.js";
 
 export const useWSDStore = defineStore("wsd", {
   state: () => ({
     websiteSaleDetails: [],
     loading: false,
     error: null,
+    loaded: false, 
   }),
 
   actions: {
-    async loadWSD() {
+    // Load WSD with caching
+    async loadWSD(force = false) {
+      if (this.loaded && !force) return; 
+
       this.loading = true;
       this.error = null;
 
       try {
         const data = await fetchWSD();
-
         const today = new Date().toISOString().split("T")[0];
 
-        this.websiteSaleDetails = data.map(c => {
+        this.websiteSaleDetails = data.map((c) => {
           let status = "UPCOMING";
 
           if (today >= c.start_date && today <= c.end_date) {
@@ -33,11 +42,12 @@ export const useWSDStore = defineStore("wsd", {
             statusOrder: {
               RUNNING: 1,
               UPCOMING: 2,
-              ENDED: 3
-            }[status]
+              ENDED: 3,
+            }[status],
           };
         });
 
+        this.loaded = true; // mark cache valid
       } catch (err) {
         this.error = err.message || "Failed to load website sale details.";
       } finally {
@@ -45,11 +55,15 @@ export const useWSDStore = defineStore("wsd", {
       }
     },
 
+    clearCache() {
+      this.loaded = false;
+      this.websiteSaleDetails = [];
+    },
+
     async addWSD(newData) {
       const created = await createWSD(newData);
       this.websiteSaleDetails.push(created);
     },
-
 
     async updateWSD(wsd_id, updates) {
       const updated = await updateWSD(wsd_id, updates);
@@ -58,10 +72,9 @@ export const useWSDStore = defineStore("wsd", {
       return updated;
     },
 
-
     async removeWSD(id) {
       await deleteWSD(id);
-      this.websiteSaleDetails = this.websiteSaleDetails.filter((w) => w.id !== id);
+      this.websiteSaleDetails = this.websiteSaleDetails.filter((w) => w.wsd_id !== id);
     },
 
     async getBlankWSD(wc_id) {
@@ -74,6 +87,6 @@ export const useWSDStore = defineStore("wsd", {
         end_date: newEndDate,
       };
       return await this.updateWSD(id, updates);
-    }
+    },
   },
 });

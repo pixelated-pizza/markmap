@@ -147,7 +147,6 @@ export const useOnsiteCampaignStore = defineStore("onsiteCampaign", {
         async loadCampaignTypes() {
             try {
                 const types = await fetchCampaignTypes();
-                console.log("Fetched campaign types:", types); // check this in browser console
                 this.campaign_types = types;
             } catch (error) {
                 console.error("Failed to load campaign types", error);

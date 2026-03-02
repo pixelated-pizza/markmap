@@ -62,7 +62,7 @@ function buildCompletedCampaignCount(campaigns) {
           month: "short",
           year: "numeric"
         }),
-        y: Object.keys(campaigns).length, // ✅ UNIQUE COUNT
+        y: Object.keys(campaigns).length,
         campaigns: campaignList
       };
     });

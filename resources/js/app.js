@@ -96,7 +96,6 @@ app.use(PrimeVue, {
   .use(ToastService)
   .use(VueApexCharts)
   .use(ConfirmationService)
-  .use(ElementPlusIconsVue).use(ganttastic)
   .use(router).mount('#app');
 
   export const auth = getAuth(firebase);

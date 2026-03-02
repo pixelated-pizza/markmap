@@ -341,8 +341,8 @@
                                 showTime
                                 hourFormat="12"
                                 timePickerMode="slider"
-                                stepMinute="1"
-                                stepSecond="1"
+                                :stepMinute="1"
+                                :stepSecond="1"
                                 fluid
                             />
                             <Message
@@ -365,8 +365,8 @@
                                 showTime
                                 hourFormat="12"
                                 timePickerMode="slider"
-                                stepMinute="1"
-                                stepSecond="1"
+                                :stepMinute="1"
+                                :stepSecond="1"
                                 fluid
                             />
                             <Message

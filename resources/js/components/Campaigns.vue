@@ -362,8 +362,8 @@ function autoAdjustTimeline(filteredTasks = []) {
         gantt.config.end_date = maxDate;
 
         gantt.render();
-        gantt.renderCalendar();
-        gantt.refreshData();
+        gantt.render();
+        gantt.setSizes();
         applyGanttTheme();
     }
 }

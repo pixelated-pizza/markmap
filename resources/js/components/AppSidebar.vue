@@ -11,7 +11,7 @@
                     />
                 </div>
             </div>
-            <AppMenu :model="model" />
+            <AppMenu />
         </div>
 
         <!-- User / Logout -->

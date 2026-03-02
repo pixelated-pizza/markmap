@@ -48,7 +48,7 @@ class ArchivedPromotionService
                 'store_id' => $store?->store_id,
                 'start_date' => $promo?->start_date,
                 'end_date' => $promo?->end_date,
-                'status' => $status, // ✅ now computed
+                'status' => $status,
                 'updated_at' => $promo?->updated_at,
             ];
         });
