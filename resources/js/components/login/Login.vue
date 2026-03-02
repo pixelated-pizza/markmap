@@ -205,6 +205,7 @@ const handleFirebaseLogin = async () => {
         } else {
             message = err.message || "Google login failed";
         }
+        ui.hideLoader();
 
         $toastr.error(message, "Login Failed");
         console.error("Google login error:", err);
