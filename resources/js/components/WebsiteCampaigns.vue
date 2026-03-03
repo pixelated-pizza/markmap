@@ -1140,6 +1140,11 @@ html.app-dark .p-datatable .p-sortable-column.p-highlight {
     color: #e5e7eb !important;
 }
 
+html.app-dark .fc-datagrid-cell-main{
+    background: #1f2937 !important;
+    color: #e5e7eb !important;
+}
+
 html.app-dark .p-datatable .p-datatable-tbody > tr > td.p-highlight {
     background: #111827 !important;
     color: #e5e7eb !important;
@@ -1148,5 +1153,8 @@ html.app-dark .p-datatable .p-datatable-tbody > tr > td.p-highlight {
 .p-datatable .p-sortable-column,
 .p-datatable .p-sortable-column.p-highlight {
     transition: background-color 0.15s ease;
+}
+.fc-datagrid-cell-main{
+    color: black !important;
 }
 </style>
