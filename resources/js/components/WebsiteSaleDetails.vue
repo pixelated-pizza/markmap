@@ -454,6 +454,10 @@ import { useWSDStore } from "@/js/stores/wsd_store";
 import { useOnsiteCampaignStore } from "@/js/stores/onsite_campaign_store.js";
 import { getCurrentInstance } from "vue";
 
+import { useUIStore } from "@/js/stores/ui.js";
+
+const ui = useUIStore();
+
 const store = useOnsiteCampaignStore();
 
 const rerunModalVisible = ref(false);
@@ -595,6 +599,7 @@ const filteredCampaigns = computed(() => {
 });
 
 const saveChanges = async (data) => {
+    ui.showLoader();
     try {
         data.featured_banner_text = editableTextTable[0].featured_banner_text;
         data.sku_in_category_creative =
@@ -625,6 +630,12 @@ const saveChanges = async (data) => {
         wsdStore.websiteSaleDetails = addStatusFields(
             wsdStore.websiteSaleDetails,
         );
+
+        Promise.all([
+            await wsdStore.loadWSD()
+        ]);
+
+        ui.hideLoader();
     } catch (err) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             const errors = err.response.data.errors;
@@ -635,11 +646,14 @@ const saveChanges = async (data) => {
                     `Error in ${field.replace(/_/g, " ")}`,
                 );
             });
+            ui.hideLoader();
         } else {
             console.error("Save failed:", err);
             toastr.error("An error occurred while saving.");
+            ui.hideLoader();
         }
     }
+    ui.hideLoader();
 };
 
 const addStatusFields = (list) => {
@@ -701,6 +715,7 @@ const openRerunModal = (campaign) => {
 };
 
 const submitRerunCampaign = async () => {
+    ui.showLoader();
     if (!newStartDate.value || !newEndDate.value) {
         toastr.error("Please select both start and end dates.");
         return;
@@ -735,10 +750,19 @@ const submitRerunCampaign = async () => {
 
         await store.loadCampaigns();
         updateCalendarResourcesAndEvents();
+
+        Promise.all([
+            await wsdStore.loadWSD()
+        ]);
+
+        ui.hideLoader();
     } catch (error) {
         console.error(error);
         toastr.error("Failed to re-run campaign.");
+
+        ui.hideLoader();
     }
+    ui.hideLoader();
 };
 
 setInterval(() => {
