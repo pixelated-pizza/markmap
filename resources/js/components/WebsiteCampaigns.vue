@@ -296,19 +296,22 @@
                                 class="block text-gray-700 dark:text-gray-300 mb-1"
                                 >What Website?</label
                             >
-                            <div class="flex items-center gap-2 mb-2 mt-2">
-                                <Checkbox
-                                    v-model="form.is_all_store"
-                                    inputId="all_store"
-                                    binary
-                                    :true-value="true"
-                                    :false-value="false"
-                                />
-                                <label
-                                    for="all_store"
-                                    class="text-gray-700 dark:text-gray-300 cursor-pointer"
-                                    >Apply to Both Websites</label
-                                >
+                            <div v-if="!isEditingDuplicateName">
+                                <div class="flex items-center gap-2 mb-2 mt-2">
+                                    <Checkbox
+                                        v-model="form.is_all_store"
+                                        inputId="all_store"
+                                        binary
+                                        :true-value="true"
+                                        :false-value="false"
+                                    />
+                                    <label
+                                        for="all_store"
+                                        class="text-gray-700 dark:text-gray-300 cursor-pointer"
+                                    >
+                                        Apply to Both Websites
+                                    </label>
+                                </div>
                             </div>
 
                             <Select
@@ -640,6 +643,13 @@ const calendarOptions = ref({
             info.revert();
         }
     },
+    eventClick: (info) => {
+        const id = info.event.id;
+        const campaign = store.campaigns.find((c) => String(c.wc_id) === id);
+        if (!campaign) return;
+
+        openEditModal(campaign);
+    },
 });
 
 const filteredCampaigns = computed(() => {
@@ -746,7 +756,6 @@ async function loadCampaigns() {
 }
 
 function updateCalendarResourcesAndEvents() {
-
     const resourcesBuilt = ref(false);
     const resources = store.stores.map((st) => {
         const sections = store.campaign_types
@@ -807,12 +816,10 @@ function updateCalendarResourcesAndEvents() {
     const calendarApi = calendarRef.value?.getApi();
     if (calendarApi) {
         if (typeof calendarApi.removeAllResources === "function") {
-            
             resources.forEach((r) => calendarApi.addResource(r));
         }
 
         if (typeof calendarApi.removeAllEvents === "function") {
-            
             events.forEach((e) => calendarApi.addEvent(e));
         }
     }
@@ -870,6 +877,7 @@ async function saveCampaign() {
     if (!validateForm()) {
         toastr.warning("Please correct the errors before saving.");
         processing.value = false;
+        ui.hideLoader();
         return;
     }
 
@@ -916,16 +924,20 @@ async function saveCampaign() {
                     toastr.warning(
                         `Campaign updated, but failed to sync to: ${failedStores.join(", ")}`,
                     );
+                    ui.hideLoader();
                 } else {
                     toastr.success(
                         "Campaign updated and synced to all stores.",
                     );
+                    ui.hideLoader();
                 }
             } else {
                 toastr.success("Campaign updated.");
                 processing.value = false;
                 ui.hideLoader();
             }
+
+            ui.hideLoader();
         } else {
             if (form.value.is_all_store) {
                 const promises = store.stores.map((s) =>
@@ -945,8 +957,10 @@ async function saveCampaign() {
                     toastr.warning(
                         `Campaign added, but failed on: ${failedStores.join(", ")}`,
                     );
+                    ui.hideLoader();
                 } else {
                     toastr.success("Campaign added to all stores.");
+                    ui.hideLoader();
                 }
             } else {
                 await store.addCampaign(payload);
@@ -962,9 +976,11 @@ async function saveCampaign() {
     } catch (err) {
         console.error(err);
         toastr.error("Failed to save campaign."); // only fires if main operation fails
+        ui.hideLoader();
     } finally {
         saving.value = false;
         processing.value = false;
+        ui.hideLoader();
     }
 }
 
@@ -1024,6 +1040,7 @@ async function archiveConfirmed() {
 
 async function deleteConfirmed() {
     showDeleteDialog.value = false;
+    ui.showLoader();
     if (!campaignToDelete.value) return;
 
     loading.value = true;
@@ -1034,15 +1051,19 @@ async function deleteConfirmed() {
         toastr.success(
             `Campaign "${campaignToDelete.value.name}" has been successfully deleted.`,
         );
+        ui.hideLoader();
     } catch (error) {
         toastr.error("Failed to delete campaign.");
+        ui.hideLoader();
     } finally {
         loading.value = false;
         campaignToDelete.value = null;
+        ui.hideLoader();
     }
 
     showDialog.value = false;
     editTargetId.value = null;
+    ui.hideLoader();
 }
 
 function validateForm() {
@@ -1092,6 +1113,17 @@ function validateForm() {
 
     return valid;
 }
+
+const isEditingDuplicateName = computed(() => {
+    if (!editTargetId.value) return false; // only relevant when editing
+    const sameNameCampaigns = store.campaigns.filter(
+        (c) =>
+            c.name === form.value.name &&
+            c.wc_id !== editTargetId.value
+    );
+    // If another campaign with the same name exists, hide checkbox
+    return sameNameCampaigns.length > 0;
+});
 
 onMounted(async () => {
     await loadCampaigns();
