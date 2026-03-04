@@ -116,24 +116,24 @@ const router = createRouter({
     routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const pinia = getActivePinia()
-  const ui = pinia?._s?.ui ? pinia._s.ui : null  // see note below
-  ui?.showLoader?.()
+// router.beforeEach((to, from, next) => {
+//   const pinia = getActivePinia()
+//   const ui = pinia?._s?.ui ? pinia._s.ui : null  // see note below
+//   ui?.showLoader?.()
 
-  if (to.meta.requiresAuth && !isAuthenticated()) {
-    next("/login")
-  } else if (to.path === "/login" && isAuthenticated()) {
-    next("/dashboard")
-  } else {
-    next()
-  }
-})
+//   if (to.meta.requiresAuth && !isAuthenticated()) {
+//     next("/login")
+//   } else if (to.path === "/login" && isAuthenticated()) {
+//     next("/dashboard")
+//   } else {
+//     next()
+//   }
+// })
 
-router.afterEach(() => {
-  const pinia = getActivePinia()
-  const ui = pinia?._s?.ui ? pinia._s.ui : null
-  ui?.hideLoader?.()
-})
+// router.afterEach(() => {
+//   const pinia = getActivePinia()
+//   const ui = pinia?._s?.ui ? pinia._s.ui : null
+//   ui?.hideLoader?.()
+// })
 
 export default router;
