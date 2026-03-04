@@ -1,5 +1,3 @@
-import api from './api.js';
-
 const api = axios.create({
   baseURL: import.meta.env.VITE_APP_URL + "/api", 
   withCredentials: true,
