@@ -362,7 +362,6 @@ function autoAdjustTimeline(filteredTasks = []) {
         gantt.config.end_date = maxDate;
 
         gantt.render();
-        gantt.render();
         gantt.setSizes();
         applyGanttTheme();
     }
@@ -533,8 +532,10 @@ function watchDarkMode() {
 }
 
 let darkObserver;
-
+let ganttInitialized = false;
 onMounted(async () => {
+    if (ganttInitialized) return;
+    ganttInitialized = true;
     try {
         loading.value = true;
 
@@ -554,7 +555,7 @@ onMounted(async () => {
                     return;
                 }
 
-                await Promise.all([initGantt(), loadCampaigns()]);
+                await loadCampaigns();
 
                 resizeObserver = new ResizeObserver(() => gantt.setSizes());
                 resizeObserver.observe(ganttContainer.value);
@@ -579,6 +580,10 @@ onBeforeUnmount(() => {
     } catch (e) {
         console.warn("Failed to cleanup gantt", e);
     }
+});
+
+requestIdleCallback(async () => {
+    initGantt();
 });
 </script>
 
