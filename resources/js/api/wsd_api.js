@@ -1,5 +1,10 @@
 import api from './api.js';
 
+const api = axios.create({
+  baseURL: import.meta.env.VITE_APP_URL + "/api", 
+  withCredentials: true,
+});
+
 export async function fetchWSD() {
   const { data } = await api.get("api/website_sale_details");
   return data;
