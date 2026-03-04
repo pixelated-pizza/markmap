@@ -98,8 +98,9 @@ async function confirmLogout() {
     loggingOut.value = false;
     showLogoutDialog.value = false;
     toastr.success("You have been logged out.", "Logout Successful");
-    ui.hideLoader();
+    
   }
+  ui.hideLoader();
 }
 
 const sidebarClass = computed(() => [
