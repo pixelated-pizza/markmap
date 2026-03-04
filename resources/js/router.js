@@ -3,7 +3,7 @@ import AppLayout from "@/js/components/AppLayout.vue";
 import { getActivePinia } from "pinia";
 
 // 🔥 EAGER LOAD most-used page
-import Dashboard from "@/js/components/Dashboard.vue";
+import Dashboard from "@/js/components/dashboard/Dashboard.vue";
 
 function isAuthenticated() {
     return !!localStorage.getItem("auth_token");
@@ -38,7 +38,7 @@ const routes = [
                 component: () =>
                     import(
                         /* webpackPrefetch: true */
-                        "@/js/components/Campaigns.vue"
+                        "@/js/components/campaigns/Campaigns.vue"
                     ),
             },
 

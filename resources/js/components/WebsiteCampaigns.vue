@@ -1046,7 +1046,7 @@ async function deleteConfirmed() {
     loading.value = true;
     try {
         await store.removeCampaign(campaignToDelete.value.wc_id);
-        await store.loadCampaigns();
+        await store.loadCampaigns(true);
         updateCalendarResourcesAndEvents();
         toastr.success(
             `Campaign "${campaignToDelete.value.name}" has been successfully deleted.`,

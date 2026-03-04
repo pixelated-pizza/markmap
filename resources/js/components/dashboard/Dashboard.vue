@@ -240,8 +240,8 @@
 </template>
 <script setup>
 import { ref, onMounted, computed, nextTick } from "vue";
-import InternalPromotions from "@/js/components/InternalPromotions.vue";
-import ExternalPromotions from "@/js/components/ExternalPromotions.vue";
+import InternalPromotions from "@/js/components/dashboard/InternalPromotions.vue";
+import ExternalPromotions from "@/js/components/dashboard/ExternalPromotions.vue";
 import { fetchCampaigns } from "@/js/api/campaign_service.js";
 import {
     ListChecks,

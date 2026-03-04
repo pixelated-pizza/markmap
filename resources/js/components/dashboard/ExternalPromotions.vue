@@ -27,7 +27,6 @@ import { fetchWC } from "@/js/api/website_campaign_api.js";
 import { fetchChannels } from "@/js/api/campaign_service";
 import Skeleton from 'primevue/skeleton';
 
-const calendarRef = ref(null);
 const channels = ref([]);
 
 const loading = ref(true);
