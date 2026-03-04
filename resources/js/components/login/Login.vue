@@ -149,7 +149,7 @@ const handleLogin = async () => {
 
         // Prefetch common pages
         Promise.all([
-            import("@/js/components/Campaigns.vue"),
+            import("@/js/components/campaigns/Campaigns.vue"),
             import("@/js/components/WebsiteCampaigns.vue"),
             import("@/js/components/WebsiteSaleDetails.vue"),
             import("@/js/components/WebsitePromos.vue"),
@@ -190,7 +190,7 @@ const handleFirebaseLogin = async () => {
         router.push("/dashboard");
 
         Promise.all([
-            import("@/js/components/Campaigns.vue"),
+            import("@/js/components/campaigns/Campaigns.vue"),
             import("@/js/components/WebsiteCampaigns.vue"),
             import("@/js/components/WebsiteSaleDetails.vue"),
             import("@/js/components/WebsitePromos.vue"),
