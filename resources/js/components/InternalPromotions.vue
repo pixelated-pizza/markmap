@@ -27,6 +27,8 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { fetchWC } from "@/js/api/website_campaign_api.js";
 import { fetchChannels } from "@/js/api/campaign_service";
 import Skeleton from "primevue/skeleton";
+import { useUIStore } from "@/js/stores/ui.js";
+const ui = useUIStore();
 
 const calendarRef = ref(null);
 const channels = ref([]);
@@ -200,8 +202,8 @@ async function loadCampaigns() {
   }
 }
 
-onMounted(() => {
-  loadCampaigns();
+onMounted( async () => {
+  await loadCampaigns();
 });
 </script>
 

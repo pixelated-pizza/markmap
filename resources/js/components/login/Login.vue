@@ -119,7 +119,7 @@ import { auth } from "@/js/app.js";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useUIStore } from "@/js/stores/ui.js";
-
+const ui = useUIStore();
 const loading = ref(false);
 const email = ref("");
 const password = ref("");
@@ -128,7 +128,7 @@ const router = useRouter();
 const { appContext } = getCurrentInstance();
 const $toastr = appContext.config.globalProperties.$toastr;
 
-const ui = useUIStore();
+
 
 const handleLogin = async () => {
     loading.value = true;
