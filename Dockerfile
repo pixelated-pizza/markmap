@@ -71,10 +71,3 @@ RUN chown -R www-data:www-data /var/www/html \
 EXPOSE 80
 
 CMD ["/startup.sh"]
-```
-
----
-
-Remove `php artisan serve` entirely. Railway should just run:
-```
-/startup.sh
