@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted,  } from "vue";
 import AppMenu from "./AppMenu.vue";
 import Dialog from "primevue/dialog";
 import { useUserStore } from "@/js/utils/user.js";
@@ -89,18 +89,16 @@ async function confirmLogout() {
   try {
     await logout();
     localStorage.removeItem('auth_token');
-    router.push('/login');
-    
+    router.push('/login'); 
   } catch (err) {
     console.error(err);
   } finally {
-    
     loggingOut.value = false;
     showLogoutDialog.value = false;
-    toastr.success("You have been logged out.", "Logout Successful");
-    
+    $toastr.success("You have been logged out.", "Logout Successful");
+    ui.hideLoader();
   }
-  ui.hideLoader();
+    
 }
 
 const sidebarClass = computed(() => [
