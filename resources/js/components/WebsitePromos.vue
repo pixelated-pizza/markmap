@@ -82,7 +82,30 @@
                                     </span>
                                 </template>
                             </Column>
-                            <Column field="promo_name" header="Promotion" />
+                            <Column
+                                field="promo_name"
+                                header="Promotion"
+                                style="min-width: 300px"
+                            >
+                                <template #body="{ data }">
+                                    <div
+                                        class="whitespace-normal break-all max-w-[400px]"
+                                    >
+                                        {{ data.promo_name }}
+                                    </div>
+                                </template>
+                            </Column>
+                            <Column header="Coupon Code">
+                                <template #body="{ data }">
+                                    <Badge severity="contrast"
+                                        ><p
+                                            class="text-white dark:text-black"
+                                        >
+                                            {{ data.coupon_code || "N/A" }}
+                                        </p></Badge
+                                    >
+                                </template>
+                            </Column>
                             <Column header="Scope">
                                 <template #body="{ data }">
                                     <div class="flex gap-2">
@@ -180,18 +203,22 @@
                                             <p
                                                 class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1"
                                             >
-                                                Coupon Code
+                                                Creatives
                                             </p>
-
-                                            <Badge
-                                                ><p
-                                                    class="text-black dark:text-black"
-                                                >
-                                                    {{
-                                                        data.coupon_code || "-"
-                                                    }}
-                                                </p></Badge
+                                            <p
+                                                class="text-gray-800 dark:text-gray-100 truncate"
                                             >
+                                                {{
+                                                    Array.isArray(
+                                                        data.creatives,
+                                                    )
+                                                        ? data.creatives.join(
+                                                              ", ",
+                                                          )
+                                                        : data.creatives ||
+                                                          "N/A"
+                                                }}
+                                            </p>
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
@@ -245,25 +272,6 @@
                                         <p
                                             class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1"
                                         >
-                                            Creatives
-                                        </p>
-                                        <p
-                                            class="text-gray-800 dark:text-gray-100 truncate"
-                                        >
-                                            {{
-                                                Array.isArray(data.creatives)
-                                                    ? data.creatives.join(", ")
-                                                    : data.creatives || "N/A"
-                                            }}
-                                        </p>
-                                    </div>
-
-                                    <div
-                                        class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm"
-                                    >
-                                        <p
-                                            class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1"
-                                        >
                                             Terms & Conditions
                                         </p>
                                         <p
@@ -302,7 +310,8 @@
                                         No Data Yet
                                     </p>
                                     <p class="text-sm">
-                                        Details of the website promotions will appear here.
+                                        Details of the website promotions will
+                                        appear here.
                                     </p>
                                 </div>
                             </template>
@@ -541,6 +550,9 @@ import {
 } from "@/js/api/website_promos_api";
 import { fetchStores } from "@/js/api/website_campaign_api.js";
 const websitePromosStore = useWebsitePromosStore();
+import { useUIStore } from "@/js/stores/ui.js";
+
+const ui = useUIStore();
 
 const stores = ref([]);
 const $instance = getCurrentInstance();
@@ -580,6 +592,7 @@ const openEditDialog = (mergedPromo) => {
 };
 const saveEdit = async () => {
     processing.value = true;
+    ui.showLoader();
     try {
         const selectedStores = editForm.value.website_stores || [];
 
@@ -592,6 +605,7 @@ const saveEdit = async () => {
 
             if (!selectedStores.includes(storeId)) {
                 await deleteWebsitePromotion(promo.promo_id);
+                ui.hideLoader();
             } else {
                 const payload = {
                     promo_name: editForm.value.promo_name,
@@ -616,6 +630,11 @@ const saveEdit = async () => {
                 };
 
                 await updateWebsitePromotion(promo.promo_id, payload);
+
+                 await websitePromosStore.loadWebsitePromotions(true);
+
+                ui.hideLoader();
+                
             }
         }
 
@@ -651,7 +670,7 @@ const saveEdit = async () => {
             await createWebsitePromotion(payload);
         }
 
-        await websitePromosStore.loadWebsitePromotions();
+        await websitePromosStore.loadWebsitePromotions(true);
         editVisible.value = false;
         toastr.success("Promotion updated successfully.");
     } catch (error) {
@@ -749,7 +768,7 @@ onMounted(async () => {
 
     try {
         await Promise.all([
-            websitePromosStore.loadWebsitePromotions(),
+            websitePromosStore.loadWebsitePromotions(true),
             loadStores(),
         ]);
     } catch (err) {

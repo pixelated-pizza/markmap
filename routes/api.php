@@ -18,6 +18,11 @@ Route::get('/user', function (Request $request) {
 return $request->user();
 })->middleware('auth:sanctum');
 
+Route::get('/heartbeat', function () {
+    // Just return 200 OK, nothing heavy
+    return response()->json(['status' => 'ok']);
+});
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/login/firebase', [AuthController::class, 'firebaseLogin']); // firebase login route
 Route::post('/logout', [AuthController::class, 'logout']);
