@@ -1,1 +1,0 @@
-import{_ as t,c as o,o as s,a}from"./app-CF9Ei4tn.js";const l={},r={class:"flex flex-col w-full h-full bg-gray-900 px-6 py-8 overflow-x-auto"};function n(c,e){return s(),o("div",r,[...e[0]||(e[0]=[a("h1",{class:"text-4xl font-bold text-gray-100"},"🚧 Under Development 🚧",-1)])])}const x=t(l,[["render",n]]);export{x as default};
