@@ -43,7 +43,5 @@ class CategoryTitleService
 
         return (bool) $categoryTitle->delete();
     }
-
-
     
 }

@@ -19,7 +19,6 @@ class FirebaseService
     public function verifyIdToken(string $idToken): ?array
     {
         try {
-            // Call Firebase REST API
             $response = Http::post(
                 "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={$this->apiKey}",
                 ['idToken' => $idToken]

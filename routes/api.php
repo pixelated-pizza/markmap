@@ -13,6 +13,10 @@ use App\Http\Controllers\WebsiteSaleDetailsController;
 use App\Http\Controllers\ArchivedPromotionController;
 use App\Http\Controllers\ArchivedWebsiteSaleController;
 use App\Http\Controllers\WebsitePromoController;
+use App\Http\Controllers\CategoryFeaturedSkusController;
+
+//api controller
+use App\Http\Controllers\NETOProductController;
 
 Route::get('/user', function (Request $request) {
 return $request->user();
@@ -104,4 +108,16 @@ Route::prefix('website_promos')->group(function() {
     // Route::put('/unarchive/{id}', [WebsitePromoController::class, 'unarchive']); 
 });
 
+Route::prefix('neto')->group(function () {
+    Route::get('products', [NETOProductController::class, 'index']);
+});
+
+Route::prefix('category-featured-skus')->group(function () {
+    Route::get('/',        [CategoryFeaturedSkusController::class, 'index']);
+    Route::post('/',       [CategoryFeaturedSkusController::class, 'store']);
+    Route::post('/bulk',   [CategoryFeaturedSkusController::class, 'bulkStore']);
+    Route::post('/sync',   [CategoryFeaturedSkusController::class, 'sync']);
+    Route::put('/{id}',    [CategoryFeaturedSkusController::class, 'update']);
+    Route::delete('/{id}', [CategoryFeaturedSkusController::class, 'destroy']);
+});
 

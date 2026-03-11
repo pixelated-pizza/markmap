@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import AppLayout from "@/js/components/AppLayout.vue";
-import { getActivePinia } from "pinia";
 
-// 🔥 EAGER LOAD most-used page
+// Eager load most-used pages
 import Dashboard from "@/js/components/dashboard/Dashboard.vue";
 
 function isAuthenticated() {
@@ -12,7 +11,6 @@ function isAuthenticated() {
 const routes = [
     { path: "/", redirect: "/login" },
 
-    // Login stays lazy (not used often once logged in)
     {
         path: "/login",
         name: "Login",
@@ -24,88 +22,106 @@ const routes = [
         component: AppLayout,
         meta: { requiresAuth: true },
         children: [
-            // ⚡ Instant load (most important page)
             {
                 path: "dashboard",
                 name: "Dashboard",
                 component: Dashboard,
             },
-
-            // ⚡ Prefetched after initial load
             {
                 path: "campaigns",
                 name: "Campaigns",
                 component: () =>
                     import(
                         /* webpackPrefetch: true */
+                        /* webpackChunkName: "campaigns" */
                         "@/js/components/campaigns/Campaigns.vue"
                     ),
             },
-
             {
                 path: "website_campaigns",
                 name: "WebsiteCampaigns",
                 component: () =>
                     import(
                         /* webpackPrefetch: true */
+                        /* webpackChunkName: "website-campaigns" */
                         "@/js/components/WebsiteCampaigns.vue"
                     ),
             },
-
             {
                 path: "website-sale",
                 name: "WebsiteSale",
                 component: () =>
                     import(
                         /* webpackPrefetch: true */
+                        /* webpackChunkName: "website-sale" */
                         "@/js/components/WebsiteSaleDetails.vue"
                     ),
             },
-
             {
                 path: "website-promo",
                 name: "WebsitePromo",
                 component: () =>
                     import(
                         /* webpackPrefetch: true */
+                        /* webpackChunkName: "website-promo" */
                         "@/js/components/WebsitePromos.vue"
                     ),
             },
 
-            // 💤 Rare / archive pages stay fully lazy
+            // Less frequent — lazy only
             {
                 path: "website-promotions-archive",
                 name: "WebsitePromoArchive",
                 component: () =>
-                    import("@/js/components/WebsitePromoArchive.vue"),
+                    import(
+                        /* webpackChunkName: "archives" */
+                        "@/js/components/WebsitePromoArchive.vue"
+                    ),
             },
-
             {
                 path: "website-sale-archive",
                 name: "WebsiteSaleArchive",
                 component: () =>
-                    import("@/js/components/WebsiteSaleArchive.vue"),
+                    import(
+                        /* webpackChunkName: "archives" */
+                        "@/js/components/WebsiteSaleArchive.vue"
+                    ),
             },
-
             {
                 path: "marketing-dates",
                 name: "KeyMarketingDates",
                 component: () =>
-                    import("@/js/components/KeyMarketingDates.vue"),
+                    import(
+                        /* webpackChunkName: "misc" */
+                        "@/js/components/KeyMarketingDates.vue"
+                    ),
             },
-
             {
                 path: "user-mgmt",
                 name: "UserMgmt",
                 component: () =>
-                    import("@/js/components/super_admin/UserMgmt.vue"),
+                    import(
+                        /* webpackChunkName: "admin" */
+                        "@/js/components/super_admin/UserMgmt.vue"
+                    ),
             },
-
             {
                 path: "forgot-password",
                 name: "ResetPassword",
                 component: () =>
-                    import("@/js/components/login/ResetPassword.vue"),
+                    import(
+                        /* webpackChunkName: "misc" */
+                        "@/js/components/login/ResetPassword.vue"
+                    ),
+            },
+            {
+                path: "category-featured-skus",
+                name: "CategoryFeaturedSkus",
+                component: () =>
+                    import(
+                        /* webpackChunkName: "misc" */
+                        "@/js/components/category_featured_skus/CategoryFeaturedSkus.vue"
+                    ),
             },
         ],
     },
@@ -116,24 +132,32 @@ const router = createRouter({
     routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   const pinia = getActivePinia()
-//   const ui = pinia?._s?.ui ? pinia._s.ui : null  // see note below
-//   ui?.showLoader?.()
+// Track if we're doing the initial navigation (login → dashboard)
+// so we don't show loader on that transition
+let initialNavDone = false;
 
-//   if (to.meta.requiresAuth && !isAuthenticated()) {
-//     next("/login")
-//   } else if (to.path === "/login" && isAuthenticated()) {
-//     next("/dashboard")
-//   } else {
-//     next()
-//   }
-// })
+router.beforeEach((to, from, next) => {
+    // Auth guard
+    if (to.meta.requiresAuth && !isAuthenticated()) {
+        return next("/login");
+    }
+    if (to.path === "/login" && isAuthenticated()) {
+        return next("/dashboard");
+    }
 
-// router.afterEach(() => {
-//   const pinia = getActivePinia()
-//   const ui = pinia?._s?.ui ? pinia._s.ui : null
-//   ui?.hideLoader?.()
-// })
+    // Show loader only for lazy-loaded routes after initial nav
+    if (initialNavDone && to.name !== "Dashboard") {
+        const appEl = document.getElementById("app");
+        appEl?.classList.add("route-loading");
+    }
+
+    next();
+});
+
+router.afterEach(() => {
+    initialNavDone = true;
+    const appEl = document.getElementById("app");
+    appEl?.classList.remove("route-loading");
+});
 
 export default router;

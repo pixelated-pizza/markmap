@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'neto' => [
+        'api_url'      => env('NETO_API_URL'),
+        'api_key'      => env('NETO_API_KEY'),
+        'api_username' => env('NETO_API_USERNAME'),
+    ],
+
 ];

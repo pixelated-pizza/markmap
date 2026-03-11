@@ -27,7 +27,8 @@ const model = ref([
         to: '/website_campaigns'
       },
       { label: 'Website Sale Details', icon: 'pi pi-pen-to-square', to: '/website-sale' },
-      { label: 'Website Promotion Details', icon: 'pi pi-pen-to-square', to: '/website-promo' }
+      { label: 'Website Promotion Details', icon: 'pi pi-at', to: '/website-promo' },
+      { label: '[Sites] Category Featured SKUs', icon: 'pi pi-asterisk', to: '/category-featured-skus' }
     ]
   },
   {

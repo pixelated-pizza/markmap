@@ -36,8 +36,9 @@
                     <label
                         for="campaignFilter"
                         class="text-black dark:text-white select-none mr-2"
-                        >Filter Campaigns:</label
                     >
+                        Filter Campaigns:
+                    </label>
                     <Select
                         v-model="campaignFilter"
                         inputId="campaignFilter"
@@ -52,26 +53,30 @@
                     />
                 </div>
             </div>
+
             <DataTable
                 :value="filteredCampaigns"
-                v-model:expandedRows="expandedRows"
                 dataKey="campaign_id"
                 showGridlines
                 scrollable
                 scrollHeight="60vh"
                 scrollDirection="both"
-                tableStyle="min-width: 100rem;"
                 size="small"
-                class="text-md bg-gray-900 mt-5"
-                @rowExpand="onRowExpand"
-                @rowCollapse="onRowCollapse"
+                class="text-md mt-5"
+                editMode="cell"
+                @cell-edit-complete="onCellEditComplete"
                 paginator
                 :rows="15"
                 :loading="loading"
             >
-                <Column expander style="width: 3rem" header="Expand" />
-
-                <Column header="Status" sortable sortField="statusOrder">
+                <!-- Frozen left -->
+                <Column
+                    header="Status"
+                    frozen
+                    sortable
+                    sortField="statusOrder"
+                    style="min-width: 110px"
+                >
                     <template #body="{ data }">
                         <Badge
                             :value="data.status"
@@ -80,323 +85,311 @@
                         />
                     </template>
                 </Column>
+                <Column
+                    field="store_name"
+                    header="Channel"
+                    frozen
+                    style="min-width: 130px"
+                />
+                <Column
+                    field="name"
+                    header="Event Name"
+                    frozen
+                    style="min-width: 220px"
+                />
 
-                <Column field="store_name" header="Channel" />
-                <Column field="name" header="Event Name" />
-                <Column field="start_date" header="Event Start Date">
-                    <template #body="{ data }">
-                        {{ formatDate(data.start_date) }}
-                    </template>
+                <!-- Scrollable -->
+                <Column
+                    field="start_date"
+                    header="Start Date"
+                    style="min-width: 190px"
+                >
+                    <template #body="{ data }">{{
+                        formatDate(data.start_date)
+                    }}</template>
+                </Column>
+                <Column
+                    field="end_date"
+                    header="End Date"
+                    style="min-width: 190px"
+                >
+                    <template #body="{ data }">{{
+                        formatDate(data.end_date)
+                    }}</template>
                 </Column>
 
-                <Column field="end_date" header="Event End Date">
+                <Column
+                    field="featured_products_sheet_url"
+                    header="Featured Products Sheet"
+                    style="min-width: 210px"
+                >
                     <template #body="{ data }">
-                        {{ formatDate(data.end_date) }}
-                    </template>
-                </Column>
-
-                <template #expansion="{ data }">
-                    <Transition
-                        enter-active-class="expand-enter-active"
-                        leave-active-class="expand-leave-active"
-                        enter-from-class="expand-enter-from"
-                        enter-to-class="expand-enter-to"
-                        leave-from-class="expand-leave-from"
-                        leave-to-class="expand-leave-to"
-                    >
-                        <div
-                            class="p-4 text-black dark:text-gray-300 border border-gray-300 dark:border-gray-600"
+                        <a
+                            v-if="data.featured_products_sheet_url"
+                            :href="data.featured_products_sheet_url"
+                            target="_blank"
+                            class="text-green-500 hover:underline text-sm break-all"
+                            @click.stop
                         >
-                            <h4
-                                class="font-semibold text-lg mb-3 text-center text-black dark:text-white"
-                            >
-                                Website Sale Details for
-                                <span class="text-green-500">{{
-                                    data.name
-                                }}</span>
-                                ({{ data.store_name }})
-                            </h4>
-                            <DataTable
-                                v-if="
-                                    editingCampaign &&
-                                    editingCampaign.wsd_id === data.wsd_id
-                                "
-                                :value="editableTextTable"
-                                showGridlines
+                            {{ data.featured_products_sheet_url }}
+                        </a>
+                        <span v-else class="text-gray-400">—</span>
+                    </template>
+                    <template #editor="{ data, field }">
+                        <InputText
+                            v-model="data[field]"
+                            class="w-full"
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="run_sheet"
+                    header="Run Sheet"
+                    style="min-width: 180px"
+                >
+                    <template #body="{ data }">
+                        <a
+                            v-if="data.run_sheet"
+                            :href="data.run_sheet"
+                            target="_blank"
+                            class="text-green-500 hover:underline text-sm break-all"
+                            @click.stop
+                        >
+                            {{ data.run_sheet }}
+                        </a>
+                        <span v-else class="text-gray-400">—</span>
+                    </template>
+                    <template #editor="{ data, field }">
+                        <InputText
+                            v-model="data[field]"
+                            class="w-full"
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="event_master_sheet"
+                    header="Event Master Sheet"
+                    style="min-width: 180px"
+                >
+                    <template #body="{ data }">
+                        <a
+                            v-if="data.event_master_sheet"
+                            :href="data.event_master_sheet"
+                            target="_blank"
+                            class="text-blue-500 hover:underline text-sm break-all"
+                            @click.stop
+                        >
+                            {{ data.event_master_sheet }}
+                        </a>
+                        <span v-else class="text-gray-400">—</span>
+                    </template>
+                    <template #editor="{ data, field }">
+                        <InputText
+                            v-model="data[field]"
+                            class="w-full"
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="ess"
+                    header="ESS to Execute"
+                    style="min-width: 160px"
+                >
+                    <template #body="{ data }">{{ data.ess || "—" }}</template>
+                    <template #editor="{ data, field }">
+                        <InputText
+                            v-model="data[field]"
+                            class="w-full"
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="cms_to_audit"
+                    header="CMS to Audit"
+                    style="min-width: 160px"
+                >
+                    <template #body="{ data }">{{
+                        data.cms_to_audit || "—"
+                    }}</template>
+                    <template #editor="{ data, field }">
+                        <InputText
+                            v-model="data[field]"
+                            class="w-full"
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="terms_conditions"
+                    header="T&Cs"
+                    style="min-width: 180px"
+                >
+                    <template #body="{ data }">
+                        {{ data.terms_conditions || "Auto generated" }}
+                    </template>
+                    <template #editor="{ data, field }">
+                        <Textarea
+                            v-model="data[field]"
+                            class="w-full"
+                            rows="3"
+                            autoResize
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="mockup_banner_locations"
+                    header="Mockup & Banner Locations"
+                    style="min-width: 200px"
+                >
+                    <template #body="{ data }">{{
+                        data.mockup_banner_locations || "—"
+                    }}</template>
+                    <template #editor="{ data, field }">
+                        <InputText
+                            v-model="data[field]"
+                            class="w-full"
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="is_sku_list_to_feature"
+                    header="SKU List to Feature?"
+                    style="min-width: 160px"
+                >
+                    <template #body="{ data }">
+                        <span
+                            :class="
+                                data.is_sku_list_to_feature == 1 ||
+                                data.is_sku_list_to_feature === true
+                                    ? 'text-green-500 font-semibold'
+                                    : 'text-red-400 font-semibold'
+                            "
+                        >
+                            {{
+                                data.is_sku_list_to_feature == 1 ||
+                                data.is_sku_list_to_feature === true
+                                    ? "Yes"
+                                    : "No"
+                            }}
+                        </span>
+                    </template>
+                    <template #editor="{ data, field }">
+                        <Select
+                            v-model="data[field]"
+                            :options="[
+                                { label: 'Yes', value: 1 },
+                                { label: 'No', value: 0 },
+                            ]"
+                            optionLabel="label"
+                            optionValue="value"
+                            class="w-full"
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="featured_banner_text"
+                    header="Featured Banner Text"
+                    style="min-width: 200px"
+                >
+                    <template #body="{ data }">
+                        <span
+                            v-html="autoLink(data.featured_banner_text)"
+                            class="text-sm"
+                        ></span>
+                    </template>
+                    <template #editor="{ data, field }">
+                        <Textarea
+                            v-model="data[field]"
+                            class="w-full"
+                            rows="3"
+                            autoResize
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="sku_in_category_creative"
+                    header="SKU in Category Creative"
+                    style="min-width: 200px"
+                >
+                    <template #body="{ data }">
+                        <span
+                            v-html="
+                                formatMultiline(data.sku_in_category_creative)
+                            "
+                            class="text-sm"
+                        ></span>
+                    </template>
+                    <template #editor="{ data, field }">
+                        <Textarea
+                            v-model="data[field]"
+                            class="w-full"
+                            rows="3"
+                            autoResize
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <Column
+                    field="url_text"
+                    header="URL Text"
+                    style="min-width: 180px"
+                >
+                    <template #body="{ data }">
+                        <span
+                            v-html="formatMultiline(data.url_text)"
+                            class="text-sm"
+                        ></span>
+                    </template>
+                    <template #editor="{ data, field }">
+                        <Textarea
+                            v-model="data[field]"
+                            class="w-full"
+                            rows="3"
+                            autoResize
+                            autofocus
+                        />
+                    </template>
+                </Column>
+
+                <!-- Frozen right -->
+                <Column
+                    header="Actions"
+                    frozen
+                    alignFrozen="right"
+                    style="min-width: 160px"
+                >
+                    <template #body="{ data }">
+                        <div class="flex gap-1">
+                            <Button
+                                icon="pi pi-refresh"
+                                v-if="isCompleted(data)"
+                                label="Re-run Campaign"
+                                severity="warn"
                                 size="small"
-                                class="text-sm mb-5 mt-5"
-                                tableStyle="min-width: 60rem"
-                            >
-                                <Column
-                                    field="featured_banner_text"
-                                    header="Featured Category Banners Text"
-                                >
-                                    <template #body="{ data: row }">
-                                        <Textarea
-                                            v-model="row.featured_banner_text"
-                                            class="w-full"
-                                            rows="3"
-                                            autoResize
-                                        />
-                                    </template>
-                                </Column>
-
-                                <Column
-                                    field="sku_in_category_creative"
-                                    header="SKU Feature in Category Creative"
-                                >
-                                    <template #body="{ data: row }">
-                                        <Textarea
-                                            v-model="
-                                                row.sku_in_category_creative
-                                            "
-                                            class="w-full"
-                                            rows="3"
-                                            autoResize
-                                        />
-                                    </template>
-                                </Column>
-
-                                <Column
-                                    field="url_text"
-                                    header="URL Text in Landing Page Link"
-                                >
-                                    <template #body="{ data: row }">
-                                        <Textarea
-                                            v-model="row.url_text"
-                                            class="w-full"
-                                            rows="3"
-                                            autoResize
-                                        />
-                                    </template>
-                                </Column>
-                            </DataTable>
-
-                            <DataTable
-                                v-else
-                                :value="editableTextTable"
-                                showGridlines
-                                size="small"
-                                class="text-sm mb-5 mt-5 text-black dark:text-gray-200"
-                                tableStyle="min-width: 60rem"
-                            >
-                                <Column
-                                    field="featured_banner_text"
-                                    header="Featured Category Banners Text"
-                                >
-                                    <template #body="{ data: row }">
-                                        <span
-                                            v-html="
-                                                autoLink(
-                                                    row.featured_banner_text,
-                                                )
-                                            "
-                                        ></span>
-                                    </template>
-                                </Column>
-
-                                <Column
-                                    field="sku_in_category_creative"
-                                    header="SKU Feature in Category Creative"
-                                >
-                                    <template #body="{ data: row }">
-                                        <span
-                                            v-html="
-                                                formatMultiline(
-                                                    row.sku_in_category_creative,
-                                                )
-                                            "
-                                        ></span>
-                                    </template>
-                                </Column>
-
-                                <Column
-                                    field="url_text"
-                                    header="URL Text in Landing Page Link"
-                                >
-                                    <template #body="{ data: row }">
-                                        <span
-                                            v-html="
-                                                formatMultiline(row.url_text)
-                                            "
-                                        ></span>
-                                    </template>
-                                </Column>
-                            </DataTable>
-
-                            <table class="min-w-full rounded-lg text-md">
-                                <tbody>
-                                    <tr
-                                        v-for="(field, i) in fieldsList"
-                                        :key="field.key"
-                                        :class="[
-                                            'border border-gray-300 dark:border-gray-800',
-                                            i % 2 === 1
-                                                ? 'bg-gray-100 dark:bg-gray-900/50'
-                                                : '',
-                                        ]"
-                                    >
-                                        <td
-                                            class="font-semibold text-md py-2 px-3 w-1/3 text-black dark:text-gray-200"
-                                        >
-                                            {{ field.label }}
-                                        </td>
-                                        <td class="py-2 px-3">
-                                            <template v-if="data.isEditing">
-                                                <template
-                                                    v-if="
-                                                        field.key ===
-                                                        'terms_conditions'
-                                                    "
-                                                >
-                                                    <span
-                                                        class="text-gray-600 dark:text-gray-400 cursor-not-allowed"
-                                                    >
-                                                        {{
-                                                            data[field.key] ||
-                                                            "T&C's are auto generated"
-                                                        }}
-                                                    </span>
-                                                </template>
-                                                <template
-                                                    v-else-if="
-                                                        field.key ===
-                                                        'is_sku_list_to_feature'
-                                                    "
-                                                >
-                                                    <Select
-                                                        v-model="
-                                                            data[field.key]
-                                                        "
-                                                        :options="[
-                                                            {
-                                                                label: 'Yes',
-                                                                value: 1,
-                                                            },
-                                                            {
-                                                                label: 'No',
-                                                                value: 0,
-                                                            },
-                                                        ]"
-                                                        optionLabel="label"
-                                                        optionValue="value"
-                                                        class="w-full"
-                                                    />
-                                                </template>
-                                                <template v-else>
-                                                    <Textarea
-                                                        v-model="
-                                                            data[field.key]
-                                                        "
-                                                        class="w-full"
-                                                        rows="2"
-                                                    />
-                                                </template>
-                                            </template>
-                                            <span
-                                                class="text-black dark:text-gray-200"
-                                            >
-                                                <template
-                                                    v-if="
-                                                        [
-                                                            'event_master_sheet',
-                                                            'run_sheet',
-                                                            'featured_products_sheet_url',
-                                                        ].includes(field.key) &&
-                                                        data[field.key]
-                                                    "
-                                                >
-                                                    <a
-                                                        :href="data[field.key]"
-                                                        target="_blank"
-                                                        :class="
-                                                            field.key ===
-                                                            'event_master_sheet'
-                                                                ? 'text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-500'
-                                                                : 'text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-500'
-                                                        "
-                                                    >
-                                                        {{
-                                                            replacer(
-                                                                data[field.key],
-                                                            )
-                                                        }}
-                                                    </a>
-                                                </template>
-                                                <template
-                                                    v-else-if="
-                                                        field.key ===
-                                                        'is_sku_list_to_feature'
-                                                    "
-                                                >
-                                                    {{
-                                                        data[field.key] == 1 ||
-                                                        data[field.key] === true
-                                                            ? "Yes"
-                                                            : "No"
-                                                    }}
-                                                </template>
-
-                                                <template
-                                                    v-else-if="
-                                                        field.key ===
-                                                        'terms_conditions'
-                                                    "
-                                                >
-                                                    {{
-                                                        data[field.key] ||
-                                                        "T&C's are auto generated"
-                                                    }}
-                                                </template>
-
-                                                <template v-else>
-                                                    {{
-                                                        replacer(
-                                                            data[field.key],
-                                                        )
-                                                    }}
-                                                </template>
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <div class="mt-4 text-center space-x-2 mb-4">
-                                <Button
-                                    v-if="!data.isEditing"
-                                    label="Edit Details"
-                                    icon="pi pi-pencil"
-                                    class="p-button-sm"
-                                    severity="contrast"
-                                    @click="enableEditing(data)"
-                                />
-                                <Button
-                                    v-else
-                                    label="Save"
-                                    icon="pi pi-save"
-                                    class="p-button-sm"
-                                    severity="contrast"
-                                    @click="() => saveChanges(data)"
-                                />
-                                <Button
-                                    v-if="data.isEditing"
-                                    label="Cancel"
-                                    icon="pi pi-times"
-                                    class="p-button-sm p-button-secondary"
-                                    @click="() => cancelEdit(data)"
-                                />
-                                <Button
-                                    v-if="isCompleted(data)"
-                                    label="Re-run Campaign"
-                                    icon="pi pi-refresh"
-                                    class="p-button-sm p-button-contrast"
-                                    @click="() => openRerunModal(data)"
-                                />
-                            </div>
+                                raised
+                                @click="openRerunModal(data)"
+                            />
                         </div>
-                    </Transition>
-                </template>
+                    </template>
+                </Column>
+
                 <template #empty>
                     <div class="text-center py-10 text-gray-400">
                         <i class="pi pi-inbox text-3xl mb-3 block"></i>
@@ -408,6 +401,8 @@
                 </template>
             </DataTable>
         </div>
+
+        <!-- Re-run Modal — unchanged -->
         <Dialog
             v-model:visible="rerunModalVisible"
             header="Re-run Campaign"
@@ -418,16 +413,14 @@
             <div class="flex flex-col gap-3">
                 <label class="font-semibold">New Start Date</label>
                 <InputText type="date" v-model="newStartDate" class="w-full" />
-
                 <label class="font-semibold">New End Date</label>
                 <InputText type="date" v-model="newEndDate" class="w-full" />
-
                 <div class="mt-4 flex justify-end gap-2">
                     <Button
                         label="Cancel"
                         icon="pi pi-times"
                         class="p-button-secondary"
-                        @click="() => (rerunModalVisible = false)"
+                        @click="rerunModalVisible = false"
                     />
                     <Button
                         label="Submit"
@@ -440,6 +433,7 @@
         </Dialog>
     </div>
 </template>
+
 <script setup>
 import { reactive, ref, onMounted, computed } from "vue";
 import DataTable from "primevue/datatable";
@@ -453,30 +447,25 @@ import InputText from "primevue/inputtext";
 import { useWSDStore } from "@/js/stores/wsd_store";
 import { useOnsiteCampaignStore } from "@/js/stores/onsite_campaign_store.js";
 import { getCurrentInstance } from "vue";
-
 import { useUIStore } from "@/js/stores/ui.js";
 
 const ui = useUIStore();
-
 const store = useOnsiteCampaignStore();
+const wsdStore = useWSDStore();
+const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
 
 const rerunModalVisible = ref(false);
 const rerunCampaignData = ref(null);
 const newStartDate = ref("");
 const newEndDate = ref("");
-
-const processing = ref(false);
-
-const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
-
 const campaignFilter = ref("ALL");
-
-const expandedRows = ref(null);
-const wsdStore = useWSDStore();
-const editableTextTable = reactive([]);
 const searchQuery = ref("");
 const loading = ref(false);
+const processing = ref(false);
 
+// Keep these in case anything still references them
+const expandedRows = ref(null);
+const editableTextTable = reactive([]);
 const editingCampaign = ref(null);
 
 const fieldsList = [
@@ -492,22 +481,21 @@ const fieldsList = [
     { key: "mockup_banner_locations", label: "Mock Up & Banner Locations" },
     { key: "is_sku_list_to_feature", label: "SKU List to Feature Provided?" },
 ];
+
 const replacer = (val) => (val == null || val === "" ? "No Data Yet" : val);
 
 const getStatus = (data) => {
     if (!data.start_date || !data.end_date) return "UPCOMING";
-
     const today = new Date();
-    const start = new Date(data.start_date); // use full datetime
-    const end = new Date(data.end_date); // use full datetime
-
+    const start = new Date(data.start_date);
+    const end = new Date(data.end_date);
     if (today >= start && today <= end) return "RUNNING";
     if (today > end) return "ENDED";
     return "UPCOMING";
 };
 
-const updateStatuses = (list) => {
-    return list.map((c) => {
+const updateStatuses = (list) =>
+    list.map((c) => {
         const status = getStatus(c);
         return {
             ...c,
@@ -515,11 +503,21 @@ const updateStatuses = (list) => {
             statusOrder: { RUNNING: 1, UPCOMING: 2, ENDED: 3 }[status],
         };
     });
-};
+
+const addStatusFields = (list) =>
+    list.map((c) => {
+        const status = getStatus(c);
+        return {
+            ...c,
+            status,
+            statusOrder: { RUNNING: 1, UPCOMING: 2, ENDED: 3 }[status],
+        };
+    });
 
 const isRunning = (data) => getStatus(data) === "RUNNING";
 const isCompleted = (data) => getStatus(data) === "ENDED";
 
+// Kept for any residual references
 const buildTextTable = (data) => [
     {
         featured_banner_text: data.featured_banner_text || "",
@@ -531,26 +529,30 @@ const buildTextTable = (data) => [
 const onRowExpand = (event) => {
     const currentCampaign = event.data;
     expandedRows.value = { [currentCampaign.campaign_id]: true };
-
     fieldsList.forEach((field) => {
         if (!(field.key in currentCampaign)) currentCampaign[field.key] = "";
     });
-
     currentCampaign.featured_banner_text =
         currentCampaign.featured_banner_text ?? "";
     currentCampaign.sku_in_category_creative =
         currentCampaign.sku_in_category_creative ?? "";
     currentCampaign.url_text = currentCampaign.url_text ?? "";
-
     const table = buildTextTable(currentCampaign);
     editableTextTable.splice(0, editableTextTable.length, ...table);
 };
 
 const onRowCollapse = () => (expandedRows.value = null);
-
 const enableEditing = (campaign) => {
     campaign.isEditing = true;
     editingCampaign.value = campaign;
+};
+
+// Inline cell edit — fires saveChanges per cell
+const onCellEditComplete = async (event) => {
+    const { data, newValue, field } = event;
+    if (newValue === data[field]) return;
+    data[field] = newValue;
+    await saveChanges(data);
 };
 
 const formatMultiline = (text) => {
@@ -560,17 +562,14 @@ const formatMultiline = (text) => {
 
 function formatDate(date) {
     if (!date) return "";
-
-    const d = new Date(date);
-    const options = {
+    return new Date(date).toLocaleString("en-US", {
         year: "numeric",
         month: "long",
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
         hour12: true,
-    };
-    return d.toLocaleString("en-US", options);
+    });
 }
 
 const filteredCampaigns = computed(() => {
@@ -587,25 +586,18 @@ const filteredCampaigns = computed(() => {
         );
     }
 
-    if (campaignFilter.value === "RUNNING") {
+    if (campaignFilter.value === "RUNNING")
         campaigns = campaigns.filter((c) => isRunning(c));
-    } else if (campaignFilter.value === "ENDED") {
+    else if (campaignFilter.value === "ENDED")
         campaigns = campaigns.filter((c) => isCompleted(c));
-    }
 
     campaigns.sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
-
     return campaigns;
 });
 
 const saveChanges = async (data) => {
     ui.showLoader();
     try {
-        data.featured_banner_text = editableTextTable[0].featured_banner_text;
-        data.sku_in_category_creative =
-            editableTextTable[0].sku_in_category_creative;
-        data.url_text = editableTextTable[0].url_text;
-
         const payload = {
             wc_id: data.wc_id ?? data.campaign_id,
             terms_conditions: data.terms_conditions,
@@ -622,7 +614,6 @@ const saveChanges = async (data) => {
         };
 
         await wsdStore.addWSD(payload);
-
         toastr.success("Details saved successfully.");
         data.isEditing = false;
         editingCampaign.value = null;
@@ -630,67 +621,47 @@ const saveChanges = async (data) => {
         wsdStore.websiteSaleDetails = addStatusFields(
             wsdStore.websiteSaleDetails,
         );
-
-        Promise.all([
-            await wsdStore.loadWSD()
-        ]);
-
-        ui.hideLoader();
     } catch (err) {
         if (err.response?.status === 422 && err.response.data?.errors) {
-            const errors = err.response.data.errors;
-
-            Object.entries(errors).forEach(([field, messages]) => {
-                toastr.error(
-                    messages[0],
-                    `Error in ${field.replace(/_/g, " ")}`,
-                );
-            });
-            ui.hideLoader();
+            Object.entries(err.response.data.errors).forEach(
+                ([field, messages]) => {
+                    toastr.error(
+                        messages[0],
+                        `Error in ${field.replace(/_/g, " ")}`,
+                    );
+                },
+            );
         } else {
             console.error("Save failed:", err);
             toastr.error("An error occurred while saving.");
-            ui.hideLoader();
         }
+    } finally {
+        ui.hideLoader();
     }
-    ui.hideLoader();
 };
 
-const addStatusFields = (list) => {
-    return list.map((c) => {
-        const status = getStatus(c);
-        return {
-            ...c,
-            status,
-            statusOrder: {
-                RUNNING: 1,
-                UPCOMING: 2,
-                ENDED: 3,
-            }[status],
-        };
-    });
-};
-
-const cancelEdit = (data) => {
-    data.isEditing = false;
-    editingCampaign.value = null;
-    const restored = buildTextTable(data);
-    editableTextTable.splice(0, editableTextTable.length, ...restored);
-    wsdStore.loadWSD().then(() => {
-        wsdStore.websiteSaleDetails = addStatusFields(
-            wsdStore.websiteSaleDetails,
-        );
-    });
-};
+// const cancelEdit = (data) => {
+//     data.isEditing = false;
+//     editingCampaign.value = null;
+//     const restored = buildTextTable(data);
+//     editableTextTable.splice(0, editableTextTable.length, ...restored);
+//     wsdStore.loadWSD().then(() => {
+//         wsdStore.websiteSaleDetails = addStatusFields(
+//             wsdStore.websiteSaleDetails,
+//         );
+//     });
+// };
 
 const autoLink = (text) => {
     if (!text) return "No Data Yet";
-
     const urlRegex = /(https?:\/\/[^\s)<>"']+)/g;
-
-    return text.replace(/\n/g, "<br>").replace(urlRegex, (url) => {
-        return `<a href="${url}" target="_blank" class="text-blue-400 underline">${url}</a>`;
-    });
+    return text
+        .replace(/\n/g, "<br>")
+        .replace(
+            urlRegex,
+            (url) =>
+                `<a href="${url}" target="_blank" class="text-blue-400 underline">${url}</a>`,
+        );
 };
 
 const getSeverity = (status) => {
@@ -706,7 +677,6 @@ const getSeverity = (status) => {
     }
 };
 
-//for rerun campaign
 const openRerunModal = (campaign) => {
     rerunCampaignData.value = campaign;
     newStartDate.value = campaign.start_date;
@@ -720,7 +690,6 @@ const submitRerunCampaign = async () => {
         toastr.error("Please select both start and end dates.");
         return;
     }
-
     if (newEndDate.value < newStartDate.value) {
         toastr.error("End date cannot be before start date.");
         return;
@@ -735,46 +704,29 @@ const submitRerunCampaign = async () => {
         };
 
         await store.editCampaign(rerunCampaignData.value.campaign_id, payload);
-
         await wsdStore.loadWSD();
 
-        toastr.success({
-            severity: "success",
-            summary: "Campaign Re-run Scheduled",
-            detail: "Campaign has been successfully re-run.",
-            life: 2000,
-        });
-
+        toastr.success("Campaign has been successfully re-run.");
         rerunModalVisible.value = false;
         rerunCampaignData.value = null;
-
         await store.loadCampaigns();
-        updateCalendarResourcesAndEvents();
-
-        Promise.all([
-            await wsdStore.loadWSD()
-        ]);
-
-        ui.hideLoader();
+        await wsdStore.loadWSD();
     } catch (error) {
         console.error(error);
         toastr.error("Failed to re-run campaign.");
-
+    } finally {
         ui.hideLoader();
     }
-    ui.hideLoader();
 };
 
 setInterval(() => {
     wsdStore.websiteSaleDetails.forEach((c) => {
+        const today = new Date();
         const start = new Date(c.start_date);
         const end = new Date(c.end_date);
-        const today = new Date();
-
         if (today >= start && today <= end) c.status = "RUNNING";
         else if (today > end) c.status = "ENDED";
         else c.status = "UPCOMING";
-
         c.statusOrder = { RUNNING: 1, UPCOMING: 2, ENDED: 3 }[c.status];
     });
 }, 30 * 1000);
@@ -782,9 +734,7 @@ setInterval(() => {
 onMounted(async () => {
     loading.value = true;
     await wsdStore.loadWSD();
-
     wsdStore.websiteSaleDetails = updateStatuses(wsdStore.websiteSaleDetails);
-
     loading.value = false;
 });
 </script>

@@ -60,19 +60,26 @@
                                     matchMode: 'contains',
                                 },
                             }"
-                            v-model:expandedRows="expandedRows"
                             class="p-datatable-sm"
                             rowHover
                             paginator
                             :rows="20"
                             :loading="loading"
+                            scrollable
+                            scrollDirection="both"
+                            style="min-width: 100%"
                         >
+                            <!-- Frozen left -->
                             <Column
                                 selectionMode="multiple"
+                                frozen
                                 style="width: 3rem"
                             />
-                            <Column expander style="width: 3rem" />
-                            <Column header="Status">
+                            <Column
+                                header="Status"
+                                frozen
+                                style="min-width: 120px"
+                            >
                                 <template #body="{ data }">
                                     <span
                                         class="text-md font-bold"
@@ -85,6 +92,7 @@
                             <Column
                                 field="promo_name"
                                 header="Promotion"
+                                frozen
                                 style="min-width: 300px"
                             >
                                 <template #body="{ data }">
@@ -95,18 +103,74 @@
                                     </div>
                                 </template>
                             </Column>
-                            <Column header="Coupon Code">
+
+                            <!-- Scrollable columns -->
+                            <Column
+                                header="Coupon Code"
+                                style="min-width: 140px"
+                            >
                                 <template #body="{ data }">
-                                    <Badge severity="contrast"
-                                        ><p
-                                            class="text-white dark:text-black"
-                                        >
+                                    <Badge severity="contrast">
+                                        <p class="text-white dark:text-black">
                                             {{ data.coupon_code || "N/A" }}
-                                        </p></Badge
-                                    >
+                                        </p>
+                                    </Badge>
                                 </template>
                             </Column>
-                            <Column header="Scope">
+                            <Column
+                                header="Coupon Label"
+                                style="min-width: 140px"
+                            >
+                                <template #body="{ data }">
+                                    {{ data.coupon_label || "—" }}
+                                </template>
+                            </Column>
+                            <Column
+                                header="Description"
+                                style="min-width: 250px"
+                            >
+                                <template #body="{ data }">
+                                    <div
+                                        class="whitespace-normal break-words max-w-[300px]"
+                                    >
+                                        {{
+                                            data.description ||
+                                            "No description available"
+                                        }}
+                                    </div>
+                                </template>
+                            </Column>
+                            <Column
+                                header="Terms & Conditions"
+                                style="min-width: 250px"
+                            >
+                                <template #body="{ data }">
+                                    <div
+                                        class="whitespace-normal break-words max-w-[300px]"
+                                    >
+                                        {{
+                                            Array.isArray(
+                                                data.terms_and_conditions,
+                                            )
+                                                ? data.terms_and_conditions.join(
+                                                      ", ",
+                                                  )
+                                                : data.terms_and_conditions ||
+                                                  "No T&Cs"
+                                        }}
+                                    </div>
+                                </template>
+                            </Column>
+                            <Column header="Creatives" style="min-width: 180px">
+                                <template #body="{ data }">
+                                    {{
+                                        Array.isArray(data.creatives)
+                                            ? data.creatives.join(", ")
+                                            : data.creatives || "N/A"
+                                    }}
+                                </template>
+                            </Column>
+                            <Column header="Scope" style="min-width: 320px">
                                 <template #body="{ data }">
                                     <div class="flex gap-2">
                                         <span
@@ -123,7 +187,6 @@
                                                     : "Parts Excluded"
                                             }}
                                         </span>
-
                                         <span
                                             class="text-md px-2 py-1 rounded"
                                             :class="
@@ -141,12 +204,64 @@
                                     </div>
                                 </template>
                             </Column>
-                            <Column header="Website">
+                            <Column header="Website" style="min-width: 150px">
                                 <template #body="{ data }">
                                     {{ data.storeNames }}
                                 </template>
                             </Column>
-                            <Column header="Actions" style="width: 10rem">
+                            <Column
+                                header="Start Date"
+                                style="min-width: 200px"
+                            >
+                                <template #body="{ data }">
+                                    <Badge severity="success">
+                                        <p
+                                            class="text-gray-800 dark:text-gray-900"
+                                        >
+                                            {{
+                                                dayjs(data.start_date).format(
+                                                    "MMMM D, YYYY [at] hh:mm A",
+                                                )
+                                            }}
+                                        </p>
+                                    </Badge>
+                                </template>
+                            </Column>
+                            <Column header="End Date" style="min-width: 200px">
+                                <template #body="{ data }">
+                                    <Badge severity="danger">
+                                        <p class="text-black">
+                                            {{
+                                                dayjs(data.end_date).format(
+                                                    "MMMM D, YYYY [at] hh:mm A",
+                                                )
+                                            }}
+                                        </p>
+                                    </Badge>
+                                </template>
+                            </Column>
+                            <Column
+                                header="Last Updated"
+                                style="min-width: 200px"
+                            >
+                                <template #body="{ data }">
+                                    <span class="text-xs text-gray-500">
+                                        {{
+                                            dayjs(data.updated_at).format(
+                                                "MMMM D, YYYY [at] hh:mm A",
+                                            )
+                                        }}
+                                    </span>
+                                </template>
+                            </Column>
+
+                            <!-- Frozen right -->
+                            <Column
+                                header="Actions"
+                                frozen
+                                alignFrozen="right"
+                                style="min-width: 120px"
+                            >
                                 <template #body="{ data }">
                                     <Button
                                         icon="pi pi-pencil"
@@ -159,148 +274,7 @@
                                     />
                                 </template>
                             </Column>
-                            <template #expansion="{ data }">
-                                <div
-                                    class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-4"
-                                >
-                                    <div
-                                        class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm"
-                                    >
-                                        <p
-                                            class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1"
-                                        >
-                                            Description
-                                        </p>
-                                        <p
-                                            class="text-gray-800 dark:text-gray-100 break-words"
-                                        >
-                                            {{
-                                                data.description ||
-                                                "No description available"
-                                            }}
-                                        </p>
-                                    </div>
-                                    <div
-                                        class="grid grid-cols-1 md:grid-cols-2 gap-4"
-                                    >
-                                        <div
-                                            class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm"
-                                        >
-                                            <p
-                                                class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1"
-                                            >
-                                                Coupon Label
-                                            </p>
-                                            <p
-                                                class="text-gray-800 dark:text-gray-100"
-                                            >
-                                                {{ data.coupon_label || "-" }}
-                                            </p>
-                                        </div>
-                                        <div
-                                            class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm"
-                                        >
-                                            <p
-                                                class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1"
-                                            >
-                                                Creatives
-                                            </p>
-                                            <p
-                                                class="text-gray-800 dark:text-gray-100 truncate"
-                                            >
-                                                {{
-                                                    Array.isArray(
-                                                        data.creatives,
-                                                    )
-                                                        ? data.creatives.join(
-                                                              ", ",
-                                                          )
-                                                        : data.creatives ||
-                                                          "N/A"
-                                                }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div
-                                            class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm"
-                                        >
-                                            <p
-                                                class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1"
-                                            >
-                                                Start Date
-                                            </p>
-                                            <Badge severity="success"
-                                                ><p
-                                                    class="text-gray-800 dark:text-gray-900"
-                                                >
-                                                    {{
-                                                        dayjs(
-                                                            data.start_date,
-                                                        ).format(
-                                                            "MMMM D, YYYY [at] hh:mm A",
-                                                        )
-                                                    }}
-                                                </p></Badge
-                                            >
-                                        </div>
-                                        <div
-                                            class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm"
-                                        >
-                                            <p
-                                                class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1"
-                                            >
-                                                End Date
-                                            </p>
-                                            <Badge severity="danger"
-                                                ><p class="text-black">
-                                                    {{
-                                                        dayjs(
-                                                            data.end_date,
-                                                        ).format(
-                                                            "MMMM D, YYYY [at] hh:mm A",
-                                                        )
-                                                    }}
-                                                </p></Badge
-                                            >
-                                        </div>
-                                    </div>
 
-                                    <div
-                                        class="bg-white dark:bg-gray-700 p-3 rounded shadow-sm"
-                                    >
-                                        <p
-                                            class="text-sm text-gray-500 dark:text-gray-300 font-semibold mb-1"
-                                        >
-                                            Terms & Conditions
-                                        </p>
-                                        <p
-                                            class="text-gray-800 dark:text-gray-100 break-words"
-                                        >
-                                            {{
-                                                Array.isArray(
-                                                    data.terms_and_conditions,
-                                                )
-                                                    ? data.terms_and_conditions.join(
-                                                          ",",
-                                                      )
-                                                    : data.terms_and_conditions ||
-                                                      "No T&Cs"
-                                            }}
-                                        </p>
-                                    </div>
-                                    <p
-                                        class="text-[11px] text-gray-500 dark:text-gray-400"
-                                    >
-                                        Last Updated:
-                                        {{
-                                            dayjs(data.updated_at).format(
-                                                "MMMM D, YYYY [at] hh:mm A",
-                                            )
-                                        }}
-                                    </p>
-                                </div>
-                            </template>
                             <template #empty>
                                 <div class="text-center py-10 text-gray-400">
                                     <i
@@ -631,10 +605,9 @@ const saveEdit = async () => {
 
                 await updateWebsitePromotion(promo.promo_id, payload);
 
-                 await websitePromosStore.loadWebsitePromotions(true);
+                await websitePromosStore.loadWebsitePromotions(true);
 
                 ui.hideLoader();
-                
             }
         }
 
