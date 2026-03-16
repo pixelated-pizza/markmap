@@ -76,4 +76,39 @@ class WebsiteSaleDetailsController extends Controller
             'data' => $blank
         ]);
     }
+
+    public function uploadImage(Request $request, string $wc_id)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+        ]);
+
+        try {
+            $url = $this->service->uploadImage($wc_id, $request->file('image'));
+
+            return response()->json([
+                'success' => true,
+                'url'     => $url,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    public function deleteImage(string $wc_id)
+    {
+        try {
+            $this->service->deleteImage($wc_id);
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
 }

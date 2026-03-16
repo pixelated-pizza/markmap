@@ -14,6 +14,7 @@ class WebsiteSaleDetails extends Model
         'wc_id',
         'terms_conditions',
         'mockup_banner_locations',
+        'mockup_banner_img',  
         'featured_products_sheet_url',
         'event_master_sheet_url',
         'run_sheet_url',

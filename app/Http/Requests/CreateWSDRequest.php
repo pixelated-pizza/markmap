@@ -25,6 +25,7 @@ class CreateWSDRequest extends FormRequest
             'wc_id' => 'required|uuid|exists:website_campaigns,wc_id',
             'terms_conditions' => 'nullable|string',
             'mockup_banner_locations' => 'nullable|string',
+            'mockup_banner_img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'event_master_sheet_url' => 'nullable|url',
             'run_sheet_url' => 'nullable|url',
             'is_sku_list_to_feature' => 'nullable|boolean',
@@ -47,6 +48,9 @@ class CreateWSDRequest extends FormRequest
             'event_master_sheet_url.url' => 'Event master sheet must be a valid URL.',
             'run_sheet_url.url' => 'Run sheet must be a valid URL.',
             'is_sku_list_to_feature.boolean' => 'The SKU list flag must be true or false.',
+            'mockup_banner_img.image' => 'The banner must be a valid image file.',
+            'mockup_banner_img.mimes' => 'Accepted formats: jpeg, png, jpg, gif, webp.',
+            'mockup_banner_img.max'=> 'Banner image must not exceed 5MB.',
         ];
     }
 }
