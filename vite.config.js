@@ -16,6 +16,7 @@ export default defineConfig({
                 "resources/css/internal_promos.css",
                 "resources/css/external_promos.css",
                 "resources/css/website_campaigns.css",
+                "resources/css/wsd.css",
                 "resources/css/mainlayout.css",
                 "resources/css/dashboard.css",
                 "resources/js/app.js",
