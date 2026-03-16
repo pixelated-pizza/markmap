@@ -11,16 +11,16 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                "resources/css/app.css",
-                "resources/css/campaign_chart.css",
-                "resources/css/internal_promos.css",
-                "resources/css/external_promos.css",
-                "resources/css/website_campaigns.css",
-                "resources/css/wsd.css",
+                "resources/css/app.css",  
                 "resources/css/mainlayout.css",
                 "resources/css/dashboard.css",
                 "resources/js/app.js",
                 "resources/css/campaigns.css",
+                "resources/css/wsd.css",
+                 "resources/css/campaign_chart.css",
+                "resources/css/internal_promos.css",
+                "resources/css/external_promos.css",
+                "resources/css/website_campaigns.css",
             ],
             refresh: true,
         }),
@@ -44,6 +44,7 @@ export default defineConfig({
         outDir: "public/build",
         emptyOutDir: true,
         chunkSizeWarningLimit: 1000,
+         cssMinify: false, 
         rollupOptions: {
             output: {
                 manualChunks: {
