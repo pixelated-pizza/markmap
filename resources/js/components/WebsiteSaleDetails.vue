@@ -141,7 +141,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance, nextTick } from "vue";
 import { HotTable } from "@handsontable/vue3";
 import { registerAllModules } from "handsontable/registry";
 import Skeleton   from "primevue/skeleton";
@@ -637,11 +637,16 @@ const statusInterval = setInterval(() => {
 }, 30_000);
 onUnmounted(() => clearInterval(statusInterval));
 
-// ─── Mount ────────────────────────────────────────────────────────────────────
 onMounted(async () => {
     loading.value = true;
     await wsdStore.loadWSD();
     loading.value = false;
+
+    // Wait for DOM to fully paint before HOT measures dimensions
+    await nextTick();
+    setTimeout(() => {
+        hotRef.value?.hotInstance?.refreshDimensions();
+    }, 300);
 });
 </script>
 
