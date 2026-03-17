@@ -69,7 +69,21 @@ export const useWSDStore = defineStore("wsd", {
 
         async addWSD(newData) {
             const created = await createWSD(newData);
-            this.websiteSaleDetails.push(created);
+
+            const index = this.websiteSaleDetails.findIndex(
+                (w) =>
+                    (w.wc_id ?? w.campaign_id) ===
+                    (created.wc_id ?? created.campaign_id),
+            );
+
+            if (index !== -1) {
+                this.websiteSaleDetails[index] = {
+                    ...this.websiteSaleDetails[index],
+                    ...created,
+                };
+            } else {
+                this.websiteSaleDetails.push(created);
+            }
         },
 
         async updateWSD(wsd_id, updates) {

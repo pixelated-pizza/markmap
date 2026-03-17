@@ -26,6 +26,7 @@
                 editMode="cell"
                 @cell-edit-complete="onCellEdit"
                 scrollable
+                 showGridlines
                 scrollDirection="both"
                 style="min-width: 100%"
             >
@@ -91,6 +92,23 @@
                         <span :class="data.qty <= 0 ? 'text-red-500' : ''">
                             {{ data.qty ?? "0" }}
                         </span>
+                    </template>
+                </Column>
+                <Column header="Stock Deducted" style="min-width: 140px">
+                    <template #body="{ data }">
+                        <span
+                            v-if="getStockDeducted(data) > 0"
+                            class="text-red-500 font-medium"
+                        >
+                            −{{ getStockDeducted(data) }}
+                        </span>
+                        <span
+                            v-else-if="getStockDeducted(data) < 0"
+                            class="text-green-600 font-medium"
+                        >
+                            +{{ Math.abs(getStockDeducted(data)) }}
+                        </span>
+                        <span v-else class="text-gray-400">—</span>
                     </template>
                 </Column>
                 <!-- Read-only -->
@@ -390,6 +408,8 @@ import { useNetoStore } from "@/js/stores/neto_store.js";
 import BulkAddFeaturedSkusModal from "@/js/components/category_featured_skus/BulkAddFeaturedSkusModal.vue";
 const bulkModalVisible = ref(false);
 
+const stockSnapshot = ref({});
+
 const store = useCategoryFeaturedSkusStore();
 const netoStore = useNetoStore();
 const lastSynced = ref(null);
@@ -401,9 +421,44 @@ const today = new Date().toLocaleDateString("en-AU", {
     year: "numeric",
 });
 
+function getStockDeducted(data) {
+    const baseline = stockSnapshot.value[data.sku_featured_id];
+    if (baseline === undefined) return null;
+    return baseline - (data.qty ?? 0);
+}
+
+function saveSnapshot(skus) {
+    const snapshot = {};
+    skus.forEach((sku) => {
+        // Only record if not already saved — preserve the original baseline
+        if (stockSnapshot.value[sku.sku_featured_id] === undefined) {
+            snapshot[sku.sku_featured_id] = sku.qty ?? 0;
+        } else {
+            snapshot[sku.sku_featured_id] =
+                stockSnapshot.value[sku.sku_featured_id];
+        }
+    });
+    stockSnapshot.value = snapshot;
+    localStorage.setItem(
+        "featured_skus_stock_snapshot",
+        JSON.stringify(snapshot),
+    );
+}
+
+function loadSnapshot() {
+    const saved = localStorage.getItem("featured_skus_stock_snapshot");
+    if (saved) {
+        stockSnapshot.value = JSON.parse(saved);
+    }
+}
+
 onMounted(() => {
-    store.loadFeaturedSkus();
-    lastSynced.value = new Date();
+    loadSnapshot(); // Load existing snapshot first
+
+    store.loadFeaturedSkus().then(() => {
+        saveSnapshot(store.allFeaturedSkus); // Fill in any missing SKUs
+        lastSynced.value = new Date();
+    });
 
     syncInterval = setInterval(
         () => {
@@ -534,10 +589,10 @@ function stockRowClass(data) {
     const qty = data.qty ?? 0;
 
     if (qty <= 5) {
-        return 'low-stock-row';
+        return "low-stock-row";
     }
 
-    return '';
+    return "";
 }
 </script>
 <style scoped>
