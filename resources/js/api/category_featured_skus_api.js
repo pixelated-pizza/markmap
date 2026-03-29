@@ -34,3 +34,8 @@ export async function updateFeaturedSku(id, payload) {
   const { data } = await api.put(`/category-featured-skus/${id}`, payload);
   return data;
 }
+
+export async function deleteAll() {
+  const { data } = await api.delete("/category-featured-skus");
+  return data;
+}

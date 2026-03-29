@@ -1,18 +1,23 @@
 <template>
   <div
-    class="apex-wrapper mt-5 rounded-2xl p-5 shadow-xl 
-           bg-white app-dark:bg-[#000524] 
-           border border-gray-200 dark:border-gray-700"
+    class="apex-wrapper mt-5 p-5 border"
+    :style="{ background: isDark ? '#000524' : '#ffffff' }"
   >
-    <apexchart type="bar" height="300" :options="chartOptions" :series="series" />
+    <apexchart
+      v-if="chartReady"
+      type="bar"
+      height="300"
+      :options="chartOptions"
+      :series="series"
+    />
   </div>
 </template>
-
 
 <script setup>
 import { computed, ref, onMounted, watch, nextTick } from "vue";
 
 const isDark = ref(false);
+const chartReady = ref(true);
 
 const props = defineProps({
   campaigns: {
@@ -68,17 +73,22 @@ function buildCompletedCampaignCount(campaigns) {
     });
 }
 
+const series = ref([{ name: "Completed Campaigns", data: [] }]);
 
-const series = ref([
-  {
-    name: "Completed Campaigns",
-    data: []
-  }
-]);
+// Force chart remount on theme change so ApexCharts picks up new options
+async function forceChartRemount() {
+  chartReady.value = false;
+  await nextTick();
+  chartReady.value = true;
+}
 
 onMounted(() => {
-  const observer = new MutationObserver(() => {
-    isDark.value = document.documentElement.classList.contains("app-dark");
+  const observer = new MutationObserver(async () => {
+    const dark = document.documentElement.classList.contains("app-dark");
+    if (isDark.value !== dark) {
+      isDark.value = dark;
+      await forceChartRemount();
+    }
   });
 
   observer.observe(document.documentElement, {
@@ -89,109 +99,108 @@ onMounted(() => {
   isDark.value = document.documentElement.classList.contains("app-dark");
 });
 
-const chartOptions = computed(() => ({
-  chart: {
-    type: "bar",
-    foreColor: "#ffffff",
-    toolbar: { show: false },
-    zoom: { enabled: true }
-  },
+const chartOptions = computed(() => {
+  const textColor = isDark.value ? "#ffffff" : "#111827";
+  const gridColor = isDark.value ? "#374151" : "#e5e7eb";
+  const tooltipBg = isDark.value ? "#1f2937" : "#f3f4f6";
+  const tooltipBorder = isDark.value ? "#374151" : "#e5e7eb";
+  const tooltipText = isDark.value ? "#fff" : "#111827";
 
-  title: {
-    text: "Website Sales / Promotions Completed Per Month",
-    align: "center",
-    style: {
-      fontSize: "16px",
-      fontWeight: "600",
-      color: "#ffffff",
-    }
-  },
+  return {
+    chart: {
+      type: "bar",
+      foreColor: textColor, // ← adapts axis labels, legend text
+      toolbar: { show: false },
+      zoom: { enabled: true },
+      background: "transparent"
+    },
 
-  plotOptions: {
-    bar: {
-      borderRadius: 6,
-      horizontal: false,
-      columnWidth: "50%"
-    }
-  },
+    title: {
+      text: "Website Sales or Promotions Currently Running or Completed Per Month",
+      align: "center",
+      style: {
+        fontSize: "16px",
+        fontWeight: "600",
+        color: textColor // ← was hardcoded #ffffff
+      }
+    },
 
-  dataLabels: { enabled: false },
+    plotOptions: {
+      bar: {
+        borderRadius: 6,
+        horizontal: false,
+        columnWidth: "50%"
+      }
+    },
 
-  // Keep your brand color for bars (works in both modes)
-  colors: ["#00BAEC"],
+    dataLabels: { enabled: false },
+    colors: ["#00BAEC"],
 
-  xaxis: {
-    type: "category",
-    title: { text: "Month" }
-  },
+    xaxis: {
+      type: "category",
+      title: {
+        text: "Month",
+        style: { color: textColor }
+      },
+      labels: { style: { colors: textColor } }
+    },
 
-  yaxis: {
-    min: 0,
-    title: { text: "Completed Campaigns" }
-  },
+    yaxis: {
+      min: 0,
+      title: {
+        text: "Completed Campaigns",
+        style: { color: textColor }
+      },
+      labels: { style: { colors: textColor } }
+    },
 
-  tooltip: {
-    enabled: true,
-    shared: false,
-    followCursor: true,
-    custom: ({ series, seriesIndex, dataPointIndex, w }) => {
-      const dp = w.config.series[seriesIndex].data[dataPointIndex];
-      const campaignList = dp.campaigns
-        .map(name => `<li>${name}</li>`)
-        .join("");
+    tooltip: {
+      enabled: true,
+      shared: false,
+      followCursor: true,
+      custom: ({ series, seriesIndex, dataPointIndex, w }) => {
+        const dp = w.config.series[seriesIndex].data[dataPointIndex];
+        const campaignList = dp.campaigns
+          .map(name => `<li>${name}</li>`)
+          .join("");
 
-      return `
-        <div style="
-          padding: 8px;
-          color: ${isDark.value ? "#fff" : "#111827"};
-          background: ${isDark.value ? "#1f2937" : "#f3f4f6"};
-          border-radius: 6px;
-          font-size: 13px;
-          border: 1px solid ${isDark.value ? "#374151" : "#e5e7eb"};
-        ">
-          <strong>Count: ${dp.y}</strong>
-          <ul style="margin: 5px 0 0 15px; padding: 0; list-style-type: disc;">
-            ${campaignList}
-          </ul>
-        </div>
-      `;
-    }
-  },
+        return `
+          <div style="
+            padding: 8px;
+            color: ${tooltipText};
+            background: ${tooltipBg};
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid ${tooltipBorder};
+          ">
+            <strong>Count: ${dp.y}</strong>
+            <ul style="margin: 5px 0 0 15px; padding: 0; list-style-type: disc;">
+              ${campaignList}
+            </ul>
+          </div>
+        `;
+      }
+    },
 
-  grid: {
-    borderColor: isDark.value ? "#374151" : "#e5e7eb"
-  }
-}));
+    grid: { borderColor: gridColor }
+  };
+});
 
 watch(
   () => props.campaigns,
   async (newVal) => {
     if (!newVal || !newVal.length) return;
-
-    // Let UI render first
     await nextTick();
-
-    // Delay heavy work so UI doesn't freeze
     setTimeout(() => {
       const processed = buildCompletedCampaignCount(newVal);
-
-      series.value = [
-        {
-          name: "Completed Campaigns",
-          data: processed
-        }
-      ];
+      series.value = [{ name: "Completed Campaigns", data: processed }];
     }, 0);
   },
   { immediate: true }
 );
 </script>
-
 <style scoped>
-.apex-wrapper {
-  background: #000524;
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 22px 35px -16px rgba(0, 0, 0, 0.7);
+:global(.app-dark) .apex-wrapper {
+  background: #000524; /* dark mode */
 }
 </style>

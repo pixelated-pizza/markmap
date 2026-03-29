@@ -5,17 +5,23 @@
             <Button label="+ Add Featured SKU" @click="openModal" />
             <Button label="+ Bulk Add SKUs" @click="bulkModalVisible = true" />
             <BulkAddFeaturedSkusModal v-model="bulkModalVisible" />
+            <Button
+                label="Clear All"
+                icon="pi pi-trash"
+                severity="danger"
+                @click="clearAllDialogVisible = true"
+            />
         </div>
 
         <div class="card">
-            <div class="bg-red-600 items-center">
+            <div class="items-center">
                 <h2
-                    class="text-gray-100 dark:text-white text-center font-bold text-lg tracking-wide"
+                    class="text-white dark:text-white text-center font-bold text-lg tracking-wide"
                 >
                     Price & Inventory Tracking
                 </h2>
             </div>
-            <span v-if="lastSynced" class="text-red-200 text-sm">
+            <span v-if="lastSynced" class="text-red-200 text-md">
                 Last synced: {{ lastSynced.toLocaleTimeString("en-AU") }}
             </span>
 
@@ -26,7 +32,7 @@
                 editMode="cell"
                 @cell-edit-complete="onCellEdit"
                 scrollable
-                 showGridlines
+                showGridlines
                 scrollDirection="both"
                 style="min-width: 100%"
             >
@@ -273,12 +279,34 @@
                             icon="pi pi-trash"
                             severity="danger"
                             text
-                            @click="remove(data.sku_featured_id)"
+                            @click="confirmDelete(data.sku_featured_id)"
                         />
                     </template>
                 </Column>
             </DataTable>
         </div>
+
+        <Dialog
+            v-model:visible="deleteDialogVisible"
+            header="Confirm Deletion"
+            modal
+            :style="{ width: '400px' }"
+        >
+            <p>Are you sure you want to delete this Featured SKU?</p>
+
+            <template #footer>
+                <Button
+                    label="Cancel"
+                    severity="secondary"
+                    @click="deleteDialogVisible = false"
+                />
+                <Button
+                    label="Delete"
+                    severity="danger"
+                    @click="deleteConfirmed"
+                />
+            </template>
+        </Dialog>
 
         <!-- Add Featured SKU Modal -->
         <Dialog
@@ -398,6 +426,32 @@
                 />
             </template>
         </Dialog>
+
+        <Dialog
+            v-model:visible="clearAllDialogVisible"
+            header="Confirm Clear All"
+            modal
+            :style="{ width: '400px' }"
+        >
+            <p>
+                Are you sure you want to delete
+                <strong>all Featured SKUs</strong>? This action cannot be
+                undone.
+            </p>
+
+            <template #footer>
+                <Button
+                    label="Cancel"
+                    severity="secondary"
+                    @click="clearAllDialogVisible = false"
+                />
+                <Button
+                    label="Delete All"
+                    severity="danger"
+                    @click="clearAllConfirmed"
+                />
+            </template>
+        </Dialog>
     </div>
 </template>
 
@@ -405,6 +459,7 @@
 import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useCategoryFeaturedSkusStore } from "@/js/stores/category_featured_skus_store.js";
 import { useNetoStore } from "@/js/stores/neto_store.js";
+import { getCurrentInstance } from "vue";
 import BulkAddFeaturedSkusModal from "@/js/components/category_featured_skus/BulkAddFeaturedSkusModal.vue";
 const bulkModalVisible = ref(false);
 
@@ -414,6 +469,12 @@ const store = useCategoryFeaturedSkusStore();
 const netoStore = useNetoStore();
 const lastSynced = ref(null);
 let syncInterval = null;
+
+const deleteDialogVisible = ref(false);
+const skuToDelete = ref(null);
+const clearAllDialogVisible = ref(false);
+
+const toastr = getCurrentInstance().appContext.config.globalProperties.$toastr;
 
 const today = new Date().toLocaleDateString("en-AU", {
     day: "2-digit",
@@ -570,8 +631,26 @@ async function onCellEdit(event) {
     });
 }
 
-async function remove(id) {
-    await store.removeFeaturedSku(id);
+async function clearAllConfirmed() {
+    await store.deleteAllSkus(); // Make sure this method exists in your store
+    clearAllDialogVisible.value = false;
+
+    toastr.success("All Featured SKUs have been deleted.");
+}
+
+function confirmDelete(skuId) {
+    skuToDelete.value = skuId;
+    deleteDialogVisible.value = true;
+}
+
+async function deleteConfirmed() {
+    if (!skuToDelete.value) return;
+
+    await store.removeFeaturedSku(skuToDelete.value);
+    deleteDialogVisible.value = false;
+    skuToDelete.value = null;
+
+    toastr.success("Featured SKU deleted successfully.");
 }
 
 function formatPrice(value) {

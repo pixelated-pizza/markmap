@@ -5,7 +5,8 @@ import {
     deleteFeaturedSku,
     createBulkFeaturedSkus,
     syncFeaturedSkus,
-    updateFeaturedSku
+    updateFeaturedSku,
+    deleteAll,
 } from "@/js/api/category_featured_skus_api.js";
 
 export const useCategoryFeaturedSkusStore = defineStore(
@@ -91,6 +92,22 @@ export const useCategoryFeaturedSkusStore = defineStore(
                     await this.loadFeaturedSkus();
                 } catch (error) {
                     console.error("Failed to delete featured SKU", error);
+                }
+            },
+
+            async deleteAllSkus() {
+                this.loading = true;
+
+                try {
+                    await deleteAll();
+
+                    this.loaded = false;
+                    await this.loadFeaturedSkus(true); // reload clean state
+                } catch (error) {
+                    console.error("Failed to delete all featured SKUs", error);
+                    throw error;
+                } finally {
+                    this.loading = false;
                 }
             },
 

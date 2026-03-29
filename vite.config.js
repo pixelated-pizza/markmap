@@ -41,20 +41,49 @@ export default defineConfig({
         dedupe: ["@fullcalendar/core"],
     },
     build: {
-        outDir: "public/build",
-        emptyOutDir: true,
-        chunkSizeWarningLimit: 1000,
-         cssMinify: false, 
-        rollupOptions: {
-            output: {
-                manualChunks: {
-                    vue: ["vue", "vue-router"],
-                    primevue: ["primevue"],
-                    firebase: ["firebase/app", "firebase/auth"],
-                },
+    outDir: "public/build",
+    emptyOutDir: true,
+    chunkSizeWarningLimit: 1500,
+    cssMinify: false,
+    rollupOptions: {
+        output: {
+            manualChunks(id) {
+                // Split each PrimeVue component into its own chunk
+                if (id.includes('node_modules/primevue')) {
+                    return 'vendor-primevue';
+                }
+                if (id.includes('node_modules/@primevue')) {
+                    return 'vendor-primevue';
+                }
+                if (id.includes('node_modules/primeicons')) {
+                    return 'vendor-primeicons';
+                }
+                if (id.includes('node_modules/vue-router')) {
+                    return 'vendor-vue-router';
+                }
+                if (id.includes('node_modules/vue') || id.includes('node_modules/@vue')) {
+                    return 'vendor-vue';
+                }
+                if (id.includes('node_modules/pinia')) {
+                    return 'vendor-pinia';
+                }
+                if (id.includes('node_modules/axios')) {
+                    return 'vendor-axios';
+                }
+                if (id.includes('node_modules/firebase')) {
+                    return 'vendor-firebase';
+                }
+                if (id.includes('node_modules/@fullcalendar')) {
+                    return 'vendor-fullcalendar';
+                }
+                // Everything else in node_modules goes to vendor
+                if (id.includes('node_modules')) {
+                    return 'vendor-misc';
+                }
             },
         },
     },
+},
     css: {
         preprocessorOptions: {
             scss: {

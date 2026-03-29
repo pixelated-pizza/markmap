@@ -1,6 +1,6 @@
 <template>
     <div class="dark:bg-gray-900 bg-white p-5">
-        <h4 class="font-semibold text-lg text-center p-2 app-dark:text-white">
+        <h4 class="font-semibold text-lg text-center p-2 dark:text-white">
             Website Sale Details
         </h4>
         <template v-if="loading">
@@ -65,6 +65,7 @@
                 class="text-md mt-5"
                 editMode="cell"
                 @cell-edit-complete="onCellEditComplete"
+                :rowClass="rowClass"
                 paginator
                 :rows="15"
                 :loading="loading"
@@ -412,9 +413,23 @@
         >
             <div class="flex flex-col gap-3">
                 <label class="font-semibold">New Start Date</label>
-                <InputText type="date" v-model="newStartDate" class="w-full" />
+                <DatePicker
+                    v-model="newStartDate"
+                    showTime
+                    hourFormat="12"
+                    stepMinute="1"
+                    stepSecond="1"
+                    fluid
+                />
                 <label class="font-semibold">New End Date</label>
-                <InputText type="date" v-model="newEndDate" class="w-full" />
+                <DatePicker
+                    v-model="newEndDate"
+                    showTime
+                    hourFormat="12"
+                    stepMinute="1"
+                    stepSecond="1"
+                    fluid
+                />
                 <div class="mt-4 flex justify-end gap-2">
                     <Button
                         label="Cancel"
@@ -448,6 +463,7 @@ import { useWSDStore } from "@/js/stores/wsd_store";
 import { useOnsiteCampaignStore } from "@/js/stores/onsite_campaign_store.js";
 import { getCurrentInstance } from "vue";
 import { useUIStore } from "@/js/stores/ui.js";
+import "@/css/wsd.css";
 
 const ui = useUIStore();
 const store = useOnsiteCampaignStore();
@@ -545,6 +561,11 @@ const filteredCampaigns = computed(() => {
         (a, b) => new Date(b.start_date) - new Date(a.start_date),
     );
 });
+
+const rowClass = (data) => {
+    const index = filteredCampaigns.value.indexOf(data);
+    return index % 2 === 0 ? "row-even" : "row-odd";
+};
 
 const saveChanges = async (data) => {
     ui.showLoader();
@@ -692,14 +713,4 @@ onMounted(async () => {
     loading.value = false;
 });
 </script>
-
-<style scoped>
-td.py-2 {
-    min-height: 2.5rem;
-}
-
-td.py-2 textarea,
-td.py-2 input {
-    height: 100%;
-}
-</style>
+<style scoped></style>

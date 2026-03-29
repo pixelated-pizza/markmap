@@ -1,5 +1,8 @@
 <template>
-  <div class="w-full mt-3 bg-gray-900 rounded-lg p-3 min-h-[500px]">
+  <div
+    class="w-full mt-3 rounded-lg p-3 min-h-[500px]"
+    :style="{ background: isDark ? '#000524' : '#ffffff' }"
+  >
     <template v-if="loading">
       <div class="flex flex-col h-full gap-4">
         <p class="text-gray-400 text-lg">Loading Gantt Chart...</p>
@@ -33,6 +36,8 @@ const ui = useUIStore();
 const calendarRef = ref(null);
 const channels = ref([]);
 const loading = ref(true);
+
+const isDark = ref(false);
 
 const ganttColors = [
   "#3B82F6", 
@@ -202,7 +207,16 @@ async function loadCampaigns() {
   }
 }
 
-onMounted( async () => {
+onMounted(async () => {
+  const observer = new MutationObserver(() => {
+    isDark.value = document.documentElement.classList.contains("app-dark");
+  });
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"]
+  });
+  isDark.value = document.documentElement.classList.contains("app-dark");
+
   await loadCampaigns();
 });
 </script>

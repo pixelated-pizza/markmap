@@ -123,5 +123,6 @@ Route::prefix('category-featured-skus')->group(function () {
     Route::post('/sync',   [CategoryFeaturedSkusController::class, 'sync']);
     Route::put('/{id}',    [CategoryFeaturedSkusController::class, 'update']);
     Route::delete('/{id}', [CategoryFeaturedSkusController::class, 'destroy']);
+    Route::delete('/',     [CategoryFeaturedSkusController::class, 'deleteAll']);
 });
 

@@ -1,5 +1,8 @@
 <template>
-  <div class="w-full mt-3 dark:bg-gray-900 rounded-lg p-3 min-h-[500px]">
+  <div
+    class="w-full mt-3 rounded-lg p-3 min-h-[500px]"
+    :style="{ background: isDark ? '#000524' : '#ffffff' }"
+  >
     <template v-if="loading">
       <div class="flex flex-col h-full gap-4">
         <p class="text-gray-400 text-lg">Loading Gantt Chart...</p>
@@ -13,10 +16,9 @@
         <Skeleton height="1.5rem" width="60%" />
       </div>
     </template>
-    <FullCalendar v-else ref="calendarRef" :options="calendarOptions" class="w-full" />
+    <FullCalendar v-else ref="calendarRef" :options="calendarOptions" class="w-full h-full" />
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import FullCalendar from "@fullcalendar/vue3"
@@ -30,6 +32,8 @@ import Skeleton from 'primevue/skeleton';
 const channels = ref([]);
 
 const loading = ref(true);
+
+const isDark = ref(false);
 
 const allowedChannels = [
   "Mytopia",
@@ -150,8 +154,17 @@ async function loadCampaigns() {
   }
 }
 
-onMounted(() => {
-  loadCampaigns();
+onMounted(async () => {
+  const observer = new MutationObserver(() => {
+    isDark.value = document.documentElement.classList.contains("app-dark");
+  });
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"]
+  });
+  isDark.value = document.documentElement.classList.contains("app-dark");
+
+  await loadCampaigns();
 });
 </script>
 

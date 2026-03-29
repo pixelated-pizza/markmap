@@ -141,4 +141,22 @@ class CategoryFeaturedSkusController extends Controller
 
         return response()->json(['message' => 'Deleted successfully']);
     }
+
+    public function deleteAll(): JsonResponse
+    {
+        try {
+            $count = CategoryFeaturedSkus::count();
+
+            CategoryFeaturedSkus::query()->delete();
+
+            return response()->json([
+                'message' => "Deleted {$count} featured SKUs successfully"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete all featured SKUs',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
