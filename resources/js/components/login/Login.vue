@@ -90,6 +90,9 @@
                 <p class="text-center text-sm text-gray-500 mt-8">
                     Don't have an account? <span class="text-indigo-600 dark:text-indigo-400 font-medium cursor-pointer hover:underline">Contact Admin</span>
                 </p>
+                <p class="text-center text-xs text-gray-400 dark:text-gray-600 mt-4">
+    Developed by: ESS - Ralph Rivera
+</p>
             </div>
         </div>
     </div>
