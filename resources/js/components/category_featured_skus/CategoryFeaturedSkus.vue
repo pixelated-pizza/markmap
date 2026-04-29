@@ -5,19 +5,12 @@
             <Button label="+ Add Featured SKU" @click="openModal" />
             <Button label="+ Bulk Add SKUs" @click="bulkModalVisible = true" />
             <BulkAddFeaturedSkusModal v-model="bulkModalVisible" />
-            <Button
-                label="Clear All"
-                icon="pi pi-trash"
-                severity="danger"
-                @click="clearAllDialogVisible = true"
-            />
+            <Button label="Clear All" icon="pi pi-trash" severity="danger" @click="clearAllDialogVisible = true" />
         </div>
 
         <div class="card">
             <div class="items-center">
-                <h2
-                    class="text-white dark:text-white text-center font-bold text-lg tracking-wide"
-                >
+                <h2 class="text-white dark:text-white text-center font-bold text-lg tracking-wide">
                     Price & Inventory Tracking
                 </h2>
             </div>
@@ -25,75 +18,42 @@
                 Last synced: {{ lastSynced.toLocaleTimeString("en-AU") }}
             </span>
 
-            <DataTable
-                :value="sortedFeaturedSkus"
-                :rowClass="stockRowClass"
-                :loading="store.isLoading"
-                editMode="cell"
-                @cell-edit-complete="onCellEdit"
-                scrollable
-                showGridlines
-                scrollDirection="both"
-                style="min-width: 100%"
-            >
+            <DataTable :value="sortedFeaturedSkus" :rowClass="stockRowClass" :loading="store.isLoading" editMode="cell"
+                @cell-edit-complete="onCellEdit" scrollable showGridlines scrollDirection="both"
+                style="min-width: 100%">
                 <template #empty>No featured SKUs found.</template>
 
-                <Column
-                    field="sku"
-                    header="SKU"
-                    frozen
-                    style="min-width: 130px"
-                />
+                <Column field="sku" header="SKU" frozen style="min-width: 130px" />
                 <Column field="rrp" header="RRP" style="min-width: 110px">
                     <template #body="{ data }">{{
                         formatPrice(data.rrp)
                     }}</template>
                 </Column>
-                <Column
-                    field="website_price"
-                    header="Website Price"
-                    style="min-width: 130px"
-                >
+                <Column field="website_price" header="Website Price" style="min-width: 130px">
                     <template #body="{ data }">{{
                         formatPrice(data.website_price)
                     }}</template>
                 </Column>
-                <Column
-                    field="special_price"
-                    header="Special Price"
-                    style="min-width: 120px"
-                >
+                <Column field="special_price" header="Special Price" style="min-width: 120px">
                     <template #body="{ data }">{{
                         data.special_price
                             ? formatPrice(data.special_price)
                             : "—"
                     }}</template>
                 </Column>
-                <Column
-                    field="price_change"
-                    header="Price Change"
-                    style="min-width: 130px"
-                >
+                <Column field="price_change" header="Price Change" style="min-width: 130px">
                     <template #body="{ data }">
-                        <span
-                            v-if="data.price_change && data.price_change != 0"
-                            :class="
-                                data.price_change > 0
-                                    ? 'text-green-600'
-                                    : 'text-red-500'
-                            "
-                        >
+                        <span v-if="data.price_change && data.price_change != 0" :class="data.price_change > 0
+                            ? 'text-green-600'
+                            : 'text-red-500'
+                            ">
                             {{ data.price_change > 0 ? "+" : ""
                             }}{{ formatPrice(data.price_change) }}
                         </span>
                         <span v-else class="text-gray-400">—</span>
                     </template>
                 </Column>
-                <Column
-                    field="qty"
-                    :header="`SOH as of ${today}`"
-                    style="min-width: 150px"
-                >
+                <Column field="qty" :header="`SOH as of ${today}`" style="min-width: 150px">
                     <template #body="{ data }">
                         <span :class="data.qty <= 0 ? 'text-red-500' : ''">
                             {{ data.qty ?? "0" }}
@@ -102,246 +62,133 @@
                 </Column>
                 <Column header="Stock Deducted" style="min-width: 140px">
                     <template #body="{ data }">
-                        <span
-                            v-if="getStockDeducted(data) > 0"
-                            class="text-red-500 font-medium"
-                        >
+                        <span v-if="getStockDeducted(data) > 0" class="text-red-500 font-medium">
                             −{{ getStockDeducted(data) }}
                         </span>
-                        <span
-                            v-else-if="getStockDeducted(data) < 0"
-                            class="text-green-600 font-medium"
-                        >
+                        <span v-else class="text-gray-400">—</span>
+                    </template>
+                </Column>
+
+                <Column header="Stock Added" style="min-width: 140px">
+                    <template #body="{ data }">
+                        <span v-if="getStockDeducted(data) < 0" class="text-green-600 font-medium">
                             +{{ Math.abs(getStockDeducted(data)) }}
                         </span>
                         <span v-else class="text-gray-400">—</span>
                     </template>
                 </Column>
-                <!-- Read-only -->
-                <Column
-                    field="category_name"
-                    header="Category"
-                    style="min-width: 150px"
-                >
+                <Column field="category_name" header="Category" style="min-width: 150px">
                     <template #body="{ data }">{{
                         data.category_name || "—"
                     }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
-                <Column
-                    field="block_name"
-                    header="Block"
-                    style="min-width: 130px"
-                >
+                <Column field="block_name" header="Block" style="min-width: 130px">
                     <template #body="{ data }">{{
                         data.block_name || "—"
                     }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
-                <Column
-                    field="website"
-                    header="Website"
-                    style="min-width: 120px"
-                >
+                <Column field="website" header="Website" style="min-width: 120px">
                     <template #body="{ data }">{{
                         data.website || "—"
                     }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
                 <Column field="type" header="Type" style="min-width: 100px">
                     <template #body="{ data }">{{ data.type || "—" }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
-                <Column
-                    field="block_id"
-                    header="Block ID"
-                    style="min-width: 120px"
-                >
+                <Column field="block_id" header="Block ID" style="min-width: 120px">
                     <template #body="{ data }">{{
                         data.block_id || "—"
                     }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
-                <Column
-                    field="identifier"
-                    header="Identifier"
-                    style="min-width: 120px"
-                >
+                <Column field="identifier" header="Identifier" style="min-width: 120px">
                     <template #body="{ data }">{{
                         data.identifier || "—"
                     }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
-                <Column
-                    field="product_landing_page"
-                    header="Product Landing Page"
-                    style="min-width: 170px"
-                >
+                <Column field="product_landing_page" header="Product Landing Page" style="min-width: 170px">
                     <template #body="{ data }">{{
                         data.product_landing_page || "—"
                     }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
-                <Column
-                    field="creative_location"
-                    header="Creative Location"
-                    style="min-width: 150px"
-                >
+                <Column field="creative_location" header="Creative Location" style="min-width: 150px">
                     <template #body="{ data }">{{
                         data.creative_location || "—"
                     }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
-                <Column
-                    field="landing_page"
-                    header="Landing Page"
-                    style="min-width: 130px"
-                >
+                <Column field="landing_page" header="Landing Page" style="min-width: 130px">
                     <template #body="{ data }">{{
                         data.landing_page || "—"
                     }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
                 <Column field="note" header="Note" style="min-width: 150px">
                     <template #body="{ data }">{{ data.note || "—" }}</template>
                     <template #editor="{ data, field }">
-                        <InputText
-                            v-model="data[field]"
-                            class="w-full"
-                            autofocus
-                        />
+                        <InputText v-model="data[field]" class="w-full" autofocus />
                     </template>
                 </Column>
 
                 <!-- Frozen right -->
-                <Column
-                    header="Actions"
-                    frozen
-                    alignFrozen="right"
-                    style="min-width: 80px"
-                >
+                <Column header="Actions" frozen alignFrozen="right" style="min-width: 80px">
                     <template #body="{ data }">
-                        <Button
-                            icon="pi pi-trash"
-                            severity="danger"
-                            text
-                            @click="confirmDelete(data.sku_featured_id)"
-                        />
+                        <Button icon="pi pi-trash" severity="danger" text
+                            @click="confirmDelete(data.sku_featured_id)" />
                     </template>
                 </Column>
             </DataTable>
         </div>
 
-        <Dialog
-            v-model:visible="deleteDialogVisible"
-            header="Confirm Deletion"
-            modal
-            :style="{ width: '400px' }"
-        >
+        <Dialog v-model:visible="deleteDialogVisible" header="Confirm Deletion" modal :style="{ width: '400px' }">
             <p>Are you sure you want to delete this Featured SKU?</p>
 
             <template #footer>
-                <Button
-                    label="Cancel"
-                    severity="secondary"
-                    @click="deleteDialogVisible = false"
-                />
-                <Button
-                    label="Delete"
-                    severity="danger"
-                    @click="deleteConfirmed"
-                />
+                <Button label="Cancel" severity="secondary" @click="deleteDialogVisible = false" />
+                <Button label="Delete" severity="danger" @click="deleteConfirmed" />
             </template>
         </Dialog>
 
         <!-- Add Featured SKU Modal -->
-        <Dialog
-            v-model:visible="modalVisible"
-            header="Add Featured SKU"
-            :style="{ width: '600px' }"
-            modal
-        >
+        <Dialog v-model:visible="modalVisible" header="Add Featured SKU" :style="{ width: '600px' }" modal>
             <div class="flex flex-col gap-4">
                 <!-- SKU Lookup -->
                 <div class="flex gap-2">
                     <div class="flex flex-col gap-1 flex-1">
-                        <label class="font-medium"
-                            >SKU <span class="text-red-500">*</span></label
-                        >
-                        <InputText
-                            v-model="form.sku"
-                            placeholder="e.g. MOWRIDBMS32A"
-                            @keyup.enter="lookupSku"
-                        />
+                        <label class="font-medium">SKU <span class="text-red-500">*</span></label>
+                        <InputText v-model="form.sku" placeholder="e.g. MOWRIDBMS32A" @keyup.enter="lookupSku" />
                     </div>
                     <div class="flex items-end">
-                        <Button
-                            label="Lookup"
-                            :loading="lookingUp"
-                            @click="lookupSku"
-                        />
+                        <Button label="Lookup" :loading="lookingUp" @click="lookupSku" />
                     </div>
                 </div>
 
                 <!-- Neto Data Preview -->
-                <div
-                    v-if="netoData"
-                    class="bg-gray-50 dark:bg-gray-900 rounded p-3 grid grid-cols-3 gap-2 text-sm"
-                >
+                <div v-if="netoData" class="bg-gray-50 dark:bg-gray-900 rounded p-3 grid grid-cols-3 gap-2 text-sm">
                     <div>
                         <span class="text-gray-500">RRP:</span>
                         {{ formatPrice(netoData.rrp) }}
@@ -413,26 +260,12 @@
             </div>
 
             <template #footer>
-                <Button
-                    label="Cancel"
-                    severity="secondary"
-                    @click="closeModal"
-                />
-                <Button
-                    label="Add Featured SKU"
-                    :loading="store.isSaving"
-                    :disabled="!netoData"
-                    @click="submit"
-                />
+                <Button label="Cancel" severity="secondary" @click="closeModal" />
+                <Button label="Add Featured SKU" :loading="store.isSaving" :disabled="!netoData" @click="submit" />
             </template>
         </Dialog>
 
-        <Dialog
-            v-model:visible="clearAllDialogVisible"
-            header="Confirm Clear All"
-            modal
-            :style="{ width: '400px' }"
-        >
+        <Dialog v-model:visible="clearAllDialogVisible" header="Confirm Clear All" modal :style="{ width: '400px' }">
             <p>
                 Are you sure you want to delete
                 <strong>all Featured SKUs</strong>? This action cannot be
@@ -440,16 +273,8 @@
             </p>
 
             <template #footer>
-                <Button
-                    label="Cancel"
-                    severity="secondary"
-                    @click="clearAllDialogVisible = false"
-                />
-                <Button
-                    label="Delete All"
-                    severity="danger"
-                    @click="clearAllConfirmed"
-                />
+                <Button label="Cancel" severity="secondary" @click="clearAllDialogVisible = false" />
+                <Button label="Delete All" severity="danger" @click="clearAllConfirmed" />
             </template>
         </Dialog>
     </div>
@@ -632,7 +457,7 @@ async function onCellEdit(event) {
 }
 
 async function clearAllConfirmed() {
-    await store.deleteAllSkus(); // Make sure this method exists in your store
+    await store.deleteAllSkus();
     clearAllDialogVisible.value = false;
 
     toastr.success("All Featured SKUs have been deleted.");
@@ -675,7 +500,7 @@ function stockRowClass(data) {
 }
 </script>
 <style scoped>
-.low-stock-row > td {
+.low-stock-row>td {
     background-color: #ef4444 !important;
     color: white !important;
 }

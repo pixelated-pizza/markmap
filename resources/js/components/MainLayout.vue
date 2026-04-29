@@ -116,11 +116,8 @@
                   Marketplace Promotions
                 </router-link>
               </li>
-
             </ul>
           </li>
-
-
         </nav>
       </div>
 

@@ -2,19 +2,13 @@
     <div class="layout-wrapper" :class="containerClass">
         <AppTopbar />
         <AppSidebar />
-
         <div class="layout-main-container">
             <div class="layout-main">
-
                 <router-view v-slot="{ Component }">
-                    <KeepAlive>
-                        <component :is="Component" />
-                    </KeepAlive>
+                    <component :is="Component" />
                 </router-view>
-
             </div>
         </div>
-
         <div class="layout-mask animate-fadein" @click="hideMobileMenu" />
     </div>
 

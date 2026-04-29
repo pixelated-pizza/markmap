@@ -6,7 +6,7 @@
     <apexchart
       v-if="chartReady"
       type="bar"
-      height="300"
+      height="200"
       :options="chartOptions"
       :series="series"
     />

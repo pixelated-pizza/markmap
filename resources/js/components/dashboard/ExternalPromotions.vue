@@ -1,6 +1,7 @@
 <template>
   <div
-    class="w-full mt-3 rounded-lg p-3 min-h-[500px]"
+    class="w-full mt-3 rounded-lg p-3 min-h-[275px]"
+    :class="isDark ? 'theme-dark' : 'theme-light'"
     :style="{ background: isDark ? '#000524' : '#ffffff' }"
   >
     <template v-if="loading">
@@ -20,7 +21,7 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onActivated, nextTick } from "vue";
 import FullCalendar from "@fullcalendar/vue3"
 import interactionPlugin from "@fullcalendar/interaction"
 import dayGridPlugin from "@fullcalendar/daygrid"
@@ -59,7 +60,7 @@ const calendarOptions = ref({
   editable: false,
   selectable: false,
   aspectRatio: 2,
-  height: 500,
+  height: 275,
 
   slotLabelFormat: [
     { weekday: 'short', day: 'numeric', month: 'short' }
@@ -166,37 +167,43 @@ onMounted(async () => {
 
   await loadCampaigns();
 });
-</script>
 
+onActivated(async () => {
+  await nextTick();
+  if (calendarRef.value) {
+    calendarRef.value.getApi().updateSize();
+  }
+});
+</script>
 <style scoped>
-:deep(.fc-toolbar-title) {
+/* Dark mode */
+:deep(.theme-dark .fc-toolbar-title) {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #f9fafb; 
+  color: #f9fafb;
 }
-
-:deep(.dark .fc-toolbar-title) {
-  color: #111827; 
-}
-
-:deep(.fc-datagrid-cell-main ) {
-  font-weight: 500;
-  color: #f3f4f6; 
-}
-
-:deep(.fc-timeline-slot-frame) {
-  font-weight: 500;
-  color: #f3f4f6
-}
-
-:deep(.dark .fc-timeline-slot-frame) {
-  font-weight: 500;
-  color: #f3f4f6
-}
-
-.fc-datagrid-cell-main {
+:deep(.theme-dark .fc-datagrid-cell-main) {
   font-weight: 500;
   color: #f3f4f6;
+}
+:deep(.theme-dark .fc-timeline-slot-frame) {
+  font-weight: 500;
+  color: #f3f4f6;
+}
+
+/* Light mode */
+:deep(.theme-light .fc-toolbar-title) {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+:deep(.theme-light .fc-datagrid-cell-main) {
+  font-weight: 500;
+  color: #111827;
+}
+:deep(.theme-light .fc-timeline-slot-frame) {
+  font-weight: 500;
+  color: #111827;
 }
 
 .fc-event {

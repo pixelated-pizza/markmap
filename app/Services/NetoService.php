@@ -26,6 +26,7 @@ class NetoService
                 'DefaultPrice',
                 'PromotionPrice',
                 'AvailableSellQuantity',
+                'WarehouseQuantity',
             ],
         ];
 

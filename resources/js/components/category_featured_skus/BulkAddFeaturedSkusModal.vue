@@ -5,7 +5,6 @@
         :style="{ width: '90vw', maxWidth: '1200px' }"
         modal
     >
-        <!-- Step 1: SKU Input -->
         <div v-if="step === 1" class="flex flex-col gap-4">
             <label class="font-medium">Enter SKUs (one per line)</label>
             <Textarea
@@ -19,7 +18,6 @@
             >
         </div>
 
-        <!-- Step 2: Preview & Edit Table -->
         <div v-if="step === 2" class="flex flex-col gap-4">
             <div
                 v-if="lookupErrors.length"

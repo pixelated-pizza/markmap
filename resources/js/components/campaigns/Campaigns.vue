@@ -1,60 +1,29 @@
 <template>
     <div class="flex flex-col bg-gray-100 dark:bg-gray-900">
-        <div
-            class="bg-white dark:bg-gray-800 mb-5 border-b border-gray-200 dark:border-gray-700"
-        >
-            <h4
-                class="text-sm text-gray-900 dark:text-white text-center tracking-wide drop-shadow-sm py-3"
-            >
+        <div class="bg-white dark:bg-gray-800 mb-5 border-b border-gray-200 dark:border-gray-700">
+            <h4 class="text-sm text-gray-900 dark:text-white text-center tracking-wide drop-shadow-sm py-3">
                 Website Sales, Promotions, Marketplaces Campaigns
             </h4>
 
             <div class="flex flex-wrap items-center gap-2 ml-5 pb-3">
-                <Select
-                    v-model="selectedChannel"
-                    :options="channels"
-                    optionLabel="name"
-                    optionValue="channel_id"
-                    placeholder="All Channels"
-                    class="w-48"
-                    showClear
-                />
+                <Select v-model="selectedChannel" :options="channels" optionLabel="name" optionValue="channel_id"
+                    placeholder="All Channels" class="w-48" showClear />
 
-                <InputText
-                    v-model="searchTerm"
-                    placeholder="Search Campaigns..."
-                    class="w-60"
-                />
+                <InputText v-model="searchTerm" placeholder="Search Campaigns..." class="w-60" />
 
-                <DatePicker
-                    v-model="dateRange"
-                    selectionMode="range"
-                    dateFormat="yy-mm-dd"
-                    placeholder="Filter by Date Range"
-                    class="w-64"
-                    showIcon
-                />
+                <DatePicker v-model="dateRange" selectionMode="range" dateFormat="yy-mm-dd"
+                    placeholder="Filter by Date Range" class="w-64" showIcon />
 
-                <Button
-                    label="Reset"
-                    icon="pi pi-refresh"
-                    class="p-button-secondary"
-                    @click="resetFilters"
-                />
+                <Button label="Reset" icon="pi pi-refresh" class="p-button-secondary" @click="resetFilters" />
             </div>
         </div>
 
         <div class="gantt-wrapper relative w-full overflow-auto touch-pan-y">
-            <div
-                ref="ganttContainer"
-                style="min-height: 500px; height: 600px"
-                class="gantt-container w-full bg-white dark:bg-gray-900"
-            ></div>
+            <div ref="ganttContainer" style="min-height: 500px; height: 600px"
+                class="gantt-container w-full bg-white dark:bg-gray-900"></div>
 
-            <div
-                v-if="loading"
-                class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col gap-4 justify-center items-center z-10"
-            >
+            <div v-if="loading"
+                class="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex flex-col gap-4 justify-center items-center z-10">
                 <p class="text-gray-600 dark:text-gray-300 text-lg">
                     Loading calendar...
                 </p>
@@ -143,6 +112,10 @@ gantt.config.time_step = 1;
 async function initGantt() {
     gantt.config.grid_resize = true;
     gantt.config.grid_buttons = true;
+
+    gantt.templates.grid_row_class = (start, end, task) => {
+        return task.type === "project" ? "" : "hide-add-btn";
+    };
 
     gantt.config.columns = [
         {
@@ -609,14 +582,17 @@ requestIdleCallback(async () => {
 .dark .gantt_task_row,
 .dark .gantt_task_bg,
 .dark .gantt_task_content {
-    background: #111827 !important; /* gray-900 */
-    border-color: #374151 !important; /* gray-700 */
+    background: #111827 !important;
+    /* gray-900 */
+    border-color: #374151 !important;
+    /* gray-700 */
 }
 
 /* Grid headers */
 .dark .gantt_grid_head_cell,
 .dark .gantt_grid_scale {
-    background: #1f2937 !important; /* gray-800 */
+    background: #1f2937 !important;
+    /* gray-800 */
     color: #e5e7eb !important;
 }
 
@@ -635,12 +611,17 @@ requestIdleCallback(async () => {
 
 /* Today line */
 .dark .gantt_today_line {
-    background: #60a5fa !important; /* blue-400 */
+    background: #60a5fa !important;
+    /* blue-400 */
 }
 
 /* Lightbox (popup) */
 .dark .gantt_lightbox {
     background: #111827 !important;
     color: #e5e7eb !important;
+}
+
+.hide-add-btn .gantt_add {
+    display: none !important;
 }
 </style>

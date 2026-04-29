@@ -2,7 +2,7 @@
     <div class="flex flex-col h-auto max-h-[88vh] overflow-auto p-5">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div
-                class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-200 rounded-xl p-5 flex flex-col items-start transition"
+                class="backdrop-blur-md dark:bg-gray-800/50 bg-white rounded-xl p-5 flex flex-col items-start transition"
                 @click="openModal('total')"
             >
                 <div v-if="loading" class="flex items-center gap-3 w-full">
@@ -31,7 +31,7 @@
             </div>
 
             <div
-                class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-200 rounded-xl p-5 flex flex-col items-start transition"
+                class="backdrop-blur-md dark:bg-gray-800/50 bg-white rounded-xl p-5 flex flex-col items-start transition"
                 @click="openModal('active')"
             >
                 <div v-if="loading" class="flex items-center gap-3 w-full">
@@ -60,7 +60,7 @@
             </div>
 
             <div
-                class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-200 rounded-xl p-5 flex flex-col items-start transition"
+                class="backdrop-blur-md dark:bg-gray-800/50 bg-white rounded-xl p-5 flex flex-col items-start transition"
                 @click="openModal('upcoming')"
             >
                 <div v-if="loading" class="flex items-center gap-3 w-full">
@@ -89,7 +89,7 @@
             </div>
 
             <div
-                class="backdrop-blur-md dark:bg-gray-800/50 bg-gray-200 rounded-xl p-5 flex flex-col items-start transition"
+                class="backdrop-blur-md dark:bg-gray-800/50 bg-white rounded-xl p-5 flex flex-col items-start transition"
                 @click="openModal('completed')"
             >
                 <div v-if="loading" class="flex items-center gap-3 w-full">
@@ -205,10 +205,9 @@
                 </p>
             </div>
         </Dialog>
-
         <div class="mt-5">
             <template v-if="loading">
-                <div class="flex flex-col gap-4 w-full h-full mt-5">
+                <div class="flex flex-col gap-4 w-fullmt-5">
                     <p class="text-gray-400 text-lg">Loading Data...</p>
                     <Skeleton height="2rem" width="70%" />
                     <Skeleton height="2rem" width="50%" />
@@ -225,7 +224,6 @@
                     <Tab value="0">Internal Promotions</Tab>
                     <Tab value="1">External Promotions</Tab>
                 </TabList>
-
                 <TabPanels>
                     <TabPanel value="0">
                         <InternalPromotions />
@@ -239,7 +237,7 @@
     </div>
 </template>
 <script setup>
-import { ref, onMounted, computed, nextTick } from "vue";
+import { ref, onMounted, computed, nextTick, watch } from "vue";
 import InternalPromotions from "@/js/components/dashboard/InternalPromotions.vue";
 import ExternalPromotions from "@/js/components/dashboard/ExternalPromotions.vue";
 import { fetchCampaigns } from "@/js/api/campaign_service.js";
@@ -370,6 +368,10 @@ onMounted(async () => {
         console.error("Failed to fetch campaigns:", err);
         loading.value = false;
     }
+});
+
+watch(activeTab, async () => {
+  await nextTick();
 });
 </script>
 <style scoped>
