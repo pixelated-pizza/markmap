@@ -8,6 +8,14 @@ import { fileURLToPath, URL } from "url";
 
 export default defineConfig({
     base: "/",
+    server: {
+        host: "0.0.0.0",      // bind to all network interfaces
+        cors: true,  
+        port: 5173,
+        hmr: {
+            host: "192.168.25.104",  // your LAN IP
+        },
+    },
     plugins: [
         laravel({
             input: [
